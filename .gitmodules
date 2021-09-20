@@ -1,0 +1,3 @@
+[submodule "geUtilities"]
+	path = geUtilities
+	url = https://github.com/NeonGE/geUtilities.git
