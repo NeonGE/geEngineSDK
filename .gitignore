@@ -1,0 +1,83 @@
+﻿# Generic C++
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+*.bin
+
+# Folders to ignore
+[Dd]ebug/
+[Rr]elease/
+build/
+[Bb]in/
+[Oo]bj/
+[Ll]ib/
+
+# IDE specific files
+# Visual Studio
+.vs/        # Visual Studio 2017+
+*.suo
+*.user
+*.config
+*.filters
+*.dsp
+*.ncb
+*.aps
+*.plg
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.opendb
+
+# Visual Studio Code
+.vscode/
+
+# Qt Creator
+*.pro.user
+*.user.*
+*.cbp
+*.layout
+moc_*
+ui_*
+qrc_*
+*~
+*.orig
+
+# CMake
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles/
+CTestTestfile.cmake
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# External Libraries
+/sdk/geUtilities/include/externals/catch_amalgamated.hpp
+/sdk/geUtilities/include/externals/json.hpp
+/sdk/geUtilities/include/externals/lz4.h
+/sdk/geUtilities/src/externals/catch_amalgamated.cpp
+/sdk/geUtilities/src/externals/lz4.c
+/vs2026
