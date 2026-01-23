@@ -652,13 +652,13 @@ namespace geEngineSDK {
      *                  the splitting process will stop after this many splits,
      *                  left to right.
      */
-    gE_NODISCARD STATIC Vector<String>
+    GE_NODISCARD static Vector<String>
     split(const String& str, const String& delims = "\t\n ", uint32 maxSplits = 0);
 
     /**
      * @copydoc	StringUtil::split(const String&, const String&, uint32)
      */
-    gE_NODISCARD STATIC Vector<WString>
+    GE_NODISCARD static Vector<WString>
     split(const WString& str, const WString& delims = L"\t\n ", uint32 maxSplits = 0);
 
     /**
@@ -678,7 +678,7 @@ namespace geEngineSDK {
      *                      the splitting process will stop after this many splits,
      *                      left to right.
      */
-    gE_NODISCARD STATIC Vector<String>
+    GE_NODISCARD static Vector<String>
     tokenise(const String& str,
              const String& singleDelims = "\t\n ",
              const String& doubleDelims = "\"", 
@@ -687,7 +687,7 @@ namespace geEngineSDK {
     /**
      * @copydoc StringUtil::tokenise(const String&, const String&, const String&, uint32)
      */
-    gE_NODISCARD STATIC Vector<WString>
+    GE_NODISCARD static Vector<WString>
     tokenise(const WString& str, 
              const WString& singleDelims = L"\t\n ",
              const WString& doubleDelims = L"\"", 
@@ -726,13 +726,13 @@ namespace geEngineSDK {
      *                  lower cased before comparison and the pattern should
      *                  also be in lower case.
      */
-    gE_NODISCARD STATIC bool
+    GE_NODISCARD static bool
     startsWith(const String& str, const String& pattern, bool lowerCase = true);
 
     /**
      * @copydoc startsWith(const String&, const String&, bool)
      */
-    gE_NODISCARD STATIC bool
+    GE_NODISCARD static bool
     startsWith(const WString& str, const WString& pattern, bool lowerCase = true);
 
     /**
@@ -744,13 +744,13 @@ namespace geEngineSDK {
      *                  lower cased before comparison, and the pattern should
      *                  also be in lower case.
      */
-    gE_NODISCARD STATIC bool
+    GE_NODISCARD static bool
     endsWith(const String& str, const String& pattern, bool lowerCase = true);
 
     /**
      * @copydoc endsWith(const String&, const String&, bool)
      */
-    gE_NODISCARD STATIC bool
+    GE_NODISCARD static bool
     endsWith(const WString& str, const WString& pattern, bool lowerCase = true);
 
     /**
@@ -761,13 +761,13 @@ namespace geEngineSDK {
      * @param	pattern       Patterns to look for.
      * @param	caseSensitive (optional) Should the match be case sensitive or not.
      */
-    gE_NODISCARD STATIC bool
+    GE_NODISCARD static bool
     match(const String& str, const String& pattern, bool caseSensitive = true);
 
     /**
      * @copydoc match(const String&, const String&, bool)
      */
-    gE_NODISCARD STATIC bool
+    GE_NODISCARD static bool
     match(const WString& str, const WString& pattern, bool caseSensitive = true);
 
     /**
@@ -777,7 +777,7 @@ namespace geEngineSDK {
      * @param	replaceWithWhat Substring to replace with (the new sub-string)
      * @return	An updated string with the substrings replaced.
      */
-    gE_NODISCARD STATIC const String
+    GE_NODISCARD static const String
     replaceAll(const String& source, 
                const String& replaceWhat, 
                const String& replaceWithWhat);
@@ -785,7 +785,7 @@ namespace geEngineSDK {
     /**
      * @copydoc  replaceAll(const String&, const String&, const String&)
      */
-    gE_NODISCARD STATIC const WString
+    GE_NODISCARD static const WString
     replaceAll(const WString& source, 
                const WString& replaceWhat, 
                const WString& replaceWithWhat);
@@ -801,7 +801,7 @@ namespace geEngineSDK {
      *                           and lowercase characters different.
      */
     template <class T>
-    gE_NODISCARD STATIC int32
+    GE_NODISCARD static int32
     compare(const BasicString<T>& lhs,
             const BasicString<T>& rhs,
             bool caseSensitive = true) {
@@ -822,7 +822,7 @@ namespace geEngineSDK {
      * @copydoc StringFormat::format
      */
     template<class T, class... Args>
-    gE_NODISCARD STATIC BasicString<T>
+    GE_NODISCARD static BasicString<T>
     format(const BasicString<T>& source, Args&&... args) {
       return StringFormat::format(source.c_str(), std::forward<Args>(args)...);
     }
@@ -831,7 +831,7 @@ namespace geEngineSDK {
      * @copydoc StringFormat::format
      */
     template<class T, class... Args>
-    gE_NODISCARD STATIC BasicString<T>
+    GE_NODISCARD static BasicString<T>
     format(const T* source, Args&&... args) {
       return StringFormat::format(source, std::forward<Args>(args)...);
     }
@@ -849,7 +849,7 @@ namespace geEngineSDK {
 
    private:
     template <class T>
-    gE_NODISCARD STATIC Vector<BasicString<T>>
+    GE_NODISCARD static Vector<BasicString<T>>
     splitInternal(const BasicString<T>& str, 
                   const BasicString<T>& delims,
                   uint32 maxSplits) {
@@ -887,7 +887,7 @@ namespace geEngineSDK {
     }
 
     template <class T>
-    gE_NODISCARD STATIC Vector<BasicString<T>>
+    GE_NODISCARD static Vector<BasicString<T>>
     tokeniseInternal(const BasicString<T>& str, 
                      const BasicString<T>& singleDelims, 
                      const BasicString<T>& doubleDelims, 
@@ -949,7 +949,7 @@ namespace geEngineSDK {
     }
 
     template <class T>
-    gE_NODISCARD STATIC bool
+    GE_NODISCARD static bool
     startsWithInternal(const BasicString<T>& str, 
                        const BasicString<T>& pattern, 
                        bool lowerCase) {
@@ -968,7 +968,7 @@ namespace geEngineSDK {
     }
 
     template <class T>
-    gE_NODISCARD STATIC bool
+    GE_NODISCARD static bool
     endsWithInternal(const BasicString<T>& str, 
                      const BasicString<T>& pattern, 
                      bool lowerCase) {
@@ -987,7 +987,7 @@ namespace geEngineSDK {
     }
 
     template <class T>
-    gE_NODISCARD STATIC bool
+    GE_NODISCARD static bool
     matchInternal(const BasicString<T>& str,
                   const BasicString<T>& pattern,
                   bool caseSensitive) {
@@ -1037,7 +1037,7 @@ namespace geEngineSDK {
     }
 
     template <class T>
-    gE_NODISCARD STATIC const BasicString<T>
+    GE_NODISCARD static const BasicString<T>
     replaceAllInternal(const BasicString<T>& source, 
                        const BasicString<T>& replaceWhat, 
                        const BasicString<T>& replaceWithWhat) {
