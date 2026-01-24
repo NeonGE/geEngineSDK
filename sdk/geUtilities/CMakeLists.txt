@@ -1,8 +1,6 @@
 include(${CMAKE_SOURCE_DIR}/cmake/Externals_LZ4.cmake)
 
 # ---- Config: URLs del release de Catch2 (assets directos) ----
-set(GE_CATCH2_CPP_URL "https://github.com/catchorg/Catch2/releases/download/v3.12.0/catch_amalgamated.cpp")
-set(GE_CATCH2_HPP_URL "https://github.com/catchorg/Catch2/releases/download/v3.12.0/catch_amalgamated.hpp")
 set(GE_JSON_HPP_URL "https://github.com/nlohmann/json/releases/download/v3.12.0/json.hpp")
 
 # ---- Destinos dentro de tu repo ----
@@ -15,33 +13,17 @@ file(MAKE_DIRECTORY "${GE_EXT_INC_DIR}")
 set(GE_DL_DIR "${CMAKE_BINARY_DIR}/_downloads/geUtilities_Externals")
 file(MAKE_DIRECTORY "${GE_DL_DIR}")
 
-set(GE_CATCH2_DL_CPP "${GE_DL_DIR}/catch_amalgamated.cpp")
-set(GE_CATCH2_DL_HPP "${GE_DL_DIR}/catch_amalgamated.hpp")
 set(GE_JSON_DL_HPP "${GE_DL_DIR}/json.hpp")
 
-file(DOWNLOAD "${GE_CATCH2_CPP_URL}" "${GE_CATCH2_DL_CPP}" SHOW_PROGRESS STATUS st_cpp)
-file(DOWNLOAD "${GE_CATCH2_HPP_URL}" "${GE_CATCH2_DL_HPP}" SHOW_PROGRESS STATUS st_hpp)
 file(DOWNLOAD "${GE_JSON_HPP_URL}" "${GE_JSON_DL_HPP}" SHOW_PROGRESS STATUS js_hpp)
-list(GET st_cpp 0 code_cpp)
-list(GET st_hpp 0 code_hpp)
 list(GET js_hpp 0 code_js_hpp)
-if(NOT code_cpp EQUAL 0)
-  message(FATAL_ERROR "No se pudo descargar CPP Catch2: ${st_cpp}")
-endif()
-if(NOT code_hpp EQUAL 0)
-  message(FATAL_ERROR "No se pudo descargar HPP Catch2: ${st_hpp}")
-endif()
 if(NOT code_js_hpp EQUAL 0)
   message(FATAL_ERROR "No se pudo descargar HPP JSON: ${js_hpp}")
 endif()
 
 # ---- Copia al arbol de fuentes (repo) ----
-set(GE_EXT_CPP "${GE_EXT_SRC_DIR}/catch_amalgamated.cpp")
-set(GE_EXT_HPP "${GE_EXT_INC_DIR}/catch_amalgamated.hpp")
 set(GE_EXT_JSON_HPP "${GE_EXT_INC_DIR}/json.hpp")
 
-file(COPY_FILE "${GE_CATCH2_DL_CPP}" "${GE_EXT_CPP}" ONLY_IF_DIFFERENT)
-file(COPY_FILE "${GE_CATCH2_DL_HPP}" "${GE_EXT_HPP}" ONLY_IF_DIFFERENT)
 file(COPY_FILE "${GE_JSON_DL_HPP}" "${GE_EXT_JSON_HPP}" ONLY_IF_DIFFERENT)
 
 add_library(geUtilities SHARED
@@ -128,7 +110,6 @@ add_library(geUtilities SHARED
 	include/geVectorNI.h
 	include/win32/geMinWindows.h
 	include/externals/md5.h
-	"${GE_EXT_HPP}"
 	"${GE_EXT_JSON_HPP}"
 
 	src/geBitmapWriter.cpp
@@ -176,7 +157,6 @@ add_library(geUtilities SHARED
 	src/win32/geWin32CrashHandler.cpp
 	src/win32/geWin32FileSystem.cpp
 	src/externals/md5.cpp
-	"${GE_EXT_CPP}"
 )
 
 ge_set_output_dirs(geUtilities)

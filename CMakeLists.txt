@@ -45,4 +45,5 @@ add_subdirectory(sdk/geUtilities)
 include(CTest)     # define BUILD_TESTING option + basic setup
 enable_testing()
 
+include(${CMAKE_SOURCE_DIR}/cmake/Externals_Catch2.cmake)
 add_subdirectory(tests)

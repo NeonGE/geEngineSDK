@@ -81,3 +81,4 @@ compile_commands.json
 /sdk/geUtilities/src/externals/catch_amalgamated.cpp
 /sdk/geUtilities/src/externals/lz4.c
 /vs2026
+/tests/externals
