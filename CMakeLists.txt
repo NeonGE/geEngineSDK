@@ -3,38 +3,46 @@ cmake_minimum_required(VERSION 3.20)
 project(geEngineSDK VERSION 0.1.2026 LANGUAGES C CXX)
 
 # -----------------------------
-# Organized Outputs
+# Organized Outputs (per Platform + Config)
 # -----------------------------
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib) # .lib / .a
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # .dll / .so
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # .exe
+function(ge_set_output_dirs targetName)
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(_arch "x64")
+  else()
+    set(_arch "x86")
+  endif()
 
-# Multi-config
-if(CMAKE_CONFIGURATION_TYPES)
-	foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
-		string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
-		set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/lib)
-		set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/bin)
-		set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/bin)
-	endforeach()
-endif()
+  set(_bin_base "${CMAKE_BINARY_DIR}/bin/$<PLATFORM_ID>/${_arch}/$<CONFIG>")
+  set(_lib_base "${CMAKE_BINARY_DIR}/lib/$<PLATFORM_ID>/${_arch}/$<CONFIG>")
 
-#Sets the settings to compile all projects
+  set_target_properties(${targetName} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${_bin_base}"  # .exe
+    LIBRARY_OUTPUT_DIRECTORY "${_bin_base}"  # .dll/.so/.dylib
+    ARCHIVE_OUTPUT_DIRECTORY "${_lib_base}"  # .lib/.a
+  )
+endfunction()
+
+# -----------------------------
+# Build settings shared by all targets
+# -----------------------------
 add_library(ge_build_settings INTERFACE)
 target_compile_features(ge_build_settings INTERFACE cxx_std_20)
+set_target_properties(ge_build_settings PROPERTIES CXX_EXTENSIONS OFF)
 
-#Remove RTTI
+# Remove RTTI
 if(MSVC)
   target_compile_options(ge_build_settings INTERFACE /GR-)
 else()
   target_compile_options(ge_build_settings INTERFACE -fno-rtti)
 endif()
 
-set_target_properties(ge_build_settings PROPERTIES CXX_EXTENSIONS OFF)
-
 # -----------------------------
 # Subprojects
 # -----------------------------
 add_subdirectory(sdk/geUtilities)
 #add_subdirectory(games/geGame)
-#add_subdirectory(tests/geUtilities_Tests)
+
+include(CTest)     # define BUILD_TESTING option + basic setup
+enable_testing()
+
+add_subdirectory(tests)

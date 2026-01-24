@@ -179,6 +179,8 @@ add_library(geUtilities SHARED
 	"${GE_EXT_CPP}"
 )
 
+ge_set_output_dirs(geUtilities)
+
 #Add the include directories
 target_include_directories(geUtilities
     PUBLIC
