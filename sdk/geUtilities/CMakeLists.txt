@@ -127,7 +127,6 @@ add_library(geUtilities SHARED
 	include/geVector4.h
 	include/geVectorNI.h
 	include/win32/geMinWindows.h
-	include/win32/geWin32PlatformUtility.h
 	include/win32/geWin32Windows.h
 	include/externals/md5.h
 	"${GE_EXT_HPP}"
@@ -177,7 +176,6 @@ add_library(geUtilities SHARED
 	src/geVector4.cpp
 	src/win32/geWin32CrashHandler.cpp
 	src/win32/geWin32FileSystem.cpp
-	src/win32/geWin32PlatformUtility.cpp
 	src/win32/geWin32Windows.cpp
 	src/externals/md5.cpp
 	"${GE_EXT_CPP}"
