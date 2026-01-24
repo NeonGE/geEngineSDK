@@ -593,7 +593,7 @@ namespace geEngineSDK {
     if (toUpper) u.toUpper();
     else         u.toLower();
 
-    std::string out;
+    String out;
     u.toUTF8String(out);
     return out;
 #else
