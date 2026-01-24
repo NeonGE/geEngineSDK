@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(geEngineSDK VERSION 0.1.2026 LANGUAGES CXX)
+project(geEngineSDK VERSION 0.1.2026 LANGUAGES C CXX)
 
 # -----------------------------
 # Organized Outputs
@@ -24,13 +24,11 @@ add_library(ge_build_settings INTERFACE)
 target_compile_features(ge_build_settings INTERFACE cxx_std_20)
 
 #Remove RTTI
-target_compile_options(ge_build_settings INTERFACE
-    # MSVC / clang-cl
-    $<$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>:/GR->
-
-    # GCC / Clang (modo GNU)
-    $<$<CXX_COMPILER_FRONTEND_VARIANT:GNU>:-fno-rtti>
-)
+if(MSVC)
+  target_compile_options(ge_build_settings INTERFACE /GR-)
+else()
+  target_compile_options(ge_build_settings INTERFACE -fno-rtti)
+endif()
 
 set_target_properties(ge_build_settings PROPERTIES CXX_EXTENSIONS OFF)
 

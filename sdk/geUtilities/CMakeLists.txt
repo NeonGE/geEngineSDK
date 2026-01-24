@@ -197,15 +197,17 @@ set_source_files_properties(
     PROPERTIES LANGUAGE C
 )
 
+target_link_libraries(geUtilities PUBLIC ge_build_settings)
+
+if(WIN32)
 target_link_libraries(geUtilities
-	PUBLIC
-		ge_build_settings
 	PRIVATE
-		$<$<PLATFORM_ID:Windows>:Shell32.lib>
-		$<$<PLATFORM_ID:Windows>:DbgHelp.lib>
-		$<$<PLATFORM_ID:Windows>:IPHLPAPI.lib>
-		$<$<PLATFORM_ID:Windows>:Rpcrt4.lib>
+		$<$<PLATFORM_ID:Windows>:Shell32>
+		$<$<PLATFORM_ID:Windows>:DbgHelp>
+		$<$<PLATFORM_ID:Windows>:IPHLPAPI>
+		$<$<PLATFORM_ID:Windows>:Rpcrt4>
 )
+endif()
 
 get_target_property(GEUTIL_SOURCES geUtilities SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${GEUTIL_SOURCES})
