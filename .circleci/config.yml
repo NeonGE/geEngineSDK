@@ -1,0 +1,89 @@
+version: 2.1
+
+jobs:
+  test_linux:
+    docker:
+      - image: cimg/base:current-22.04
+    environment:
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
+      CTEST_OUTPUT_ON_FAILURE: 1
+    steps:
+      - checkout
+
+      - run:
+          name: Install build tools
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends \
+              cmake ninja-build build-essential git
+
+      - run:
+          name: Configure
+          command: |
+            cmake -S . -B build -G Ninja \
+              -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+              -DBUILD_TESTING=ON
+
+      - run:
+          name: Build
+          command: |
+            cmake --build build
+
+      - run:
+          name: Run tests (CTest -> JUnit)
+          command: |
+            mkdir -p build/test-results
+            ctest --test-dir build --output-junit build/test-results/ctest.xml
+
+      - store_test_results:
+          path: build/test-results
+
+      - store_artifacts:
+          path: build/test-results
+          destination: test-results
+
+  test_windows:
+    machine:
+      image: windows-server-2022-gui:current
+    resource_class: windows.medium
+    shell: powershell.exe -ExecutionPolicy Bypass
+    environment:
+      CTEST_OUTPUT_ON_FAILURE: 1
+    steps:
+      - checkout
+
+      - run:
+          name: Install build tools (Chocolatey)
+          command: |
+            choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+            choco install -y ninja
+
+      - run:
+          name: Configure (VS 2022)
+          command: |
+            cmake -S . -B build -G "Visual Studio 17 2022" -A x64 ^
+              -DBUILD_TESTING=ON
+
+      - run:
+          name: Build
+          command: |
+            cmake --build build --config RelWithDebInfo
+
+      - run:
+          name: Run tests (CTest -> JUnit)
+          command: |
+            New-Item -ItemType Directory -Force build\test-results | Out-Null
+            ctest --test-dir build -C RelWithDebInfo --output-junit build\test-results\ctest.xml
+
+      - store_test_results:
+          path: build/test-results
+
+      - store_artifacts:
+          path: build/test-results
+          destination: test-results
+
+workflows:
+  tests:
+    jobs:
+      - test_linux
+      - test_windows
