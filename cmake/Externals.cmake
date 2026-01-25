@@ -1,0 +1,8 @@
+include(${CMAKE_SOURCE_DIR}/cmake/Externals_LZ4.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/Externals_Json.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/Externals_Catch2.cmake)
+
+function(ge_setup_test_dependencies)
+  ge_setup_catch2_amalgamated()
+  ge_setup_nlohmann_json()
+endfunction()

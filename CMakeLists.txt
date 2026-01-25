@@ -39,11 +39,11 @@ endif()
 # -----------------------------
 # Subprojects
 # -----------------------------
+include(CTest)     # define BUILD_TESTING option + basic setup
+include(${CMAKE_SOURCE_DIR}/cmake/Externals.cmake)
+
 add_subdirectory(sdk/geUtilities)
 #add_subdirectory(games/geGame)
 
-include(CTest)     # define BUILD_TESTING option + basic setup
 enable_testing()
-
-include(${CMAKE_SOURCE_DIR}/cmake/Externals_Catch2.cmake)
 add_subdirectory(tests)

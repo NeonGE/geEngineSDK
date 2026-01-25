@@ -1,4 +1,4 @@
-include(${CMAKE_SOURCE_DIR}/cmake/Externals_LZ4.cmake)
+ge_setup_lz4()
 
 # ---- Config: URLs del release de Catch2 (assets directos) ----
 set(GE_JSON_HPP_URL "https://github.com/nlohmann/json/releases/download/v3.12.0/json.hpp")
@@ -110,7 +110,6 @@ add_library(geUtilities SHARED
 	include/geVectorNI.h
 	include/win32/geMinWindows.h
 	include/externals/md5.h
-	"${GE_EXT_JSON_HPP}"
 
 	src/geBitmapWriter.cpp
 	src/geBox.cpp
@@ -168,18 +167,11 @@ target_include_directories(geUtilities
 		${GE_EXT_INC_DIR}
 )
 
-target_sources(geUtilities PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/externals/lz4.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/externals/lz4.h
+target_link_libraries(geUtilities
+	PUBLIC
+		ge_build_settings
+		ge_lz4
 )
-
-# Asegurar C para el .c
-set_source_files_properties(
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/externals/lz4.c
-    PROPERTIES LANGUAGE C
-)
-
-target_link_libraries(geUtilities PUBLIC ge_build_settings)
 
 if(WIN32)
 target_link_libraries(geUtilities
@@ -196,7 +188,6 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${GEUTIL_SOURCES})
 
 target_compile_definitions(geUtilities
     PRIVATE
-        LZ4_HEAPMODE=1
 		GE_UTILITIES_EXPORTS=1
     #PUBLIC
     #   GE_HAS_UTILITIES=1

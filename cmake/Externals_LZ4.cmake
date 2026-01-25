@@ -1,62 +1,47 @@
 include(FetchContent)
 
-# -----------------------------
-# Config
-# -----------------------------
-set(GE_LZ4_GIT_REPO https://github.com/lz4/lz4.git)
-set(GE_LZ4_GIT_TAG  v1.9.4)
+function(ge_setup_lz4)
+  if(TARGET ge_lz4)
+    return()
+  endif()
 
-# -----------------------------
-# Declare
-# -----------------------------
-FetchContent_Declare(
-  lz4_upstream
-  GIT_REPOSITORY ${GE_LZ4_GIT_REPO}
-  GIT_TAG        ${GE_LZ4_GIT_TAG}
-  GIT_SHALLOW    TRUE
-)
+  set(GE_LZ4_GIT_REPO "https://github.com/lz4/lz4.git")
+  set(GE_LZ4_GIT_TAG  "v1.9.4")
 
-# -----------------------------
-# Make available (modern)
-# -----------------------------
-FetchContent_MakeAvailable(lz4_upstream)
+  FetchContent_Declare(
+    lz4_upstream
+    GIT_REPOSITORY ${GE_LZ4_GIT_REPO}
+    GIT_TAG        ${GE_LZ4_GIT_TAG}
+    GIT_SHALLOW    TRUE
+  )
 
-# -----------------------------
-# Get source dir
-# -----------------------------
-FetchContent_GetProperties(lz4_upstream)
-if(NOT lz4_upstream_POPULATED)
-  message(FATAL_ERROR "lz4_upstream not populated")
-endif()
+  FetchContent_MakeAvailable(lz4_upstream)
+  FetchContent_GetProperties(lz4_upstream)
 
-# -----------------------------
-# Paths in upstream repo
-# -----------------------------
-set(GE_LZ4_SRC_IN "${lz4_upstream_SOURCE_DIR}/lib/lz4.c")
-set(GE_LZ4_HDR_IN "${lz4_upstream_SOURCE_DIR}/lib/lz4.h")
+  if(NOT lz4_upstream_POPULATED)
+    message(FATAL_ERROR "[LZ4] lz4_upstream not populated")
+  endif()
 
-# -----------------------------
-# Destinations in YOUR project
-# -----------------------------
-set(GE_LZ4_DST_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/externals")
-set(GE_LZ4_DST_INC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/externals")
+  set(_SRC "${lz4_upstream_SOURCE_DIR}/lib/lz4.c")
+  set(_HDR "${lz4_upstream_SOURCE_DIR}/lib/lz4.h")
 
-file(MAKE_DIRECTORY "${GE_LZ4_DST_SRC_DIR}" "${GE_LZ4_DST_INC_DIR}")
+  if(NOT EXISTS "${_SRC}" OR NOT EXISTS "${_HDR}")
+    message(FATAL_ERROR "[LZ4] No encontré lib/lz4.c o lib/lz4.h en: ${lz4_upstream_SOURCE_DIR}")
+  endif()
 
-set(GE_LZ4_SRC_OUT "${GE_LZ4_DST_SRC_DIR}/lz4.c")
-set(GE_LZ4_HDR_OUT "${GE_LZ4_DST_INC_DIR}/lz4.h")
+  add_library(ge_lz4 STATIC "${_SRC}" "${_HDR}")
+  set_source_files_properties("${_SRC}" PROPERTIES LANGUAGE C)
 
-# -----------------------------
-# Copy (only if changed)
-# -----------------------------
-file(COPY_FILE "${GE_LZ4_SRC_IN}" "${GE_LZ4_SRC_OUT}" ONLY_IF_DIFFERENT)
-file(COPY_FILE "${GE_LZ4_HDR_IN}" "${GE_LZ4_HDR_OUT}" ONLY_IF_DIFFERENT)
+  target_include_directories(ge_lz4 PUBLIC
+    "${lz4_upstream_SOURCE_DIR}/lib"
+  )
 
-# -----------------------------
-# Export to parent scope
-# -----------------------------
-set(GE_LZ4_SOURCES
-    "${GE_LZ4_SRC_OUT}"
-    "${GE_LZ4_HDR_OUT}"
-    PARENT_SCOPE
-)
+  target_link_libraries(ge_lz4 PUBLIC ge_build_settings)
+
+  target_compile_definitions(ge_lz4 PUBLIC
+    LZ4_HEAPMODE=1
+  )
+
+  # Opcional: para IDE
+  source_group(TREE "${lz4_upstream_SOURCE_DIR}" FILES "${_SRC}" "${_HDR}")
+endfunction()
