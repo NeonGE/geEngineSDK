@@ -19,7 +19,7 @@
 #include "geCompression.h"
 #include "geDataStream.h"
 #include "geDebug.h"
-#include "externals/lz4.h"
+#include <lz4.h>
 
 namespace geEngineSDK {
   using std::static_pointer_cast;
