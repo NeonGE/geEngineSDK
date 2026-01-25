@@ -161,6 +161,17 @@ target_link_libraries(geUtilities
 )
 endif()
 
+if(UNIX AND NOT APPLE)
+find_package(ICU REQUIRED COMPONENTS uc i18n data)
+
+target_link_libraries(geUtilities
+	PRIVATE
+		ICU::uc
+		ICU::i18n
+		ICU::data
+)
+endif()
+
 get_target_property(GEUTIL_SOURCES geUtilities SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${GEUTIL_SOURCES})
 
