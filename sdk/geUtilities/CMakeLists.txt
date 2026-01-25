@@ -130,6 +130,7 @@ add_library(geUtilities SHARED
 	src/geVector4.cpp
 	src/win32/geWin32CrashHandler.cpp
 	src/win32/geWin32FileSystem.cpp
+	src/posix/gePosixCrashHandler.cpp
 	src/externals/md5.cpp
 )
 

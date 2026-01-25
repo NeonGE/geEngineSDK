@@ -93,6 +93,7 @@ namespace geEngineSDK {
      */
     static String
     getStackTrace();
+
    private:
     /**
      * @brief Does what it says. Internal utility function used by reportCrash().
@@ -142,10 +143,8 @@ namespace geEngineSDK {
     static const String s_crashLogName;
     static const String s_fatalErrorMsg;
 
-#if USING(GE_PLATFORM_WINDOWS)
     struct Data;
     Data* m_crashData;
-#endif
   };
 
   GE_UTILITIES_EXPORT CrashHandler& g_crashHandler();
