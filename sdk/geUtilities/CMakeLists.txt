@@ -1,30 +1,5 @@
 ge_setup_lz4()
-
-# ---- Config: URLs del release de Catch2 (assets directos) ----
-set(GE_JSON_HPP_URL "https://github.com/nlohmann/json/releases/download/v3.12.0/json.hpp")
-
-# ---- Destinos dentro de tu repo ----
-set(GE_EXT_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/externals")
-set(GE_EXT_INC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/externals")
-file(MAKE_DIRECTORY "${GE_EXT_SRC_DIR}")
-file(MAKE_DIRECTORY "${GE_EXT_INC_DIR}")
-
-# ---- Descarga a un cache dentro del build ----
-set(GE_DL_DIR "${CMAKE_BINARY_DIR}/_downloads/geUtilities_Externals")
-file(MAKE_DIRECTORY "${GE_DL_DIR}")
-
-set(GE_JSON_DL_HPP "${GE_DL_DIR}/json.hpp")
-
-file(DOWNLOAD "${GE_JSON_HPP_URL}" "${GE_JSON_DL_HPP}" SHOW_PROGRESS STATUS js_hpp)
-list(GET js_hpp 0 code_js_hpp)
-if(NOT code_js_hpp EQUAL 0)
-  message(FATAL_ERROR "No se pudo descargar HPP JSON: ${js_hpp}")
-endif()
-
-# ---- Copia al arbol de fuentes (repo) ----
-set(GE_EXT_JSON_HPP "${GE_EXT_INC_DIR}/json.hpp")
-
-file(COPY_FILE "${GE_JSON_DL_HPP}" "${GE_EXT_JSON_HPP}" ONLY_IF_DIFFERENT)
+ge_setup_nlohmann_json()
 
 add_library(geUtilities SHARED
 	include/geBitmapWriter.h
@@ -170,7 +145,9 @@ target_include_directories(geUtilities
 target_link_libraries(geUtilities
 	PUBLIC
 		ge_build_settings
+	PRIVATE
 		ge_lz4
+		ge_json
 )
 
 if(WIN32)
