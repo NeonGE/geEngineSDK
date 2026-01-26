@@ -30,7 +30,10 @@ namespace geEngineSDK {
   {
    public:
     Float16Color() = default;
-    Float16Color(const float R, const float G, const float B, const float A)
+    Float16Color(const float R,
+                 const float G,
+                 const float B,
+                 const float A = 1.0f)
       : r(R), g(G), b(B), a(A)
     {}
 
