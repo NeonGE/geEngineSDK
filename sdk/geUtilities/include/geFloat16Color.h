@@ -29,9 +29,18 @@ namespace geEngineSDK {
   class GE_UTILITIES_EXPORT Float16Color
   {
    public:
-    Float16Color() {}
-    Float16Color(const Float16Color& Src) : r(Src.r), g(Src.g), b(Src.b), a(Src.a) {}
-    explicit Float16Color(const LinearColor& Src) : r(Src.r), g(Src.g), b(Src.b), a(Src.a) {}
+    Float16Color() = default;
+    Float16Color(const float R, const float G, const float B, const float A)
+      : r(R), g(G), b(B), a(A)
+    {}
+
+    Float16Color(const Float16Color& Src)
+      : r(Src.r), g(Src.g), b(Src.b), a(Src.a)
+    {}
+
+    explicit Float16Color(const LinearColor& Src)
+      : r(Src.r), g(Src.g), b(Src.b), a(Src.a)
+    {}
 
     /**
      * @brief	Assignment operator
