@@ -79,7 +79,7 @@ namespace geEngineSDK {
 
     bool
     operator!=(const VectorNI& rhs) const {
-      return !operator==(*this, rhs);
+      return !this->operator==(rhs);
     }
 
     int32 v[N];

@@ -3,6 +3,11 @@ ge_setup_nlohmann_json()
 add_executable(geUtilities_Tests
   src/core_types.cpp
   src/math_main.cpp
+  src/math_Vector2.cpp
+  src/math_Vector2Half.cpp
+  src/math_Vector3.cpp
+  src/math_Vector4.cpp
+  src/math_VectorNI.cpp
 )
 
 # Mantener mismo layout de outputs (bin/lib) por platform/config

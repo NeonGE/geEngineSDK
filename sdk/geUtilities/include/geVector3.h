@@ -643,7 +643,7 @@ namespace geEngineSDK {
      * @brief When this vector contains Euler angles (degrees), ensure that
      *        angles are between +/-180
      */
-    void
+    GE_UTILITIES_EXPORT void
     unwindEuler();
 
     /**
@@ -684,7 +684,7 @@ namespace geEngineSDK {
      * @param YAxis The input basis' YAxis, and upon return the orthonormal basis' YAxis.
      * @param ZAxis The input basis' ZAxis, and upon return the orthonormal basis' ZAxis.
      */
-    static void
+    GE_UTILITIES_EXPORT static void
     createOrthonormalBasis(Vector3& XAxis, Vector3& YAxis, Vector3& ZAxis);
 
     /**

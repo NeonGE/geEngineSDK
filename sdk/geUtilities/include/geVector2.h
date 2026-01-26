@@ -62,7 +62,7 @@ namespace geEngineSDK {
      * Copies the X and Y components from the Vector3.
      * @param V Vector to copy from.
      */
-    explicit inline Vector2(const Vector3& V);
+    GE_UTILITIES_EXPORT explicit Vector2(const Vector3& V);
 
    public:
     /**
@@ -498,7 +498,7 @@ namespace geEngineSDK {
      * @brief Converts spherical coordinates on the unit sphere into a
      *        Cartesian unit length vector.
      */
-    inline Vector3
+    GE_UTILITIES_EXPORT Vector3
     sphericalToUnitCartesian() const;
 
    public:

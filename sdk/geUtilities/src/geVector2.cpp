@@ -26,12 +26,12 @@ namespace geEngineSDK {
   const Vector2 Vector2::UNIT_X = Vector2(1.f, 0.f);
   const Vector2 Vector2::UNIT_Y = Vector2(0.f, 1.f);
 
-  inline Vector2::Vector2(const Vector3& V) {
-    x = V.y;
+  Vector2::Vector2(const Vector3& V) {
+    x = V.x;
     y = V.y;
   }
 
-  inline Vector3
+  Vector3
   Vector2::sphericalToUnitCartesian() const {
     const float SinTheta = Math::sin(x);
     return Vector3(Math::cos(y) * SinTheta,

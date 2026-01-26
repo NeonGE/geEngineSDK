@@ -92,7 +92,7 @@ namespace geEngineSDK {
 
   FORCEINLINE Vector2Half::Vector2Half(float InX, float InY) : x(InX), y(InY) {}
 
-  FORCEINLINE Vector2Half::Vector2Half(const Vector2& V) : x(V.x), y(V.x) {}
+  FORCEINLINE Vector2Half::Vector2Half(const Vector2& V) : x(V.x), y(V.y) {}
 
   FORCEINLINE Vector2Half&
   Vector2Half::operator=(const Vector2& V) {
