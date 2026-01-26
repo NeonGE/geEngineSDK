@@ -790,7 +790,7 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static FORCEINLINE bool
     isPowerOfTwo(uint32 Value) {
-      return (0 == (Value & (Value - 1)));
+      return Value && !(Value & (Value - 1u));
     }
 
     /**

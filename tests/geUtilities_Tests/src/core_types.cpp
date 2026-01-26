@@ -1,9 +1,6 @@
-#include <iostream>
 #include <catch_amalgamated.hpp>
 
 #include <gePrerequisitesUtilities.h>
-#include <geMath.h>
-
 using namespace geEngineSDK;
 
 TEST_CASE("Basic_Type_Size", "[Data Types]") {
@@ -28,6 +25,14 @@ TEST_CASE("Basic_Type_Size", "[Data Types]") {
   REQUIRE(static_cast<uint16>(-1) == NumLimit::MAX_UINT16);
   REQUIRE(static_cast<uint32>(-1) == NumLimit::MAX_UINT32);
   REQUIRE(static_cast<uint64>(-1) == NumLimit::MAX_UINT64);
+}
 
-  REQUIRE_THAT(Math::PI, Catch::Matchers::WithinRel(3.141592f, 0.0001f));
+TEST_CASE("Endianess", "[Platform]") {
+  uint32 v = 0x01020304;
+  uint8* b = reinterpret_cast<uint8*>(&v);
+#if USING(GE_ENDIAN_LITTLE)
+  REQUIRE(b[0] == 0x04);
+#else
+  REQUIRE(b[0] == 0x01);
+#endif
 }

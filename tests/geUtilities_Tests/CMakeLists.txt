@@ -1,7 +1,8 @@
 ge_setup_nlohmann_json()
 
 add_executable(geUtilities_Tests
-  src/main.cpp
+  src/core_types.cpp
+  src/math_main.cpp
 )
 
 # Mantener mismo layout de outputs (bin/lib) por platform/config
