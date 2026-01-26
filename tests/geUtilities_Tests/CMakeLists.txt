@@ -4,6 +4,7 @@ add_executable(geUtilities_Tests
   src/core_types.cpp
   src/core_floats.cpp
   src/math_main.cpp
+  src/math_angle.cpp
   src/math_Vector2.cpp
   src/math_Vector2Half.cpp
   src/math_Vector3.cpp

@@ -56,8 +56,7 @@ TEST_CASE("Float16: roundtrip accuracy", "[Float][Float16]")
   }
 }
 
-TEST_CASE("Float16: sign, inf and NaN", "[Float][Float16]")
-{
+TEST_CASE("Float16: sign, inf and NaN", "[Float][Float16]") {
   Float16 pz(0.0f), nz(-0.0f);
   REQUIRE(Float32((float)pz).sign() == 0u);
   REQUIRE(Float32((float)nz).sign() == 1u);
@@ -72,8 +71,7 @@ TEST_CASE("Float16: sign, inf and NaN", "[Float][Float16]")
   REQUIRE(std::isnan((float)qnan));
 }
 
-TEST_CASE("Float10/Float11: monotonic and finite", "[Float][Float10][Float11]")
-{
+TEST_CASE("Float10/Float11: monotonic and finite", "[Float][Float10][Float11]") {
   float prev10 = 0.0f;
   float prev11 = 0.0f;
 
@@ -98,8 +96,7 @@ TEST_CASE("Float10/Float11: monotonic and finite", "[Float][Float10][Float11]")
   }
 }
 
-TEST_CASE("Cross conversion: Float32 -> Float16 -> Float10/11 stability", "[Float][Cross]")
-{
+TEST_CASE("Cross conversion: Float32 -> Float16 -> Float10/11 stability", "[Float][Cross]") {
   const float vals[] = { 0.0f, 0.1f, 0.5f, 1.0f, 5.0f, 10.0f, 100.0f };
 
   for (float v : vals)
@@ -126,8 +123,7 @@ TEST_CASE("Cross conversion: Float32 -> Float16 -> Float10/11 stability", "[Floa
   }
 }
 
-TEST_CASE("Float16Color: RGB roundtrip", "[Float][Float16Color]")
-{
+TEST_CASE("Float16Color: RGB roundtrip", "[Float][Float16Color]") {
   struct C { float r, g, b; };
   const C colors[] = {
     {0,0,0}, {1,1,1}, {0.5f, 0.25f, 0.75f}, {10,20,30}
