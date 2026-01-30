@@ -937,6 +937,10 @@ namespace geEngineSDK {
      */
     static GE_UTILITIES_EXPORT const Vector3 UNIT;
 
+    static GE_UTILITIES_EXPORT const Vector3 UNIT_X;
+    static GE_UTILITIES_EXPORT const Vector3 UNIT_Y;
+    static GE_UTILITIES_EXPORT const Vector3 UNIT_Z;
+
     /**
      * @brief World up vector (0,0,1)
      */

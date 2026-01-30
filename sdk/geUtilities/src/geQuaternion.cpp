@@ -22,93 +22,96 @@ namespace geEngineSDK {
   const Quaternion Quaternion::IDENTITY = Quaternion(0.f, 0.f, 0.f, 1.f);
 
   Quaternion::Quaternion(const Matrix4& M) {
-    //If Matrix is nullptr, return Identity quaternion. If any of them is 0,
-    //you won't be able to construct rotation. If you have two planea at least,
-    //we can reconstruct the frame using cross product, but that's a bit
-    //expensive op to do here for now, if you convert to matrix from 0 scale
-    //and convert back, you'll lose rotation. Don't do that. 
-    if (M.getScaledAxis(AXIS::kX).isNearlyZero() ||
-      M.getScaledAxis(AXIS::kY).isNearlyZero() ||
-      M.getScaledAxis(AXIS::kZ).isNearlyZero()) {
-      *this = Quaternion::IDENTITY;
-      return;
+    auto& m = M.m;
+
+    const float m00 = m[0][0], m11 = m[1][1], m22 = m[2][2];
+    const float trace = m00 + m11 + m22;
+
+    if (trace > 0.0f) {
+      const float s = Math::sqrt(trace + 1.0f) * 2.0f; // s = 4w
+      x = (m[1][2] - m[2][1]) / s;
+      y = (m[2][0] - m[0][2]) / s;
+      z = (m[0][1] - m[1][0]) / s;
+      w = 0.25f * s;
     }
-
-#if USING(GE_DEBUG_MODE)
-    //Make sure the Rotation part of the Matrix is unit length.
-    //Changed to this (same as removeScaling) from rotDeterminant as using two
-    //different ways of checking unit length matrix caused inconsistency. 
-
-    bool isUnitLenght = (Math::abs(1.f - M.getScaledAxis(AXIS::kX).sizeSquared()) <=
-      Math::KINDA_SMALL_NUMBER) &&
-      (Math::abs(1.f - M.getScaledAxis(AXIS::kY).sizeSquared()) <=
-        Math::KINDA_SMALL_NUMBER) &&
-        (Math::abs(1.f - M.getScaledAxis(AXIS::kZ).sizeSquared()) <=
-          Math::KINDA_SMALL_NUMBER);
-
-    GE_ASSERT(isUnitLenght);
-    if (!isUnitLenght) {
-      *this = Quaternion::IDENTITY;
-      return;
+    else if (m00 > m11 && m00 > m22) {
+      const float s = Math::sqrt(1.0f + m00 - m11 - m22) * 2.0f; // s = 4x
+      x = 0.25f * s;
+      y = (m[0][1] + m[1][0]) / s;
+      z = (m[0][2] + m[2][0]) / s;
+      w = (m[1][2] - m[2][1]) / s;
     }
-#endif
-
-    //const MeReal *const t = (MeReal *) tm;
-    float	s;
-
-    //Check diagonal (trace)
-    const float tr = M.m[0][0] + M.m[1][1] + M.m[2][2];
-
-    if (0.0f < tr) {
-      float InvS = Math::invSqrt(tr + 1.f);
-      this->w = 0.5f * (1.f / InvS);
-      s = 0.5f * InvS;
-
-      this->x = (M.m[1][2] - M.m[2][1]) * s;
-      this->y = (M.m[2][0] - M.m[0][2]) * s;
-      this->z = (M.m[0][1] - M.m[1][0]) * s;
+    else if (m11 > m22) {
+      const float s = Math::sqrt(1.0f + m11 - m00 - m22) * 2.0f; // s = 4y
+      x = (m[0][1] + m[1][0]) / s;
+      y = 0.25f * s;
+      z = (m[1][2] + m[2][1]) / s;
+      w = (m[2][0] - m[0][2]) / s;
     }
     else {
-      //diagonal is negative
-      int32 i = 0;
-
-      if (M.m[1][1] > M.m[0][0]) {
-        i = 1;
-      }
-
-      if (M.m[2][2] > M.m[i][i]) {
-        i = 2;
-      }
-
-      static const int32 nxt[3] = { 1, 2, 0 };
-      const int32 j = nxt[i];
-      const int32 k = nxt[j];
-
-      s = M.m[i][i] - M.m[j][j] - M.m[k][k] + 1.0f;
-
-      float InvS = Math::invSqrt(s);
-
-      float qt[4];
-      qt[i] = 0.5f * (1.f / InvS);
-
-      s = 0.5f * InvS;
-
-      qt[3] = (M.m[j][k] - M.m[k][j]) * s;
-      qt[j] = (M.m[i][j] + M.m[j][i]) * s;
-      qt[k] = (M.m[i][k] + M.m[k][i]) * s;
-
-      this->x = qt[0];
-      this->y = qt[1];
-      this->z = qt[2];
-      this->w = qt[3];
-
-      diagnosticCheckNaN();
+      const float s = Math::sqrt(1.0f + m22 - m00 - m11) * 2.0f; // s = 4z
+      x = (m[0][2] + m[2][0]) / s;
+      y = (m[1][2] + m[2][1]) / s;
+      z = 0.25f * s;
+      w = (m[0][1] - m[1][0]) / s;
     }
+
+    normalize();
+    diagnosticCheckNaN();
   }
 
   Quaternion::Quaternion(const Rotator& R) {
     *this = R.toQuaternion();
     diagnosticCheckNaN();
+  }
+
+  Quaternion
+  Quaternion::operator*(const Quaternion& Q) const {
+    Quaternion r;
+    vectorQuaternionMultiply(r, Q, *this);
+    r.diagnosticCheckNaN();
+    return r;
+  }
+
+  Quaternion
+  Quaternion::operator*=(const Quaternion& Q) {
+    *this = (*this) * Q;
+    return *this;
+  }
+
+  Quaternion
+  Quaternion::getNormalized(float Tolerance) const {
+    const float ss = sizeSquared();
+    if (ss <= Tolerance) {
+      return Quaternion::IDENTITY;
+    }
+
+    const float inv = Math::invSqrt(ss);
+    return Quaternion(x * inv, y * inv, z * inv, w * inv);
+  }
+
+  void
+  Quaternion::normalize(float Tolerance) {
+    const float ss = sizeSquared();
+    if (ss <= Tolerance) {
+      *this = Quaternion::IDENTITY;
+      return;
+    }
+
+    const float inv = Math::invSqrt(ss);
+    x *= inv; y *= inv; z *= inv; w *= inv;
+    diagnosticCheckNaN();
+  }
+
+  Quaternion
+  Quaternion::inverse() const {
+    const float ss = sizeSquared();
+    if (ss <= Math::SMALL_NUMBER) {
+      return Quaternion::IDENTITY;
+    }
+
+    const float inv = 1.0f / ss;
+    return Quaternion(-x * inv, -y * inv, -z * inv, w * inv);
   }
 
   Vector3
@@ -118,70 +121,72 @@ namespace geEngineSDK {
 
   Matrix4
   Quaternion::operator*(const Matrix4& M) const {
-    Matrix4 Result;
-    Quaternion VT, VR;
-    Quaternion Inv = inverse();
-    for (int32 I = 0; I<4; ++I) {
-      Quaternion VQ(M.m[I][0], M.m[I][1], M.m[I][2], M.m[I][3]);
-      vectorQuaternionMultiply(VT, *this, VQ);
-      vectorQuaternionMultiply(VR, VT, Inv);
-      Result.m[I][0] = VR.x;
-      Result.m[I][1] = VR.y;
-      Result.m[I][2] = VR.z;
-      Result.m[I][3] = VR.w;
-    }
-
-    return Result;
+    //Apply this rotation to the matrix's rotation part:
+    //Out = Rot * M  => rotate in "world" sense relative to row-vectors.
+    //If you want "local", swap the order at call site.
+    const Matrix4 R = toMatrix();
+    return R * M;
   }
 
-  Rotator
-  Quaternion::rotator() const {
-    diagnosticCheckNaN();
-    const float SingularityTest = z * x - w * y;
-    const float YawY = 2.f * (w * z + x * y);
-    const float YawX = (1.f - 2.f * (Math::square(y) + Math::square(z)));
+  static float SignedAngleAroundAxisRad(Vector3 a, Vector3 b, Vector3 axis)
+  {
+    a = a.getSafeNormal();
+    b = b.getSafeNormal();
+    axis = axis.getSafeNormal();
 
-    //Reference:
-    //http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-    //http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
+    const Vector3 c = (a ^ b);
+    const float s = (axis | c);
+    const float d = (a | b);
 
-    //this value was found from experience, the above websites recommend different values
-    //but that isn't the case for us, so I went through different testing, and finally
-    //found the case where both of world lives happily. 
-    const float SINGULARITY_THRESHOLD = 0.4999995f;
-    Rotator RotatorFromQuat;
+    return Math::atan2(s, d).valueRadians();
+  }
 
-    if (-SINGULARITY_THRESHOLD > SingularityTest) {
-      RotatorFromQuat.pitch = -90.f;
-      RotatorFromQuat.yaw = Math::atan2(YawY, YawX).valueDegrees();
-      RotatorFromQuat.roll = Rotator::normalizeAxis(-RotatorFromQuat.yaw -
-                                                    (2.f * Math::atan2(x, w).valueDegrees()));
-    }
-    else if (SINGULARITY_THRESHOLD < SingularityTest) {
-      RotatorFromQuat.pitch = 90.f;
-      RotatorFromQuat.yaw = Math::atan2(YawY, YawX).valueDegrees();
-      RotatorFromQuat.roll = Rotator::normalizeAxis(RotatorFromQuat.yaw -
-                                                    (2.f * Math::atan2(x, w).valueDegrees()));
-    }
-    else {
-      RotatorFromQuat.pitch = Math::fastAsin(2.f*(SingularityTest)).valueDegrees();
-      RotatorFromQuat.yaw = Math::atan2(YawY, YawX).valueDegrees();
-      RotatorFromQuat.roll = Math::atan2(-2.f*(w*x + y*z),
-                                         (1.f - 2.f*(x*x + y*y))).valueDegrees();
-    }
+  Rotator Quaternion::rotator() const
+  {
+    const Quaternion q = getNormalized();
 
-# if USING(GE_DEBUG_MODE)
-    if (RotatorFromQuat.containsNaN()) {
-      GE_LOG(kWarning, Generic, "Quaternion::rotator(): Rotator result contains NaN!");
-      RotatorFromQuat = Rotator::ZERO;
-    }
-# endif
-    return RotatorFromQuat;
+    // Forward (+Z)
+    const Vector3 f = q.rotateVector(Vector3(0, 0, 1)).getSafeNormal();
+
+    // Yaw + derecha: atan2(f.x, f.z)
+    const float yawRad = Math::atan2(f.x, f.z).valueRadians();
+
+    // Pitch + arriba: atan2(f.y, sqrt(f.x^2+f.z^2))
+    const float horiz = Math::sqrt(f.x * f.x + f.z * f.z);
+    const float pitchRad = Math::atan2(f.y, horiz).valueRadians();
+
+    const float yawDeg = Math::RAD2DEG * (yawRad);
+    const float pitchDeg = Math::RAD2DEG * (pitchRad);
+
+    // Construye qYP con tu contrato (roll=0).
+    Rotator yp(pitchDeg, yawDeg, 0.0f);
+    const Quaternion qYP = yp.toQuaternion().getNormalized();
+
+    // Para medir roll, usamos "up" o "right" (ambos sirven) y lo medimos alrededor del forward FINAL.
+    const Vector3 up0 = qYP.rotateVector(Vector3(0, 1, 0)).getSafeNormal();
+    const Vector3 up1 = q.rotateVector(Vector3(0, 1, 0)).getSafeNormal();
+
+    float rollMathRad = SignedAngleAroundAxisRad(up0, up1, f);
+
+    // Tu convención humana: roll + = clockwise mirando forward => flip
+    float rollDeg = -Math::RAD2DEG * (rollMathRad);
+
+    Rotator out(pitchDeg, yawDeg, rollDeg);
+    out.normalize();
+    return out;
   }
 
   Quaternion
-  Quaternion::makeFromEuler(const Vector3& Euler) {
-    return Rotator::makeFromEuler(Euler).toQuaternion();
+  Quaternion::makeFromEuler(const Vector3& EulerDegrees) {
+    // EulerRad = (pitch, yaw, roll) in radians
+    const Quaternion qPitch(Vector3::UNIT_X, Degree(EulerDegrees.x));
+    const Quaternion qYaw  (Vector3::UNIT_Y, Degree(EulerDegrees.y));
+    const Quaternion qRoll (Vector3::UNIT_Z, Degree(EulerDegrees.z));
+
+    // Roll -> Pitch -> Yaw
+    Quaternion q = (qYaw * qPitch * qRoll);
+    q.normalize();
+    return q;
   }
 
   void
@@ -206,72 +211,81 @@ namespace geEngineSDK {
     OutSwing = *this * OutTwist.inverse();
   }
 
-  Vector3 Quaternion::euler() const {
+  Vector3
+  Quaternion::euler() const {
     return rotator().euler();
   }
 
-  //Based on:
-  //http://lolengine.net/blog/2014/02/24/quaternion-from-two-vectors-final
-  //http://www.euclideanspace.com/maths/algebra/vectors/angleBetween/index.htm
-  Quaternion
-  findBetween_Helper(const Vector3& A, const Vector3& B, float NormAB) {
-    float W = NormAB + Vector3::dot(A, B);
-    Quaternion Result;
-
-    if (W >= 1e-6f * NormAB) {
-      //Axis = Vector::crossProduct(A, B);
-      Result = Quaternion(A.y * B.z - A.z * B.y,
-                          A.z * B.x - A.x * B.z,
-                          A.x * B.y - A.y * B.x,
-                          W);
+  void
+  Quaternion::enforceShortestArcWith(const Quaternion& OtherQuat) {
+    if (((*this) | OtherQuat) < 0.0f) {
+      x = -x;
+      y = -y;
+      z = -z;
+      w = -w;
     }
-    else {
-      //A and B point in opposite directions
-      W = 0.f;
-      Result = Math::abs(A.x) > Math::abs(A.y) ?
-        Quaternion(-A.z, 0.f, A.x, W) :
-        Quaternion(0.f, -A.z, A.y, W);
-    }
+  }
 
-    Result.normalize();
-    return Result;
+  Radian
+  Quaternion::angularDistance(const Quaternion& Q) const {
+    const float d = Math::clamp(Math::abs((*this) | Q), 0.0f, 1.0f);
+    return Math::acos(d) * 2.0f;
   }
 
   Quaternion
   Quaternion::findBetweenNormals(const Vector3& A, const Vector3& B) {
-    const float NormAB = 1.f;
-    return findBetween_Helper(A, B, NormAB);
+    return findBetweenVectors(A, B);
   }
 
   Quaternion
   Quaternion::findBetweenVectors(const Vector3& A, const Vector3& B) {
-    const float NormAB = Math::sqrt(A.sizeSquared() * B.sizeSquared());
-    return findBetween_Helper(A, B, NormAB);
+    Vector3 a = A; a.normalize();
+    Vector3 b = B; b.normalize();
+
+    const float dot = Math::clamp(a | b, -1.0f, 1.0f);
+
+    //If vectors are nearly identical
+    if (dot > 1.0f - Math::KINDA_SMALL_NUMBER) {
+      return Quaternion::IDENTITY;
+    }
+
+    //If vectors are opposite
+    if (dot < -1.0f + Math::KINDA_SMALL_NUMBER) {
+      //Choose an arbitrary orthogonal axis
+      Vector3 axis = Vector3::UNIT_X ^ a;
+      if (axis.sizeSquared() < Math::KINDA_SMALL_NUMBER) {
+        axis = Vector3::UNIT_Y ^ a;
+      }
+      axis.normalize();
+      return Quaternion(axis, Radian(Math::PI));
+    }
+
+    Vector3 axis = b ^ a;
+    axis.normalize();
+
+    const Radian angle = Math::acos(dot);
+    Quaternion q(axis, angle);
+    q.normalize();
+
+    return q;
   }
 
   Quaternion
   Quaternion::log() const {
-    Quaternion Result;
-    Result.w = 0.f;
+    Quaternion q = getNormalized();
+    const float a = Math::acos(Math::clamp(q.w, -1.0f, 1.0f)).valueRadians();
+    const float s = Math::sin(a);
 
-    if (1.f > Math::abs(w)) {
-      const float Angle = Math::acos(w).valueRadians();
-      const float SinAngle = Math::sin(Angle);
+    Quaternion r(FORCE_INIT::kForceInitToZero);
+    r.w = 0.0f;
 
-      if (Math::abs(SinAngle) >= Math::SMALL_NUMBER) {
-        const float Scale = Angle / SinAngle;
-        Result.x = Scale*x;
-        Result.y = Scale*y;
-        Result.z = Scale*z;
-        return Result;
-      }
+    if (Math::abs(s) > Math::SMALL_NUMBER) {
+      const float coeff = a / s;
+      r.x = q.x * coeff;
+      r.y = q.y * coeff;
+      r.z = q.z * coeff;
     }
-
-    Result.x = x;
-    Result.y = y;
-    Result.z = z;
-
-    return Result;
+    return r;
   }
 
   Quaternion
@@ -402,54 +416,60 @@ namespace geEngineSDK {
     OutTan = P * PreExp.exp();
   }
 
-  void
+  Quaternion
   Quaternion::lookRotation(const Vector3& forwardDir) {
-    if (Vector3::ZERO == forwardDir) {
-      return;
-    }
-
-    Quaternion retValue = IDENTITY;
-
-    Vector3 nrmForwardDir = forwardDir;
-    nrmForwardDir.normalize();
-
-    Vector3 currentForwardDir = -retValue.getForwardVector();
-
-    if ((nrmForwardDir + currentForwardDir).sizeSquared() < 0.00005f) {
-      //Oops, a 180 degree turn (infinite possible rotation axes)
-      //Default to yaw i.e. use current UP
-      *this = Quaternion(-z, w, x, -y);
-    }
-    else {
-      //Derive shortest arc to new direction
-      Quaternion rotQuat = findBetween(currentForwardDir, nrmForwardDir);
-      *this = rotQuat * *this;
-    }
+    return lookRotation(forwardDir, Vector3::UNIT_Y);
   }
 
-  void
+  Quaternion
   Quaternion::lookRotation(const Vector3& forwardDir, const Vector3& upDir) {
-    Vector3 forward = forwardDir;
-    Vector3 up = upDir;
+    //Build an orthonormal basis (right, up, forward)
+    Vector3 f = forwardDir; f.normalize();
+    Vector3 r = upDir ^ f; r.normalize();
+    Vector3 u = f ^ r;
 
-    forward.normalize();
-    up.normalize();
+    //Row-vector rotation matrix:
+    //rows are the basis vectors expressed in world? (depends on your Matrix4 convention)
+    Matrix4 m = Matrix4::IDENTITY;
+    m.m[0][0] = r.x; m.m[0][1] = r.y; m.m[0][2] = r.z;
+    m.m[1][0] = u.x; m.m[1][1] = u.y; m.m[1][2] = u.z;
+    m.m[2][0] = f.x; m.m[2][1] = f.y; m.m[2][2] = f.z;
 
-    if (Math::isNearlyEqual(forward | up, 1.0f)) {
-      lookRotation(forward);
-      return;
-    }
+    return Quaternion(m);
+  }
 
-    Vector3 right = forward ^ up;
-    Vector3 realUp = right ^ forward;
+  Matrix4
+  Quaternion::toMatrix() const {
+    //Row-major matrix for row-vectors (v' = v * M).
+    Quaternion q = this->getNormalized();
 
-    right.normalize();
-    realUp.normalize();
+    const float xx = q.x * q.x;
+    const float yy = q.y * q.y;
+    const float zz = q.z * q.z;
 
-    w = sqrtf(1.0f + right.x + up.y + forward.z) * 0.5f;
-    float w4_recip = 1.0f / (4.0f * w);
-    x = (up.z - forward.y) * w4_recip;
-    y = (forward.x - right.z) * w4_recip;
-    z = (right.y - up.x) * w4_recip;
+    const float xy = q.x * q.y;
+    const float xz = q.x * q.z;
+    const float yz = q.y * q.z;
+
+    const float wx = q.w * q.x;
+    const float wy = q.w * q.y;
+    const float wz = q.w * q.z;
+
+    Matrix4 M = Matrix4::IDENTITY;
+
+    //This is the row-vector version
+    M.m[0][0] = 1.0f - 2.0f * (yy + zz);
+    M.m[0][1] = 2.0f * (xy + wz);
+    M.m[0][2] = 2.0f * (xz - wy);
+
+    M.m[1][0] = 2.0f * (xy - wz);
+    M.m[1][1] = 1.0f - 2.0f * (xx + zz);
+    M.m[1][2] = 2.0f * (yz + wx);
+
+    M.m[2][0] = 2.0f * (xz + wy);
+    M.m[2][1] = 2.0f * (yz - wx);
+    M.m[2][2] = 1.0f - 2.0f * (xx + yy);
+
+    return M;
   }
 }

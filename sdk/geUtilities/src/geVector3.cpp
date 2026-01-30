@@ -24,6 +24,9 @@
 namespace geEngineSDK {
   const Vector3 Vector3::ZERO     = Vector3(0.f, 0.f, 0.f);
   const Vector3 Vector3::UNIT     = Vector3(1.f, 1.f, 1.f);
+  const Vector3 Vector3::UNIT_X   = Vector3(1.f, 0.f, 0.f);
+  const Vector3 Vector3::UNIT_Y   = Vector3(0.f, 1.f, 0.f);
+  const Vector3 Vector3::UNIT_Z   = Vector3(0.f, 0.f, 1.f);
   const Vector3 Vector3::UP       = Vector3(0.f, 1.f, 0.f);
   const Vector3 Vector3::DOWN     = Vector3(0.f,-1.f, 0.f);
   const Vector3 Vector3::FORWARD  = Vector3(0.f, 0.f, 1.f);

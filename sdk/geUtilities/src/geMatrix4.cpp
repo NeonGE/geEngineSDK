@@ -34,22 +34,9 @@ namespace geEngineSDK {
                                   0.0f, 0.0f, 0.0f, 1.0f);
 
 
-  Rotator Matrix4::rotator() const {
-    const Vector3 XAxis = getScaledAxis(AXIS::kX);
-    const Vector3 YAxis = getScaledAxis(AXIS::kY);
-    const Vector3 ZAxis = getScaledAxis(AXIS::kZ);
-
-    Rotator tmpRotator = Rotator(Math::atan2(XAxis.z, Math::sqrt(
-                                              Math::square(XAxis.x) +
-                                              Math::square(XAxis.y))).valueDegrees(),
-                                 Math::atan2(XAxis.y, XAxis.x).valueDegrees(),
-                                 0);
-
-    const Vector3 SYAxis = RotationMatrix(tmpRotator).getScaledAxis(AXIS::kY);
-    tmpRotator.roll = Math::atan2(ZAxis | SYAxis, YAxis | SYAxis).valueDegrees();
-
-    tmpRotator.diagnosticCheckNaN();
-    return tmpRotator;
+  Rotator
+  Matrix4::rotator() const {
+    return Quaternion(*this).rotator();
   }
 
   Quaternion Matrix4::toQuaternion() const {
@@ -59,13 +46,20 @@ namespace geEngineSDK {
 
   QuatRotationTranslationMatrix::QuatRotationTranslationMatrix(const Quaternion& Q,
                                                                const Vector3& Origin) {
-    //Make sure Quaternion is normalized (Only done in debug)
     GE_ASSERT(Q.isNormalized());
 
-    const float x2 = Q.x + Q.x;  const float y2 = Q.y + Q.y;  const float z2 = Q.z + Q.z;
-    const float xx = Q.x * x2;   const float xy = Q.x * y2;   const float xz = Q.x * z2;
-    const float yy = Q.y * y2;   const float yz = Q.y * z2;   const float zz = Q.z * z2;
-    const float wx = Q.w * x2;   const float wy = Q.w * y2;   const float wz = Q.w * z2;
+    const float x2 = Q.x + Q.x;
+    const float y2 = Q.y + Q.y;
+    const float z2 = Q.z + Q.z;
+    const float xx = Q.x * x2;
+    const float xy = Q.x * y2;
+    const float xz = Q.x * z2;
+    const float yy = Q.y * y2;
+    const float yz = Q.y * z2;
+    const float zz = Q.z * z2;
+    const float wx = Q.w * x2;
+    const float wy = Q.w * y2;
+    const float wz = Q.w * z2;
 
     m[0][0] = 1.0f - (yy + zz);
     m[1][0] = xy - wz;
@@ -85,6 +79,23 @@ namespace geEngineSDK {
     m[0][3] = 0.0f;
     m[1][3] = 0.0f;
     m[2][3] = 0.0f;
+    m[3][3] = 1.0f;
+  }
+
+  RotationTranslationMatrix::RotationTranslationMatrix(const Rotator& Rot,
+                                                       const Vector3& Origin) {
+    Quaternion q = Rot.toQuaternion().getNormalized();
+    Matrix4 R = q.toMatrix();
+
+    //Copy 3x3
+    m[0][0] = R.m[0][0]; m[0][1] = R.m[0][1]; m[0][2] = R.m[0][2]; m[0][3] = 0.f;
+    m[1][0] = R.m[1][0]; m[1][1] = R.m[1][1]; m[1][2] = R.m[1][2]; m[1][3] = 0.f;
+    m[2][0] = R.m[2][0]; m[2][1] = R.m[2][1]; m[2][2] = R.m[2][2]; m[2][3] = 0.f;
+
+    //Traslation row-vector
+    m[3][0] = Origin.x;
+    m[3][1] = Origin.y;
+    m[3][2] = Origin.z;
     m[3][3] = 1.0f;
   }
 

@@ -72,29 +72,21 @@ namespace geEngineSDK {
   const float Math::ZERO_ANIMWEIGHT_THRESH = (0.00001f);
 
   Radian
-  Math::acos(float Value) {
-    if (-1.0f < Value) {
-      if (1.0f > Value) {
-        return Radian(std::acos(Value));
-      }
-      else {
-        return Radian(0.0f);
-      }
+  Math::acos(float v) {
+    if (isNaN(v)) {
+      return Radian(std::numeric_limits<float>::quiet_NaN());
     }
-    return Radian(PI);
+    v = clamp(v, -1.0f, 1.0f);
+    return Radian(std::acos(v));
   }
 
   Radian
-  Math::asin(float Value) {
-    if (-1.0f < Value) {
-      if (1.0f > Value) {
-        return Radian(std::asin(Value));
-      }
-      else {
-        return Radian(HALF_PI);
-      }
+  Math::asin(float v) {
+    if (isNaN(v)) {
+      return Radian(std::numeric_limits<float>::quiet_NaN());
     }
-    return Radian(-HALF_PI);
+    v = clamp(v, -1.0f, 1.0f);
+    return Radian(std::asin(v));
   }
 
 #if USING(GE_PLATFORM_WINDOWS)

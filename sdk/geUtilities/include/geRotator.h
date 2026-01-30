@@ -64,7 +64,10 @@ namespace geEngineSDK {
      * @brief Constructor
      * @param InF Value to set all components to.
      */
-    explicit FORCEINLINE Rotator(float InF);
+    explicit FORCEINLINE Rotator(float InF)
+      : pitch(InF), yaw(InF), roll(InF) {
+      diagnosticCheckNaN();
+    }
 
     /**
      * @brief Constructor.
@@ -72,13 +75,18 @@ namespace geEngineSDK {
      * @param InYaw Yaw in degrees.
      * @param InRoll Roll in degrees.
      */
-    FORCEINLINE Rotator(float InPitch, float InYaw, float InRoll);
+    FORCEINLINE Rotator(float InPitch, float InYaw, float InRoll)
+      : pitch(InPitch), yaw(InYaw), roll(InRoll) {
+      diagnosticCheckNaN();
+    }
 
     /**
      * @brief Constructor.
      * @param FORCE_INIT Force Init Enum.
      */
-    explicit FORCEINLINE Rotator(FORCE_INIT::E);
+    explicit FORCEINLINE Rotator(FORCE_INIT::E)
+      : pitch(0), yaw(0), roll(0) {
+    }
 
     /**
      * @brief Constructor.
@@ -98,32 +106,42 @@ namespace geEngineSDK {
      * @param R The other rotator.
      * @return The result of adding a rotator to this.
      */
-    Rotator
-    operator+(const Rotator& R) const;
+    GE_NODISCARD FORCEINLINE Rotator
+    operator+(const Rotator& R) const {
+      return Rotator(pitch + R.pitch, yaw + R.yaw, roll + R.roll);
+    }
 
     /**
      * @brief Get the result of subtracting a rotator from this.
      * @param R The other rotator.
      * @return The result of subtracting a rotator from this.
      */
-    Rotator
-    operator-(const Rotator& R) const;
+    GE_NODISCARD FORCEINLINE Rotator
+    operator-(const Rotator& R) const {
+      return Rotator(pitch - R.pitch, yaw - R.yaw, roll - R.roll);
+    }
 
     /**
      * @brief Get the result of scaling this rotator.
      * @param Scale The scaling factor.
      * @return The result of scaling.
      */
-    Rotator
-    operator*(float Scale) const;
+    GE_NODISCARD FORCEINLINE Rotator
+    operator*(float Scale) const {
+      return Rotator(pitch * Scale, yaw * Scale, roll * Scale);
+    }
 
     /**
      * @brief Multiply this rotator by a scaling factor.
      * @param Scale The scaling factor.
      * @return Copy of the rotator after scaling.
      */
-    Rotator
-    operator*=(float Scale);
+    FORCEINLINE Rotator&
+    operator*=(float Scale) {
+      pitch = pitch * Scale; yaw = yaw * Scale; roll = roll * Scale;
+      diagnosticCheckNaN();
+      return *this;
+    }
 
     /*************************************************************************/
     /**
@@ -138,16 +156,20 @@ namespace geEngineSDK {
      * @return true if two rotators are identical, otherwise false.
      * @see equals()
      */
-    bool
-    operator==(const Rotator& R) const;
+    GE_NODISCARD FORCEINLINE bool
+    operator==(const Rotator& R) const {
+      return pitch == R.pitch && yaw == R.yaw && roll == R.roll;
+    }
 
     /**
      * @brief Checks whether two rotators are different.
      * @param V The other rotator.
      * @return true if two rotators are different, otherwise false.
      */
-    bool
-    operator!=(const Rotator& V) const;
+    GE_NODISCARD FORCEINLINE bool
+    operator!=(const Rotator& V) const {
+      return !((*this) == V);
+    }
 
     /*************************************************************************/
     /**
@@ -160,16 +182,24 @@ namespace geEngineSDK {
      * @param R The other rotator.
      * @return Copy of rotator after addition.
      */
-    Rotator
-    operator+=(const Rotator& R);
+    FORCEINLINE Rotator&
+    operator+=(const Rotator& R) {
+      pitch += R.pitch; yaw += R.yaw; roll += R.roll;
+      diagnosticCheckNaN();
+      return *this;
+    }
 
     /**
      * @brief Subtracts another rotator from this.
      * @param R The other rotator.
      * @return Copy of rotator after subtraction.
      */
-    Rotator
-    operator-=(const Rotator& R);
+    FORCEINLINE Rotator&
+    operator-=(const Rotator& R) {
+      pitch -= R.pitch; yaw -= R.yaw; roll -= R.roll;
+      diagnosticCheckNaN();
+      return *this;
+    }
 
    public:
     /*************************************************************************/
@@ -185,8 +215,12 @@ namespace geEngineSDK {
      * @param Tolerance Error Tolerance.
      * @return true if rotator is nearly zero, within specified tolerance, otherwise false.
      */
-    bool
-    isNearlyZero(float Tolerance = Math::KINDA_SMALL_NUMBER) const;
+    GE_NODISCARD FORCEINLINE bool
+    isNearlyZero(float Tolerance = Math::KINDA_SMALL_NUMBER) const {
+      return Math::abs(normalizeAxis(pitch)) <= Tolerance
+          && Math::abs(normalizeAxis(yaw)) <= Tolerance
+          && Math::abs(normalizeAxis(roll)) <= Tolerance;
+    }
 
     /**
      * @brief Checks whether this has exactly zero rotation, when treated as an
@@ -194,8 +228,12 @@ namespace geEngineSDK {
      *        because it is the same final orientation as the zero rotator.
      * @return true if this has exactly zero rotation, otherwise false.
      */
-    bool
-    isZero() const;
+    GE_NODISCARD FORCEINLINE bool
+    isZero() const {
+      return (clampAxis(pitch) == 0.f)
+          && (clampAxis(yaw) == 0.f)
+          && (clampAxis(roll) == 0.f);
+    }
 
     /**
      * @brief Checks whether two rotators are equal within specified tolerance,
@@ -207,8 +245,12 @@ namespace geEngineSDK {
      * @return true if two rotators are equal, within specified tolerance,
      *         otherwise false.
      */
-    bool
-    equals(const Rotator& R, float Tolerance = Math::KINDA_SMALL_NUMBER) const;
+    GE_NODISCARD FORCEINLINE bool
+    equals(const Rotator& R, float Tolerance = Math::KINDA_SMALL_NUMBER) const {
+      return (Math::abs(normalizeAxis(pitch - R.pitch)) <= Tolerance)
+          && (Math::abs(normalizeAxis(yaw - R.yaw)) <= Tolerance)
+          && (Math::abs(normalizeAxis(roll - R.roll)) <= Tolerance);
+    }
 
     /**
      * @brief Adds to each component of the rotator.
@@ -217,13 +259,19 @@ namespace geEngineSDK {
      * @param DeltaRoll Change in roll. (+/-)
      * @return Copy of rotator after addition.
      */
-    Rotator
-    add(float DeltaPitch, float DeltaYaw, float DeltaRoll);
+    FORCEINLINE Rotator&
+    add(float DeltaPitch, float DeltaYaw, float DeltaRoll) {
+      yaw += DeltaYaw;
+      pitch += DeltaPitch;
+      roll += DeltaRoll;
+      diagnosticCheckNaN();
+      return *this;
+    }
 
     /**
      * @brief Returns the inverse of the rotator.
      */
-    GE_UTILITIES_EXPORT Rotator
+    GE_NODISCARD GE_UTILITIES_EXPORT Rotator
     getInverse() const;
 
     /**
@@ -231,21 +279,25 @@ namespace geEngineSDK {
      * @param RotGrid A Rotator specifying how to snap each component.
      * @return Snapped version of rotation.
      */
-    Rotator
-    gridSnap(const Rotator& RotGrid) const;
+    GE_NODISCARD FORCEINLINE Rotator
+    gridSnap(const Rotator& RotGrid) const {
+      return Rotator(Math::gridSnap(pitch, RotGrid.pitch),
+                     Math::gridSnap(yaw, RotGrid.yaw),
+                     Math::gridSnap(roll, RotGrid.roll));
+    }
 
     /**
      * @brief Convert a rotation into a unit vector facing in its direction.
      * @return Rotation as a unit direction vector.
      */
-    GE_UTILITIES_EXPORT Vector3
+    GE_NODISCARD GE_UTILITIES_EXPORT Vector3
     toVector() const;
 
     /**
      * @brief Get Rotation as a quaternion.
      * @return Rotation as a quaternion.
      */
-    GE_UTILITIES_EXPORT Quaternion
+    GE_NODISCARD GE_UTILITIES_EXPORT Quaternion
     toQuaternion() const;
 
     /**
@@ -276,42 +328,91 @@ namespace geEngineSDK {
      * @brief Gets the rotation values so they fall within the range [0,360]
      * @return Clamped version of rotator.
      */
-    Rotator
-    clamp() const;
+    GE_NODISCARD FORCEINLINE Rotator
+    clamp() const {
+      return Rotator(clampAxis(pitch), clampAxis(yaw), clampAxis(roll));
+    }
 
     /**
      * @brief Create a copy of this rotator and normalize, removes all winding
      *        and creates the "shortest route" rotation.
      * @return Normalized copy of this rotator
      */
-    Rotator
-    getNormalized() const;
+    GE_NODISCARD FORCEINLINE Rotator
+    getNormalized() const {
+      Rotator Rot = *this;
+      Rot.normalize();
+      return Rot;
+    }
 
     /**
      * @brief Create a copy of this rotator and denormalize, clamping each axis to 0 - 360.
      * @return Denormalized copy of this rotator
      */
-    Rotator
-    getDenormalized() const;
+    GE_NODISCARD FORCEINLINE Rotator
+    getDenormalized() const {
+      Rotator Rot = *this;
+      Rot.pitch = clampAxis(Rot.pitch);
+      Rot.yaw = clampAxis(Rot.yaw);
+      Rot.roll = clampAxis(Rot.roll);
+      return Rot;
+    }
 
     /**
      * @brief Get a specific component of the vector, given a specific axis by enum
      */
-    float
-    getComponentForAxis(AXIS::E Axis) const;
+    GE_NODISCARD FORCEINLINE float
+    getComponentForAxis(AXIS::E Axis) const {
+      switch (Axis)
+      {
+        case AXIS::kX:
+          return pitch;
+        case AXIS::kY:
+          return yaw;
+        case AXIS::kZ:
+          return roll;
+        case AXIS::kNone:
+        default: {
+          GE_LOG(kWarning, Generic, "Invalid Axis.");
+        }
+      }
+      return 0.f;
+    }
 
     /**
      * @brief Set a specified componet of the vector, given a specific axis by enum
      */
-    void
-    setComponentForAxis(AXIS::E Axis, float Component);
+    GE_NODISCARD FORCEINLINE void
+    setComponentForAxis(AXIS::E Axis, float Component){
+      switch (Axis)
+      {
+        case AXIS::kX:
+          pitch = Component;
+          break;
+        case AXIS::kY:
+          yaw = Component;
+          break;
+        case AXIS::kZ:
+          roll = Component;
+          break;
+        case AXIS::kNone:
+        default: {
+          GE_LOG(kWarning, Generic, "Invalid Axis.");
+        }
+      }
+    }
 
     /**
      * @brief In-place normalize, removes all winding and creates the
      *        "shortest route" rotation.
      */
-    void
-    normalize();
+    FORCEINLINE void
+    normalize() {
+      pitch = normalizeAxis(pitch);
+      yaw = normalizeAxis(yaw);
+      roll = normalizeAxis(roll);
+      diagnosticCheckNaN();
+    }
 
     /**
      * @brief Decompose this Rotator into a Winding part (multiples of 360)
@@ -329,8 +430,12 @@ namespace geEngineSDK {
      * @param Rotator[In] the Rotator we are comparing with.
      * @return Distance(Manhattan) between the two rotators.
      */
-    float
-    getManhattanDistance(const Rotator& Rotator) const;
+    GE_NODISCARD FORCEINLINE float
+    getManhattanDistance(const Rotator& Rotator) const {
+      return Math::abs<float>(pitch - Rotator.pitch) +
+             Math::abs<float>(yaw - Rotator.yaw) +
+             Math::abs<float>(roll - Rotator.roll);
+    }
 
     /**
      * @brief Return a Rotator that has the same rotation but has different
@@ -338,8 +443,10 @@ namespace geEngineSDK {
      *        This rotator should be within -180, 180 range,
      * @return A Rotator with the same rotation but different degrees.
      */
-    Rotator
-    getEquivalentRotator() const;
+    GE_NODISCARD FORCEINLINE Rotator
+    getEquivalentRotator() const {
+      return Rotator(180.0f - pitch, yaw + 180.0f, roll + 180.0f);
+    }
 
     /**
      * @brief Modify if necessary the passed in rotator to be the closest
@@ -350,8 +457,15 @@ namespace geEngineSDK {
      *        Should be between (-180, 180]. This Rotator may change if we need
      *        to use different degree values to make it closer.
      */
-    void
-    setClosestToMe(Rotator& MakeClosest) const;
+    FORCEINLINE void
+    setClosestToMe(Rotator& MakeClosest) const {
+      Rotator OtherChoice = MakeClosest.getEquivalentRotator();
+      float FirstDiff = getManhattanDistance(MakeClosest);
+      float SecondDiff = getManhattanDistance(OtherChoice);
+      if (SecondDiff < FirstDiff) {
+        MakeClosest = OtherChoice;
+      }
+    }
 
     /**
      * @brief Utility to check if there are any non-finite values (NaN, Inf)
@@ -359,8 +473,12 @@ namespace geEngineSDK {
      * @return true if there are any non-finite values in this Rotator,
      *         otherwise false.
      */
-    bool
-    containsNaN() const;
+    GE_NODISCARD FORCEINLINE bool
+    containsNaN() const {
+      return (!Math::isFinite(pitch) ||
+        !Math::isFinite(yaw) ||
+        !Math::isFinite(roll));
+    }
 
    public:
     /**
@@ -368,48 +486,78 @@ namespace geEngineSDK {
      * @param Angle The angle to clamp.
      * @return The clamped angle.
      */
-    static float
-    clampAxis(float Angle);
+    GE_NODISCARD static float
+    clampAxis(float Angle) {
+      Angle = Math::fmod(Angle, 360.f);
+
+      if (0.f > Angle) {
+        //shift to [0,360) range
+        Angle += 360.f;
+      }
+
+      return Angle;
+    }
 
     /**
      * @brief Clamps an angle to the range of (-180, 180].
      * @param Angle The Angle to clamp.
      * @return The clamped angle.
      */
-    static float
-    normalizeAxis(float Angle);
+    GE_NODISCARD static float
+    normalizeAxis(float Angle) {
+      Angle = clampAxis(Angle);
+
+      if (180.f < Angle) {
+        //shift to (-180,180]
+        Angle -= 360.f;
+      }
+
+      return Angle;
+    }
 
     /**
      * @brief Compresses a floating point angle into a byte.
      * @param Angle The angle to compress.
      * @return The angle as a byte.
      */
-    static uint8
-    compressAxisToByte(float Angle);
+    GE_NODISCARD static uint8
+    compressAxisToByte(float Angle) {
+      //map [0->360) to [0->256) and mask off any winding
+      return static_cast<uint8>(Math::round(Angle * 256.f / 360.f) & 0xFF);
+    }
 
     /**
      * @brief Decompress a byte into a floating point angle.
      * @param Angle The word angle.
      * @return The decompressed angle.
      */
-    static float
-    decompressAxisFromByte(uint8 Angle);
+    GE_NODISCARD static float
+    decompressAxisFromByte(uint8 Angle) {
+      //map [0->256) to [0->360)
+      return (Angle * 360.f / 256.f);
+    }
 
     /**
      * @brief Compress a floating point angle into a word.
      * @param Angle The angle to compress.
      * @return The decompressed angle.
      */
-    static uint16
-    compressAxisToShort(float Angle);
+    GE_NODISCARD static uint16
+    compressAxisToShort(float Angle) {
+      //map [0->360) to [0->65536) and mask off any winding
+      return static_cast<uint16>(Math::round(Angle * 65536.f / 360.f) & 0xFFFF);
+    }
 
     /**
      * @brief Decompress a short into a floating point angle.
      * @param Angle The word angle.
      * @return The decompressed angle.
      */
-    static float
-    decompressAxisFromShort(uint16 Angle);
+    GE_NODISCARD static float
+    decompressAxisFromShort(uint16 Angle) {
+      //map [0->65536) to [0->360)
+      return (Angle * 360.f / 65536.f);
+    }
 
     /**
      * @brief Convert a vector of floating-point Euler angles (in degrees) into
@@ -417,7 +565,7 @@ namespace geEngineSDK {
      * @param Euler Euler angle vector.
      * @return A rotator from a Euler angle.
      */
-    static GE_UTILITIES_EXPORT Rotator
+    GE_NODISCARD static GE_UTILITIES_EXPORT Rotator
     makeFromEuler(const Vector3& Euler);
 
    public:
@@ -434,8 +582,9 @@ namespace geEngineSDK {
     float pitch;
 
     /**
-     * @brief Rotation around the up axis (around Y axis), Running in circles
-     *        0=East, +North, -South.
+     * @brief Rotation around the up axis (Y axis).
+     * 0 = Forward (+Z)
+     * Positive values rotate to the right (towards +X).
      */
     float yaw;
 
@@ -461,250 +610,6 @@ namespace geEngineSDK {
   FORCEINLINE Rotator
   operator*(float Scale, const Rotator& R) {
     return R.operator*(Scale);
-  }
-
-  FORCEINLINE Rotator::Rotator(float InF) : pitch(InF), yaw(InF), roll(InF) {
-    diagnosticCheckNaN();
-  }
-
-  FORCEINLINE Rotator::Rotator(float InPitch, float InYaw, float InRoll)
-    : pitch(InPitch),
-      yaw(InYaw),
-      roll(InRoll) {
-    diagnosticCheckNaN();
-  }
-
-  FORCEINLINE Rotator::Rotator(FORCE_INIT::E) : pitch(0), yaw(0), roll(0) {}
-
-  FORCEINLINE Rotator
-  Rotator::operator+(const Rotator& R) const {
-    return Rotator(pitch + R.pitch, yaw + R.yaw, roll + R.roll);
-  }
-
-  FORCEINLINE Rotator
-  Rotator::operator-(const Rotator& R) const {
-    return Rotator(pitch - R.pitch, yaw - R.yaw, roll - R.roll);
-  }
-
-  FORCEINLINE Rotator
-  Rotator::operator*(float Scale) const {
-    return Rotator(pitch*Scale, yaw*Scale, roll*Scale);
-  }
-
-  FORCEINLINE Rotator
-  Rotator::operator*=(float Scale) {
-    pitch = pitch*Scale; yaw = yaw*Scale; roll = roll*Scale;
-    diagnosticCheckNaN();
-    return *this;
-  }
-
-  FORCEINLINE bool
-  Rotator::operator==(const Rotator& R) const {
-    return pitch == R.pitch && yaw == R.yaw && roll == R.roll;
-  }
-
-  FORCEINLINE bool
-  Rotator::operator!=(const Rotator& V) const {
-    return pitch != V.pitch || yaw != V.yaw || roll != V.roll;
-  }
-
-  FORCEINLINE Rotator
-  Rotator::operator+=(const Rotator& R) {
-    pitch += R.pitch; yaw += R.yaw; roll += R.roll;
-    diagnosticCheckNaN();
-    return *this;
-  }
-
-  FORCEINLINE Rotator
-  Rotator::operator-=(const Rotator& R) {
-    pitch -= R.pitch; yaw -= R.yaw; roll -= R.roll;
-    diagnosticCheckNaN();
-    return *this;
-  }
-
-  FORCEINLINE bool
-  Rotator::isNearlyZero(float Tolerance) const {
-    return Math::abs(normalizeAxis(pitch)) <= Tolerance
-        && Math::abs(normalizeAxis(yaw)) <= Tolerance
-        && Math::abs(normalizeAxis(roll)) <= Tolerance;
-  }
-
-  FORCEINLINE bool
-  Rotator::isZero() const {
-    return (clampAxis(pitch) == 0.f) && (clampAxis(yaw) == 0.f) && (clampAxis(roll) == 0.f);
-  }
-
-  FORCEINLINE bool
-  Rotator::equals(const Rotator& R, float Tolerance) const {
-    return (Math::abs(normalizeAxis(pitch - R.pitch)) <= Tolerance)
-        && (Math::abs(normalizeAxis(yaw - R.yaw)) <= Tolerance)
-        && (Math::abs(normalizeAxis(roll - R.roll)) <= Tolerance);
-  }
-
-  FORCEINLINE Rotator
-  Rotator::add(float DeltaPitch, float DeltaYaw, float DeltaRoll) {
-    yaw += DeltaYaw;
-    pitch += DeltaPitch;
-    roll += DeltaRoll;
-    diagnosticCheckNaN();
-    return *this;
-  }
-
-  FORCEINLINE Rotator
-  Rotator::gridSnap(const Rotator& RotGrid) const {
-    return Rotator(Math::gridSnap(pitch, RotGrid.pitch),
-                   Math::gridSnap(yaw, RotGrid.yaw),
-                   Math::gridSnap(roll, RotGrid.roll));
-  }
-
-  FORCEINLINE Rotator
-  Rotator::clamp() const {
-    return Rotator(clampAxis(pitch), clampAxis(yaw), clampAxis(roll));
-  }
-
-  FORCEINLINE float
-  Rotator::clampAxis(float Angle) {
-    //returns Angle in the range (-360,360)
-    Angle = Math::fmod(Angle, 360.f);
-
-    if (0.f > Angle) {
-      //shift to [0,360) range
-      Angle += 360.f;
-    }
-
-    return Angle;
-  }
-
-  FORCEINLINE float
-  Rotator::normalizeAxis(float Angle) {
-    //returns Angle in the range [0,360)
-    Angle = clampAxis(Angle);
-
-    if (180.f < Angle) {
-      //shift to (-180,180]
-      Angle -= 360.f;
-    }
-
-    return Angle;
-  }
-
-  FORCEINLINE uint8
-  Rotator::compressAxisToByte(float Angle) {
-    //map [0->360) to [0->256) and mask off any winding
-    return static_cast<uint8>(Math::round(Angle * 256.f / 360.f) & 0xFF);
-  }
-
-  FORCEINLINE float
-  Rotator::decompressAxisFromByte(uint8 Angle) {
-    //map [0->256) to [0->360)
-    return (Angle * 360.f / 256.f);
-  }
-
-  FORCEINLINE uint16
-  Rotator::compressAxisToShort(float Angle) {
-    //map [0->360) to [0->65536) and mask off any winding
-    return static_cast<uint16>(Math::round(Angle * 65536.f / 360.f) & 0xFFFF);
-  }
-
-  FORCEINLINE float
-  Rotator::decompressAxisFromShort(uint16 Angle) {
-    //map [0->65536) to [0->360)
-    return (Angle * 360.f / 65536.f);
-  }
-
-  FORCEINLINE Rotator
-  Rotator::getNormalized() const {
-    Rotator Rot = *this;
-    Rot.normalize();
-    return Rot;
-  }
-
-  FORCEINLINE Rotator
-  Rotator::getDenormalized() const {
-    Rotator Rot = *this;
-    Rot.pitch = clampAxis(Rot.pitch);
-    Rot.yaw = clampAxis(Rot.yaw);
-    Rot.roll = clampAxis(Rot.roll);
-    return Rot;
-  }
-
-  FORCEINLINE void
-  Rotator::normalize() {
-    pitch = normalizeAxis(pitch);
-    yaw = normalizeAxis(yaw);
-    roll = normalizeAxis(roll);
-    diagnosticCheckNaN();
-  }
-
-  FORCEINLINE float
-  Rotator::getComponentForAxis(AXIS::E Axis) const {
-    switch (Axis)
-    {
-      case AXIS::kX:
-        return pitch;//roll;
-      case AXIS::kY:
-        return yaw;//pitch;
-      case AXIS::kZ:
-        return roll;// yaw;
-      case AXIS::kNone:
-      default: {
-        GE_LOG(kWarning, Generic, "Invalid Axis.");
-      }
-    }
-
-    return 0.f;
-  }
-
-  FORCEINLINE void
-  Rotator::setComponentForAxis(AXIS::E Axis, float Component) {
-    switch (Axis)
-    {
-      case AXIS::kX:
-        //roll = Component;
-        pitch = Component;
-        break;
-      case AXIS::kY:
-        //pitch = Component;
-        yaw = Component;
-        break;
-      case AXIS::kZ:
-        //yaw = Component;
-        roll = Component;
-        break;
-      case AXIS::kNone:
-      default: {
-        GE_LOG(kWarning, Generic, "Invalid Axis.");
-      }
-    }
-  }
-
-  FORCEINLINE bool
-  Rotator::containsNaN() const {
-    return (!Math::isFinite(pitch) ||
-            !Math::isFinite(yaw) ||
-            !Math::isFinite(roll));
-  }
-
-  FORCEINLINE float
-  Rotator::getManhattanDistance(const Rotator& Rotator) const {
-    return Math::abs<float>(pitch - Rotator.pitch) +
-           Math::abs<float>(yaw - Rotator.yaw) +
-           Math::abs<float>(roll - Rotator.roll);
-  }
-
-  FORCEINLINE Rotator
-  Rotator::getEquivalentRotator() const {
-    return Rotator(180.0f - pitch, yaw + 180.0f, roll + 180.0f);
-  }
-
-  FORCEINLINE void
-  Rotator::setClosestToMe(Rotator& MakeClosest) const {
-    Rotator OtherChoice = MakeClosest.getEquivalentRotator();
-    float FirstDiff = getManhattanDistance(MakeClosest);
-    float SecondDiff = getManhattanDistance(OtherChoice);
-    if (SecondDiff < FirstDiff) {
-      MakeClosest = OtherChoice;
-    }
   }
 
   /***************************************************************************/

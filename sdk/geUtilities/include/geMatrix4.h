@@ -2050,7 +2050,7 @@ namespace geEngineSDK {
      * @param Rot rotation
      * @param Origin translation to apply
      */
-    RotationTranslationMatrix(const Rotator& Rot, const Vector3& Origin);
+    GE_UTILITIES_EXPORT RotationTranslationMatrix(const Rotator& Rot, const Vector3& Origin);
 
     /**
      * @brief Matrix factory. Return a Matrix4 so we don't have type conversion
@@ -2061,35 +2061,6 @@ namespace geEngineSDK {
       return RotationTranslationMatrix(Rot, Origin);
     }
   };
-
-  FORCEINLINE RotationTranslationMatrix::RotationTranslationMatrix(const Rotator& Rot,
-                                                                   const Vector3& Origin) {
-    float SP, SY, SR;
-    float CP, CY, CR;
-    Math::sin_cos(&SP, &CP, Rot.pitch * Math::DEG2RAD);
-    Math::sin_cos(&SY, &CY, Rot.yaw   * Math::DEG2RAD);
-    Math::sin_cos(&SR, &CR, Rot.roll  * Math::DEG2RAD);
-
-    m[0][0] = CY * CR + SY * SP * SR;
-    m[0][1] = SR * CP;
-    m[0][2] = -SY * CR + CY * SP * SR;
-    m[0][3] = 0.f;
-
-    m[1][0] = -CY * SR + SY * SP * CR;
-    m[1][1] = CR * CP;
-    m[1][2] = SR * SY + CY * SP * CR;
-    m[1][3] = 0.f;
-
-    m[2][0] = SY * CP;
-    m[2][1] = -SP;
-    m[2][2] = CY * CP;
-    m[2][3] = 0.f;
-
-    m[3][0] = Origin.x;
-    m[3][1] = Origin.y;
-    m[3][2] = Origin.z;
-    m[3][3] = 1.f;
-  }
 }
 
 namespace geEngineSDK {

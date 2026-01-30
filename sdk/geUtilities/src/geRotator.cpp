@@ -65,30 +65,24 @@ namespace geEngineSDK {
 
   Rotator
   Rotator::getInverse() const {
-    return toQuaternion().inverse().rotator();
+    Quaternion q = toQuaternion();
+    return q.inverse().rotator();
   }
 
   Quaternion
   Rotator::toQuaternion() const {
     diagnosticCheckNaN();
-    const float DIVIDE_BY_2 = Math::DEG2RAD / 2.0f;
-    float SP, SY, SR;
-    float CP, CY, CR;
 
-    Math::sin_cos(&SP, &CP, pitch * DIVIDE_BY_2);
-    Math::sin_cos(&SY, &CY, yaw * DIVIDE_BY_2);
-    Math::sin_cos(&SR, &CR, roll * DIVIDE_BY_2);
+    const Degree dPitch(-pitch);
+    const Degree dYaw(yaw);
+    const Degree dRoll(-roll);
 
-    Quaternion RotationQuat;
-    RotationQuat.w = CR * CP * CY + SR * SP * SY;  
-    RotationQuat.x = CR * SP * CY + SR * CP * SY;
-    RotationQuat.y = CR * CP * SY - SR * SP * CY;
-    RotationQuat.z = SR * CP * CY - CR * SP * SY;
+    const Quaternion qPitch(Vector3::RIGHT,  dPitch);
+    const Quaternion qYaw(Vector3::UP,       dYaw);
+    const Quaternion qRoll(Vector3::FORWARD, dRoll);
 
-    //Very large inputs can cause NaN's. Want to catch this here
-    GE_ASSERT(!RotationQuat.containsNaN() &&
-              "Invalid input to Rotator::toQuaternion - generated NaN output");
+    Quaternion q = qYaw * qPitch * qRoll;
 
-    return RotationQuat;
+    return q.getNormalized();
   }
 }

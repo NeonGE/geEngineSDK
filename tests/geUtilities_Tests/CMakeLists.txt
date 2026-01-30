@@ -10,6 +10,9 @@ add_executable(geUtilities_Tests
   src/math_Vector3.cpp
   src/math_Vector4.cpp
   src/math_VectorNI.cpp
+  src/math_Quaternion.cpp
+  src/math_Matrix4.cpp
+  src/math_Rotator.cpp
 )
 
 # Mantener mismo layout de outputs (bin/lib) por platform/config

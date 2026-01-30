@@ -35,7 +35,7 @@
 #include "gePrerequisitesUtilities.h"
 #include "geMath.h"
 #include "geVector3.h"
-#include "geRotator.h"
+
 #include "geMatrix4.h"
 #include "geDebug.h"
 
@@ -55,7 +55,12 @@ namespace geEngineSDK {
      * @param FORCE_INIT::E: if equal to kForceInitToZero then w is 0,
      *        otherwise w = 1 (creating an identity transform)
      */
-    explicit FORCEINLINE Quaternion(FORCE_INIT::E e);
+    explicit FORCEINLINE Quaternion(FORCE_INIT::E e)
+      : x(0),
+        y(0),
+        z(0),
+        w(FORCE_INIT::kForceInitToZero == e ? 0.0f : 1.0f)
+    {}
 
     /**
      * @brief Constructor.
@@ -64,13 +69,32 @@ namespace geEngineSDK {
      * @param InZ z component of the quaternion
      * @param InW w component of the quaternion
      */
-    FORCEINLINE Quaternion(float InX, float InY, float InZ, float InW);
+    FORCEINLINE Quaternion(float InX, float InY, float InZ, float InW)
+      : x(InX),
+        y(InY),
+        z(InZ),
+        w(InW) {
+      diagnosticCheckNaN();
+    }
 
     /**
-     * @brief Creates and initializes a new quaternion from the given matrix.
-     * @param M The rotation matrix to initialize from.
+     * @brief Creates and initializes a new quaternion from the a rotation
+     *        around the given axis.
+     * @param Axis assumed to be a normalized vector
+     * @param Angle angle to rotate above the given axis (in radians)
      */
-    explicit GE_UTILITIES_EXPORT Quaternion(const Matrix4& M);
+    FORCEINLINE Quaternion(const Vector3& AxisUnit, Radian AngleRad) {
+      const float half_a = 0.5f * AngleRad.valueRadians();
+      float s, c;
+      Math::sin_cos(&s, &c, half_a);
+
+      x = s * AxisUnit.x;
+      y = s * AxisUnit.y;
+      z = s * AxisUnit.z;
+      w = c;
+
+      diagnosticCheckNaN();
+    }
 
     /**
      * @brief Creates and initializes a new quaternion from the given rotator.
@@ -79,12 +103,10 @@ namespace geEngineSDK {
     explicit GE_UTILITIES_EXPORT Quaternion(const Rotator& R);
 
     /**
-     * @brief Creates and initializes a new quaternion from the a rotation
-     *        around the given axis.
-     * @param Axis assumed to be a normalized vector
-     * @param Angle angle to rotate above the given axis (in radians)
+     * @brief Creates and initializes a new quaternion from the given matrix.
+     * @param M The rotation matrix to initialize from.
      */
-    Quaternion(const Vector3& Axis, float AngleRad);
+    explicit GE_UTILITIES_EXPORT Quaternion(const Matrix4& M);
 
    public:
     /**
@@ -94,8 +116,22 @@ namespace geEngineSDK {
      * @param Q The Quaternion to add.
      * @return The result of addition.
      */
-    FORCEINLINE Quaternion
-    operator+(const Quaternion& Q) const;
+    GE_NODISCARD FORCEINLINE Quaternion
+    operator+(const Quaternion& Q) const {
+      return Quaternion(x + Q.x, y + Q.y, z + Q.z, w + Q.w);
+    }
+
+    /**
+     * @brief Gets the result of subtracting a Quaternion to this.
+     *        This is a component-wise subtraction; composing quaternions
+     *        should be done via multiplication.
+     * @param Q The Quaternion to subtract.
+     * @return The result of subtraction.
+     */
+    GE_NODISCARD FORCEINLINE Quaternion
+    operator-(const Quaternion& Q) const {
+      return Quaternion(x - Q.x, y - Q.y, z - Q.z, w - Q.w);
+    }
 
     /**
      * @brief Adds to this quaternion.
@@ -105,35 +141,11 @@ namespace geEngineSDK {
      * @return Result after addition.
      */
     FORCEINLINE Quaternion
-    operator+=(const Quaternion& Q);
-
-    /**
-     * @brief Gets the result of subtracting a Quaternion to this.
-     *        This is a component-wise subtraction; composing quaternions
-     *        should be done via multiplication.
-     * @param Q The Quaternion to subtract.
-     * @return The result of subtraction.
-     */
-    FORCEINLINE Quaternion
-    operator-(const Quaternion& Q) const;
-
-    /**
-     * @brief Checks whether another Quaternion is equal to this, within specified tolerance.
-     * @param Q The other Quaternion.
-     * @param Tolerance Error tolerance for comparison with other Quaternion.
-     * @return true if two Quaternions are equal, within specified tolerance, otherwise false.
-     */
-    FORCEINLINE bool
-    equals(const Quaternion& Q, float Tolerance = Math::KINDA_SMALL_NUMBER) const;
-
-    /**
-     * @brief Checks whether this Quaternion is an Identity Quaternion.
-     *        Assumes Quaternion tested is normalized.
-     * @param Tolerance Error tolerance for comparison with Identity Quaternion.
-     * @return true if Quaternion is a normalized Identity Quaternion.
-     */
-    FORCEINLINE bool
-    isIdentity(float Tolerance = Math::SMALL_NUMBER) const;
+    operator+=(const Quaternion& Q) {
+      x += Q.x; y += Q.y; z += Q.z; w += Q.w;
+      diagnosticCheckNaN();
+      return *this;
+    }
 
     /**
      * @brief Subtracts another quaternion from this.
@@ -143,7 +155,11 @@ namespace geEngineSDK {
      * @return reference to this after subtraction.
      */
     FORCEINLINE Quaternion
-    operator-=(const Quaternion& Q);
+    operator-=(const Quaternion& Q) {
+      x -= Q.x; y -= Q.y; z -= Q.z; w -= Q.w;
+      diagnosticCheckNaN();
+      return *this;
+    }
 
     /**
      * @brief Gets the result of multiplying this by another quaternion (this * Q).
@@ -153,7 +169,7 @@ namespace geEngineSDK {
      * @param Q The Quaternion to multiply this by.
      * @return The result of multiplication (this * Q).
      */
-    FORCEINLINE Quaternion
+    GE_NODISCARD GE_UTILITIES_EXPORT Quaternion
     operator*(const Quaternion& Q) const;
 
     /**
@@ -164,57 +180,8 @@ namespace geEngineSDK {
      * @param Q the quaternion to multiply this by.
      * @return The result of multiplication (this * Q).
      */
-    FORCEINLINE Quaternion
+    GE_UTILITIES_EXPORT Quaternion
     operator*=(const Quaternion& Q);
-
-    /**
-     * @brief Rotate a vector by this quaternion.
-     * @param V the vector to be rotated
-     * @return vector after rotation
-     * @see RotateVector
-     */
-    GE_UTILITIES_EXPORT Vector3
-    operator*(const Vector3& V) const;
-
-    /**
-     * @brief Multiply this by a matrix.
-     * @param M Matrix to multiply by.
-     * @return Matrix result after multiplication.
-     */
-    GE_UTILITIES_EXPORT Matrix4
-    operator*(const Matrix4& M) const;
-
-    /**
-     * @brief Multiply this quaternion by a scaling factor.
-     * @param Scale The scaling factor.
-     * @return a reference to this after scaling.
-     */
-    FORCEINLINE Quaternion
-    operator*=(const float Scale);
-
-    /**
-     * @brief Get the result of scaling this quaternion.
-     * @param Scale The scaling factor.
-     * @return The result of scaling.
-     */
-    FORCEINLINE Quaternion
-    operator*(const float Scale) const;
-
-    /**
-     * @brief Divide this quaternion by scale.
-     * @param Scale What to divide by.
-     * @return a reference to this after scaling.
-     */
-    FORCEINLINE Quaternion
-    operator/=(const float Scale);
-
-    /**
-     * @brief Divide this quaternion by scale.
-     * @param Scale What to divide by.
-     * @return new Quaternion of this after division by scale.
-     */
-    FORCEINLINE Quaternion
-    operator/(const float Scale) const;
 
     /**
      * @brief Checks whether two quaternions are identical.
@@ -225,76 +192,300 @@ namespace geEngineSDK {
      * @return true if two quaternion are identical, otherwise false.
      * @see Equals
      */
-    bool
-    operator==(const Quaternion& Q) const;
+    GE_NODISCARD FORCEINLINE bool
+    operator==(const Quaternion& Q) const {
+      return x == Q.x && y == Q.y && z == Q.z && w == Q.w;
+    }
 
     /**
      * @brief Checks whether two quaternions are not identical.
      * @param Q The other quaternion.
      * @return true if two quaternion are not identical, otherwise false.
      */
-    bool
-    operator!=(const Quaternion& Q) const;
+    GE_NODISCARD FORCEINLINE bool
+    operator!=(const Quaternion& Q) const {
+      return !(*this == Q);
+    }
 
     /**
      * @brief Calculates dot product of two quaternions.
      * @param Q The other quaternions.
      * @return The dot product.
      */
-    float
-    operator|(const Quaternion& Q) const;
+    GE_NODISCARD float
+    operator|(const Quaternion& Q) const {
+      return x * Q.x + y * Q.y + z * Q.z + w * Q.w;
+    }
+
+    /**
+     * @brief Get the result of scaling this quaternion.
+     * @param Scale The scaling factor.
+     * @return The result of scaling.
+     */
+    GE_NODISCARD FORCEINLINE Quaternion
+    operator*(const float Scale) const {
+      return Quaternion(Scale * x, Scale * y, Scale * z, Scale * w);
+    }
+
+    /**
+     * @brief Divide this quaternion by scale.
+     * @param Scale What to divide by.
+     * @return new Quaternion of this after division by scale.
+     */
+    GE_NODISCARD FORCEINLINE Quaternion
+    operator/(const float Scale) const {
+      const float inv = 1.0f / Scale;
+      return Quaternion(x * inv, y * inv, z * inv, w * inv);
+    }
+
+    /**
+     * @brief Multiply this quaternion by a scaling factor.
+     * @param Scale The scaling factor.
+     * @return a reference to this after scaling.
+     */
+    FORCEINLINE Quaternion
+    operator*=(const float Scale) {
+      x *= Scale; y *= Scale; z *= Scale; w *= Scale;
+      diagnosticCheckNaN();
+      return *this;
+    }
+
+    /**
+     * @brief Divide this quaternion by scale.
+     * @param Scale What to divide by.
+     * @return a reference to this after scaling.
+     */
+    FORCEINLINE Quaternion
+    operator/=(const float Scale) {
+      const float Recip = 1.0f / Scale;
+      x *= Recip; y *= Recip; z *= Recip; w *= Recip;
+      diagnosticCheckNaN();
+      return *this;
+    }
 
    public:
-    /**
-     * @brief Convert a vector of floating-point Euler angles (in degrees) into a Quaternion.
-     * @param Euler the Euler angles
-     * @return constructed Quaternion
-     */
-    static GE_UTILITIES_EXPORT Quaternion
-    makeFromEuler(const Vector3& Euler);
 
     /**
-     * @brief Convert a Quaternion into floating-point Euler angles (in degrees).
+     * @brief Utility to check if there are any non-finite values (NaN or Inf) in this Quat.
+     * @return true if there are any non-finite values in this Quaternion, otherwise false.
      */
-    GE_UTILITIES_EXPORT Vector3
-    euler() const;
+     GE_NODISCARD FORCEINLINE bool
+    containsNaN() const {
+      return !(Math::isFinite(x) &&
+               Math::isFinite(y) &&
+               Math::isFinite(z) &&
+               Math::isFinite(w));
+    }
 
-    /**
-     * @brief Normalize this quaternion if it is large enough.
-     * If it is too small, returns an identity quaternion.
-     * @param Tolerance Minimum squared length of quaternion for normalization.
-     */
+#if USING(GE_DEBUG_MODE)
     FORCEINLINE void
-    normalize(float Tolerance = Math::SMALL_NUMBER);
+    diagnosticCheckNaN() const {
+      if (containsNaN()) {
+        GE_LOG(kWarning, Generic, "Quaternion contains NaN");
+        *const_cast<Quaternion*>(this) = Quaternion::IDENTITY;
+      }
+    }
+
+    FORCEINLINE void
+    diagnosticCheckNaN(const String& Message) const {
+      if (containsNaN()) {
+        GE_LOG(kWarning, Generic, "{0}: Quaternion contains NaN", Message);
+        *const_cast<Quaternion*>(this) = Quaternion::IDENTITY;
+      }
+    }
+#else
+    FORCEINLINE void diagnosticCheckNaN() const {}
+    FORCEINLINE void diagnosticCheckNaN(const String&) const {}
+#endif
+
+    /**
+     * @brief Get the length squared of this quaternion.
+     * @return The length of this quaternion.
+     */
+    GE_NODISCARD FORCEINLINE float
+    sizeSquared() const {
+      return (x * x + y * y + z * z + w * w);
+    }
+
+    /**
+     * @brief Get the length of this quaternion.
+     * @return The length of this quaternion.
+     */
+    GE_NODISCARD FORCEINLINE float
+    size() const {
+      return Math::sqrt(sizeSquared());
+    }
 
     /**
      * @brief Get a normalized copy of this quaternion.
      * If it is too small, returns an identity quaternion.
      * @param Tolerance Minimum squared length of quaternion for normalization.
      */
-    FORCEINLINE Quaternion
+    GE_NODISCARD GE_UTILITIES_EXPORT Quaternion
     getNormalized(float Tolerance = Math::SMALL_NUMBER) const;
+
+    /**
+     * @brief Normalize this quaternion if it is large enough.
+     * If it is too small, returns an identity quaternion.
+     * @param Tolerance Minimum squared length of quaternion for normalization.
+     */
+    GE_UTILITIES_EXPORT void
+    normalize(float Tolerance = Math::SMALL_NUMBER);
 
     /**
      * @brief Return true if this quaternion is normalized
      */
-    bool
-    isNormalized() const;
+    GE_NODISCARD FORCEINLINE bool
+    isNormalized() const {
+      return (Math::abs(1.f - sizeSquared()) < Math::THRESH_QUAT_NORMALIZED);
+    }
+
+    GE_NODISCARD FORCEINLINE Quaternion
+    conjugate() const {
+      return Quaternion(-x, -y, -z, w);
+    }
+
+    GE_NODISCARD GE_UTILITIES_EXPORT Quaternion
+    inverse() const;
 
     /**
-     * @brief Get the length of this quaternion.
-     * @return The length of this quaternion.
+     * @brief Checks whether this Quaternion is an Identity Quaternion.
+     *        Assumes Quaternion tested is normalized.
+     * @param Tolerance Error tolerance for comparison with Identity Quaternion.
+     * @return true if Quaternion is a normalized Identity Quaternion.
      */
-    FORCEINLINE float
-    size() const;
+    GE_NODISCARD FORCEINLINE bool
+    isIdentity(float Tolerance = Math::KINDA_SMALL_NUMBER) const {
+      return equals(Quaternion::IDENTITY, Tolerance);
+    }
 
     /**
-     * @brief Get the length squared of this quaternion.
-     * @return The length of this quaternion.
+     * @brief Checks whether another Quaternion is equal to this, within specified tolerance.
+     * @param Q The other Quaternion.
+     * @param Tolerance Error tolerance for comparison with other Quaternion.
+     * @return true if two Quaternions are equal, within specified tolerance, otherwise false.
      */
-    FORCEINLINE float
-    sizeSquared() const;
+    GE_NODISCARD FORCEINLINE bool
+    equals(const Quaternion& Q, float Tolerance = Math::KINDA_SMALL_NUMBER) const {
+      return (Math::abs(x - Q.x) <= Tolerance && Math::abs(y - Q.y) <= Tolerance &&
+              Math::abs(z - Q.z) <= Tolerance && Math::abs(w - Q.w) <= Tolerance) ||
+             (Math::abs(x + Q.x) <= Tolerance && Math::abs(y + Q.y) <= Tolerance &&
+              Math::abs(z + Q.z) <= Tolerance && Math::abs(w + Q.w) <= Tolerance);
+    }
 
+   public:
+    /**
+     * @brief Get the Rotator representation of this Quaternion.
+     */
+    GE_NODISCARD GE_UTILITIES_EXPORT Rotator
+    rotator() const;
+
+    /**
+     * @brief Convert a Quaternion into floating-point Euler angles (in degrees).
+     */
+    GE_NODISCARD GE_UTILITIES_EXPORT Vector3
+    euler() const;
+
+    /**
+     * @brief Convert a vector of floating-point Euler angles (in degrees) into a Quaternion.
+     * @param Euler the Euler angles
+     * @return constructed Quaternion
+     */
+    GE_NODISCARD static GE_UTILITIES_EXPORT Quaternion
+    makeFromEuler(const Vector3& EulerDegrees);
+
+    GE_NODISCARD GE_UTILITIES_EXPORT Matrix4
+    toMatrix() const;
+
+   public:
+    /**
+     * @brief Rotate a vector by this quaternion.
+     * @param V the vector to be rotated
+     * @return vector after rotation
+     * @see RotateVector
+     */
+    GE_NODISCARD GE_UTILITIES_EXPORT Vector3
+    operator*(const Vector3& V) const;
+
+    /**
+     * @brief Multiply this by a matrix.
+     * @param M Matrix to multiply by.
+     * @return Matrix result after multiplication.
+     */
+    GE_NODISCARD GE_UTILITIES_EXPORT Matrix4
+    operator*(const Matrix4& M) const;
+
+   public:
+    /**
+     * @brief Enforce that the delta between this Quaternion and another one represents
+     * the shortest possible rotation angle
+     */
+    GE_UTILITIES_EXPORT void
+    enforceShortestArcWith(const Quaternion& OtherQuat);
+
+    /**
+     * @brief Find the angular distance between two rotation quaternions (in radians)
+     */
+    GE_NODISCARD GE_UTILITIES_EXPORT Radian
+    angularDistance(const Quaternion& Q) const;
+
+    /**
+     * @return quaternion with W=0 and V=theta*v.
+     */
+    GE_NODISCARD GE_UTILITIES_EXPORT Quaternion
+    log() const;
+
+    /**
+     * @note exp should really only be used after log.
+     * Assumes a quaternion with w=0 and v=theta*v (where |v| = 1).
+     * exp(q) = (sin(theta)*v, cos(theta))
+     */
+    GE_NODISCARD GE_UTILITIES_EXPORT Quaternion
+    exp() const;
+
+    /**
+     * @brief Generates the 'smallest' (geodesic) rotation between two normals
+     *        (assumed to be unit length).
+     */
+    GE_NODISCARD static GE_UTILITIES_EXPORT Quaternion
+    findBetweenNormals(const Vector3& A, const Vector3& B);
+
+    /**
+     * @brief Generates the 'smallest' (geodesic) rotation between two vectors
+     *        of arbitrary length.
+     */
+    GE_NODISCARD static GE_UTILITIES_EXPORT Quaternion
+    findBetweenVectors(const Vector3& A, const Vector3& B);
+
+    /**
+     * @brief Generates the 'smallest' (geodesic) rotation between two vectors
+     *        of arbitrary length.
+     */
+    GE_NODISCARD static Quaternion
+    findBetween(const Vector3& vector1, const Vector3& vector2) {
+      return findBetweenVectors(vector1, vector2);
+    }
+
+    /**
+    * @brief Orients the quaternion so its negative z axis points to the
+    *        provided direction.
+    * @param[in] forwardDir  Direction to orient towards.
+    */
+    GE_UTILITIES_EXPORT Quaternion
+    lookRotation(const Vector3& forwardDir);
+
+    /**
+    * @brief Orients the quaternion so its negative z axis points to the
+    *        provided direction.
+    * @param[in] forwardDir  Direction to orient towards.
+    * @param[in] upDir       Constrains y axis orientation to a plane this
+    *            vector lies on. This rule might be broken if forward and up
+    *            direction are nearly parallel.
+    */
+    GE_UTILITIES_EXPORT Quaternion
+    lookRotation(const Vector3& forwardDir, const Vector3& upDir);
+
+   public:
     /**
      * @brief get the axis and angle of rotation of this quaternion
      * @param Axis{out] vector of axis of the quaternion
@@ -331,33 +522,6 @@ namespace geEngineSDK {
      */
     Vector3
     unrotateVector(Vector3 V) const;
-
-    /**
-     * @return quaternion with W=0 and V=theta*v.
-     */
-    GE_UTILITIES_EXPORT Quaternion
-    log() const;
-
-    /**
-     * @note exp should really only be used after log.
-     * Assumes a quaternion with w=0 and v=theta*v (where |v| = 1).
-     * exp(q) = (sin(theta)*v, cos(theta))
-     */
-    GE_UTILITIES_EXPORT Quaternion
-    exp() const;
-
-    /**
-     * @return inverse of this quaternion
-     */
-    FORCEINLINE Quaternion
-    inverse() const;
-
-    /**
-     * @brief Enforce that the delta between this Quaternion and another one represents
-     * the shortest possible rotation angle
-     */
-    void
-    enforceShortestArcWith(const Quaternion& OtherQuat);
 
     /**
      * @brief Get the forward direction (x axis) after it has been rotated by this Quaternion.
@@ -403,12 +567,6 @@ namespace geEngineSDK {
     toVector() const;
 
     /**
-     * @brief Get the Rotator representation of this Quaternion.
-     */
-    GE_UTILITIES_EXPORT Rotator
-    rotator() const;
-
-    /**
      * @brief Get the axis of rotation of the Quaternion.
      * This is the axis around which rotation occurs to transform the canonical
      * coordinate system to the target orientation.
@@ -416,38 +574,6 @@ namespace geEngineSDK {
      */
     FORCEINLINE Vector3
     getRotationAxis() const;
-
-    /**
-     * @brief Find the angular distance between two rotation quaternions (in radians)
-     */
-    FORCEINLINE float
-    angularDistance(const Quaternion& Q) const;
-
-    /**
-     * @brief Utility to check if there are any non-finite values (NaN or Inf) in this Quat.
-     * @return true if there are any non-finite values in this Quaternion, otherwise false.
-     */
-    bool
-    containsNaN() const;
-
-    /**
-    * @brief Orients the quaternion so its negative z axis points to the
-    *        provided direction.
-    * @param[in] forwardDir  Direction to orient towards.
-    */
-    GE_UTILITIES_EXPORT void
-    lookRotation(const Vector3& forwardDir);
-
-    /**
-    * @brief Orients the quaternion so its negative z axis points to the
-    *        provided direction.
-    * @param[in] forwardDir  Direction to orient towards.
-    * @param[in] upDir       Constrains y axis orientation to a plane this
-    *            vector lies on. This rule might be broken if forward and up
-    *            direction are nearly parallel.
-    */
-    GE_UTILITIES_EXPORT void
-    lookRotation(const Vector3& forwardDir, const Vector3& upDir);
 
     static FORCEINLINE void
     vectorQuaternionMultiply(Quaternion& Result,
@@ -461,52 +587,6 @@ namespace geEngineSDK {
     }
 
    public:
-
-#if USING(GE_DEBUG_MODE)
-    FORCEINLINE void
-    diagnosticCheckNaN() const {
-      if (containsNaN()) {
-        GE_LOG(kWarning, Generic, "Quaternion contains NaN");
-        *const_cast<Quaternion*>(this) = Quaternion::IDENTITY;
-      }
-    }
-
-    FORCEINLINE void
-    diagnosticCheckNaN(const String& Message) const {
-      if (containsNaN()) {
-        GE_LOG(kWarning, Generic, "{0}: Quaternion contains NaN", Message);
-        *const_cast<Quaternion*>(this) = Quaternion::IDENTITY;
-      }
-    }
-#else
-    FORCEINLINE void diagnosticCheckNaN() const {}
-    FORCEINLINE void diagnosticCheckNaN(const String&) const {}
-#endif
-
-   public:
-    /**
-     * @brief Generates the 'smallest' (geodesic) rotation between two vectors
-     *        of arbitrary length.
-     */
-    static FORCEINLINE Quaternion
-    findBetween(const Vector3& vector1, const Vector3& vector2) {
-      return findBetweenVectors(vector1, vector2);
-    }
-
-    /**
-     * @brief Generates the 'smallest' (geodesic) rotation between two normals
-     *        (assumed to be unit length).
-     */
-    static GE_UTILITIES_EXPORT Quaternion
-    findBetweenNormals(const Vector3& Normal1, const Vector3& Normal2);
-
-    /**
-     * @brief Generates the 'smallest' (geodesic) rotation between two vectors
-     *        of arbitrary length.
-     */
-    static GE_UTILITIES_EXPORT Quaternion
-    findBetweenVectors(const Vector3& vector1, const Vector3& vector2);
-
     /**
      * @brief Error measure (angle) between two quaternions, ranged [0..1].
      *        Returns the hypersphere-angle between two quaternions; alignment
@@ -651,190 +731,6 @@ namespace geEngineSDK {
    * Quaternion inline functions.
    */
   /***************************************************************************/
-
-  FORCEINLINE Quaternion::Quaternion(FORCE_INIT::E e)
-    : x(0),
-      y(0),
-      z(0),
-      w(FORCE_INIT::kForceInitToZero == e ? 0.0f : 1.0f)
-  {}
-
-  FORCEINLINE Quaternion::Quaternion(float InX, float InY, float InZ, float InW)
-    : x(InX),
-      y(InY),
-      z(InZ),
-      w(InW) {
-    diagnosticCheckNaN();
-  }
-
-  FORCEINLINE Quaternion::Quaternion(const Vector3& Axis, float AngleRad) {
-    const float half_a = 0.5f * AngleRad;
-    float s, c;
-    Math::sin_cos(&s, &c, half_a);
-
-    x = s * Axis.x;
-    y = s * Axis.y;
-    z = s * Axis.z;
-    w = c;
-
-    diagnosticCheckNaN();
-  }
-
-  FORCEINLINE Quaternion
-  Quaternion::operator+(const Quaternion& Q) const {
-    return Quaternion(x + Q.x, y + Q.y, z + Q.z, w + Q.w);
-  }
-
-  FORCEINLINE Quaternion
-  Quaternion::operator+=(const Quaternion& Q) {
-    x += Q.x;
-    y += Q.y;
-    z += Q.z;
-    w += Q.w;
-
-    diagnosticCheckNaN();
-    return *this;
-  }
-
-  FORCEINLINE Quaternion
-  Quaternion::operator-(const Quaternion& Q) const {
-    return Quaternion(x - Q.x, y - Q.y, z - Q.z, w - Q.w);
-  }
-
-  FORCEINLINE bool Quaternion::equals(const Quaternion& Q, float Tolerance) const {
-    return (Math::abs(x - Q.x) <= Tolerance &&
-            Math::abs(y - Q.y) <= Tolerance &&
-            Math::abs(z - Q.z) <= Tolerance &&
-            Math::abs(w - Q.w) <= Tolerance) ||
-           (Math::abs(x + Q.x) <= Tolerance &&
-            Math::abs(y + Q.y) <= Tolerance &&
-            Math::abs(z + Q.z) <= Tolerance &&
-            Math::abs(w + Q.w) <= Tolerance);
-  }
-
-  FORCEINLINE bool
-  Quaternion::isIdentity(float Tolerance) const {
-    return equals(Quaternion::IDENTITY, Tolerance);
-  }
-
-  Quaternion
-  Quaternion::operator-=(const Quaternion& Q) {
-    x -= Q.x;
-    y -= Q.y;
-    z -= Q.z;
-    w -= Q.w;
-
-    diagnosticCheckNaN();
-
-    return *this;
-  }
-
-  FORCEINLINE Quaternion
-  Quaternion::operator*(const Quaternion& Q) const {
-    Quaternion Result;
-    vectorQuaternionMultiply(Result, *this, Q);
-    Result.diagnosticCheckNaN();
-
-    return Result;
-  }
-
-  FORCEINLINE Quaternion
-  Quaternion::operator*=(const Quaternion& Q) {
-    Quaternion Result;
-    vectorQuaternionMultiply(Result, *this, Q);
-    *this = Result;
-    diagnosticCheckNaN();
-    return *this;
-  }
-
-  FORCEINLINE Quaternion
-  Quaternion::operator*=(const float Scale) {
-    x *= Scale;
-    y *= Scale;
-    z *= Scale;
-    w *= Scale;
-    diagnosticCheckNaN();
-    return *this;
-  }
-
-  FORCEINLINE Quaternion
-  Quaternion::operator*(const float Scale) const {
-    return Quaternion(Scale * x, Scale * y, Scale * z, Scale * w);
-  }
-
-  FORCEINLINE Quaternion
-  Quaternion::operator/=(const float Scale) {
-    const float Recip = 1.0f / Scale;
-    x *= Recip;
-    y *= Recip;
-    z *= Recip;
-    w *= Recip;
-
-    diagnosticCheckNaN();
-
-    return *this;
-  }
-
-  FORCEINLINE Quaternion
-  Quaternion::operator/(const float Scale) const {
-    const float Recip = 1.0f / Scale;
-    return Quaternion(x * Recip, y * Recip, z * Recip, w * Recip);
-  }
-
-  FORCEINLINE bool
-  Quaternion::operator==(const Quaternion& Q) const {
-    return x == Q.x && y == Q.y && z == Q.z && w == Q.w;
-  }
-
-  FORCEINLINE bool
-  Quaternion::operator!=(const Quaternion& Q) const {
-    return x != Q.x || y != Q.y || z != Q.z || w != Q.w;
-  }
-
-  FORCEINLINE float
-  Quaternion::operator|(const Quaternion& Q) const {
-    return x * Q.x + y * Q.y + z * Q.z + w * Q.w;
-  }
-
-  FORCEINLINE void
-  Quaternion::normalize(float Tolerance) {
-    const float SquareSum = x * x + y * y + z * z + w * w;
-
-    if (SquareSum >= Tolerance) {
-      const float Scale = Math::invSqrt(SquareSum);
-      x *= Scale;
-      y *= Scale;
-      z *= Scale;
-      w *= Scale;
-    }
-    else
-    {
-      *this = Quaternion::IDENTITY;
-    }
-  }
-
-  FORCEINLINE Quaternion
-  Quaternion::getNormalized(float Tolerance) const {
-    Quaternion Result(*this);
-    Result.normalize(Tolerance);
-    return Result;
-  }
-
-  FORCEINLINE bool
-  Quaternion::isNormalized() const {
-    return (Math::abs(1.f - sizeSquared()) < Math::THRESH_QUAT_NORMALIZED);
-  }
-
-  FORCEINLINE float
-  Quaternion::size() const {
-    return Math::sqrt(x * x + y * y + z * z + w * w);
-  }
-
-  FORCEINLINE float
-  Quaternion::sizeSquared() const {
-    return (x * x + y * y + z * z + w * w);
-  }
-
   FORCEINLINE void
   Quaternion::toAxisAndAngle(Vector3& Axis, float& Angle) const {
     Angle = 2.f * Math::acos(w).valueRadians();
@@ -853,49 +749,22 @@ namespace geEngineSDK {
     return Vector3(1.f, 0.f, 0.f);
   }
 
-  float
-  Quaternion::angularDistance(const Quaternion& Q) const {
-    float InnerProd = x*Q.x + y*Q.y + z*Q.z + w*Q.w;
-    return Math::acos((2 * InnerProd * InnerProd) - 1.f).valueRadians();
-  }
-
   FORCEINLINE Vector3
   Quaternion::rotateVector(Vector3 V) const {
-    //http://people.csail.mit.edu/bkph/articles/Quaternions.pdf
-    //V' = V + 2w(Q x V) + (2Q x (Q x V))
-    //refactor:
-    //V' = V + w(2(Q x V)) + (Q x (2(Q x V)))
-    //T = 2(Q x V);
-    //V' = V + w*(T) + (Q x T)
+    Quaternion qn = this->getNormalized(); // igual que DXMath: asume unit
 
-    const Vector3 Q(x, y, z);
-    const Vector3 T = 2.f * Vector3::crossProduct(Q, V);
-    const Vector3 Result = V + (w * T) + Vector3::crossProduct(Q, T);
-    return Result;
+    Vector3 qv{ qn.x, qn.y, qn.z };
+    Vector3 t = 2.0f * (qv ^ V);
+    Vector3 v2 = V + qn.w * t + (qv ^ t);
+    return v2;
   }
 
   FORCEINLINE Vector3
   Quaternion::unrotateVector(Vector3 V) const {
-    const Vector3 Q(-x, -y, -z);  //Inverse
-    const Vector3 T = 2.f * Vector3::crossProduct(Q, V);
-    const Vector3 Result = V + (w * T) + Vector3::crossProduct(Q, T);
-    return Result;
-  }
-
-  FORCEINLINE Quaternion
-  Quaternion::inverse() const {
-    GE_ASSERT(isNormalized());
-    return Quaternion(-x, -y, -z, w);
-  }
-
-  FORCEINLINE void
-  Quaternion::enforceShortestArcWith(const Quaternion& OtherQuat) {
-    const float DotResult = (OtherQuat | *this);
-    const float Bias = Math::floatSelect(DotResult, 1.0f, -1.0f);
-    x *= Bias;
-    y *= Bias;
-    z *= Bias;
-    w *= Bias;
+    Vector3 qv(x, y, z);
+    Vector3 t = 2.0f * (qv ^ V);
+    Vector3 out = V - w * t + (qv ^ t);
+    return out;
   }
 
   FORCEINLINE Vector3
@@ -915,22 +784,22 @@ namespace geEngineSDK {
 
   FORCEINLINE Vector3
   Quaternion::getForwardVector() const {
-    return getAxisX();
-  }
-
-  FORCEINLINE Vector3
-  Quaternion::getRightVector() const {
-    return getAxisY();
-  }
-
-  FORCEINLINE Vector3
-  Quaternion::getUpVector() const {
     return getAxisZ();
   }
 
   FORCEINLINE Vector3
-  Quaternion::toVector() const {
+  Quaternion::getRightVector() const {
     return getAxisX();
+  }
+
+  FORCEINLINE Vector3
+  Quaternion::getUpVector() const {
+    return getAxisY();
+  }
+
+  FORCEINLINE Vector3
+  Quaternion::toVector() const {
+    return getAxisZ();
   }
 
   FORCEINLINE float
@@ -976,20 +845,11 @@ namespace geEngineSDK {
                                 FracY);
   }
 
-  FORCEINLINE bool
-  Quaternion::containsNaN() const {
-    return (!Math::isFinite(x) ||
-            !Math::isFinite(y) ||
-            !Math::isFinite(z) ||
-            !Math::isFinite(w));
-  }
-
   /***************************************************************************/
   /**
    * Math inline functions.
    */
   /***************************************************************************/
-
   template<class U>
   Quaternion Math::lerp(const Quaternion& A, const Quaternion& B, const U& Alpha) {
     return Quaternion::slerp(A, B, Alpha);
