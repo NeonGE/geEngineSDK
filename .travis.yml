@@ -1,0 +1,42 @@
+language: cpp
+
+os:
+  - linux
+
+dist: jammy
+
+compiler:
+  - gcc
+  - clang
+
+env:
+  global:
+    - BUILD_TYPE=Debug
+
+addons:
+  apt:
+    packages:
+      - cmake
+      - ninja-build
+      - ccache
+      - libicu-dev
+
+before_install:
+  - export PATH="/usr/lib/ccache:$PATH"
+  - ccache -s
+
+before_script:
+  - mkdir build
+  - cd build
+
+script:
+  - cmake -G Ninja .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+  - cmake --build .
+  - ctest --output-on-failure
+
+after_script:
+  - ccache -s
+
+cache:
+  directories:
+    - $HOME/.ccache
