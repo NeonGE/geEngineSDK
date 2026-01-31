@@ -84,13 +84,16 @@ jobs:
       - run:
           name: Generate lcov report
           command: |
-            lcov --capture --directory build --output-file coverage.raw.info
-            lcov --remove coverage.raw.info '/usr/*' '*/_deps/*' '*/tests/externals/*' --output-file coverage.cleaned.info
-            lcov --extract coverage.cleaned.info '*/sdk/geUtilities/*' --output-file coverage.info
+            lcov --capture --directory build --output-file coverage.info
+            lcov --remove coverage.info \
+              '/usr/*' \
+              '*/_deps/*' \
+              '*/tests/externals/*' \
+              --output-file coverage.info
             lcov --list coverage.info
 
       - coveralls/upload:
-          path_to_lcov: coverage.info
+          coverage_file: coverage.info
 
       - store_artifacts:
           path: coverage.info
