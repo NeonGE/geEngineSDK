@@ -9,7 +9,8 @@ using namespace geEngineSDK;
 
 static std::mt19937&
 rng() {
-  static std::mt19937 rng(0xC0FFEEu);
+  static auto seed = Catch::getSeed();
+  static std::mt19937 rng(seed);
   return rng;
 }
 

@@ -227,10 +227,9 @@ namespace geEngineSDK {
      */
     FORCEINLINE Transform
     inverse() const {
-      Quaternion   InvRotation = m_rotation.inverse();
-      //This used to cause NaN if Scale contained 0 
+      Quaternion InvRotation = m_rotation.inverse();
       Vector3 InvScale3D = getSafeScaleReciprocal(m_scale3D);
-      Vector3 InvTranslation = InvRotation * (InvScale3D * -m_translation);
+      Vector3 InvTranslation = (InvRotation * (-m_translation)) * InvScale3D;
       return Transform(InvRotation, InvTranslation, InvScale3D);
     }
 
