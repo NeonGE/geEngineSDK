@@ -90,9 +90,6 @@ jobs:
               '*/_deps/*' \
               '*/tests/*' \
               --output-file coverage.info
-            lcov --extract coverage.cleaned.info \
-              '*/sdk/geUtilities/*' \
-              --output-file coverage.info
             lcov --list coverage.info
 
       - coveralls/upload:
