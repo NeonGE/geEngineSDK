@@ -1,3 +1,4 @@
+[![Coverage Status](https://coveralls.io/repos/github/NeonGE/geEngineSDK/badge.svg)](https://coveralls.io/github/NeonGE/geEngineSDK)
 
 # geEngineSDK
 

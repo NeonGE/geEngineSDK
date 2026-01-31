@@ -88,7 +88,10 @@ jobs:
             lcov --remove coverage.info \
               '/usr/*' \
               '*/_deps/*' \
-              '*/tests/externals/*' \
+              '*/tests/*' \
+              --output-file coverage.info
+            lcov --extract coverage.cleaned.info \
+              '*/sdk/geUtilities/*' \
               --output-file coverage.info
             lcov --list coverage.info
 
