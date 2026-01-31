@@ -65,8 +65,8 @@ namespace geEngineSDK {
 
   Rotator
   Rotator::getInverse() const {
-    Quaternion q = toQuaternion();
-    return q.inverse().rotator();
+    Quaternion q = toQuaternion().inverse();
+    return q.rotator();
   }
 
   Quaternion

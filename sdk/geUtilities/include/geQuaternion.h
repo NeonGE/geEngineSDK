@@ -751,7 +751,7 @@ namespace geEngineSDK {
 
   FORCEINLINE Vector3
   Quaternion::rotateVector(Vector3 V) const {
-    Quaternion qn = this->getNormalized(); // igual que DXMath: asume unit
+    Quaternion qn = this->getNormalized();
 
     Vector3 qv{ qn.x, qn.y, qn.z };
     Vector3 t = 2.0f * (qv ^ V);

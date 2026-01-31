@@ -68,7 +68,7 @@ namespace geEngineSDK {
   Quaternion
   Quaternion::operator*(const Quaternion& Q) const {
     Quaternion r;
-    vectorQuaternionMultiply(r, Q, *this);
+    vectorQuaternionMultiply(r, *this, Q);
     r.diagnosticCheckNaN();
     return r;
   }
@@ -130,50 +130,45 @@ namespace geEngineSDK {
 
   static float SignedAngleAroundAxisRad(Vector3 a, Vector3 b, Vector3 axis)
   {
-    a = a.getSafeNormal();
-    b = b.getSafeNormal();
-    axis = axis.getSafeNormal();
+    a.normalize();
+    b.normalize();
+    axis.normalize();
 
     const Vector3 c = (a ^ b);
     const float s = (axis | c);
     const float d = (a | b);
-
     return Math::atan2(s, d).valueRadians();
   }
 
-  Rotator Quaternion::rotator() const
+  static Vector3 Reject(const Vector3& v, const Vector3& axisUnit)
   {
-    const Quaternion q = getNormalized();
+    return v - axisUnit * (v | axisUnit);
+  }
 
-    // Forward (+Z)
-    const Vector3 f = q.rotateVector(Vector3(0, 0, 1)).getSafeNormal();
+  Rotator
+  Quaternion::rotator() const {
+    Quaternion q = getNormalized();
 
-    // Yaw + derecha: atan2(f.x, f.z)
-    const float yawRad = Math::atan2(f.x, f.z).valueRadians();
+    Vector3 f = q.rotateVector(Vector3::FORWARD).getSafeNormal();
+    float yawRad = Math::atan2(f.x, f.z).valueRadians();
+    float horiz = Math::sqrt(f.x * f.x + f.z * f.z);
+    float pitchRad = Math::atan2(f.y, horiz).valueRadians();
 
-    // Pitch + arriba: atan2(f.y, sqrt(f.x^2+f.z^2))
-    const float horiz = Math::sqrt(f.x * f.x + f.z * f.z);
-    const float pitchRad = Math::atan2(f.y, horiz).valueRadians();
+    float yawDeg = Math::RAD2DEG * yawRad;
+    float pitchDeg = Math::RAD2DEG * pitchRad;
 
-    const float yawDeg = Math::RAD2DEG * (yawRad);
-    const float pitchDeg = Math::RAD2DEG * (pitchRad);
-
-    // Construye qYP con tu contrato (roll=0).
     Rotator yp(pitchDeg, yawDeg, 0.0f);
-    const Quaternion qYP = yp.toQuaternion().getNormalized();
+    Quaternion qYP = yp.toQuaternion().getNormalized();
 
-    // Para medir roll, usamos "up" o "right" (ambos sirven) y lo medimos alrededor del forward FINAL.
-    const Vector3 up0 = qYP.rotateVector(Vector3(0, 1, 0)).getSafeNormal();
-    const Vector3 up1 = q.rotateVector(Vector3(0, 1, 0)).getSafeNormal();
+    Vector3 upReal = q.rotateVector(Vector3::UP).getSafeNormal();
+    Vector3 upRef = qYP.rotateVector(Vector3::UP).getSafeNormal();
 
-    float rollMathRad = SignedAngleAroundAxisRad(up0, up1, f);
+    float sinTerm = Vector3::dot(f, upRef ^ upReal);
+    float cosTerm = Vector3::dot(upRef, upReal);
+    float rollRad = Math::atan2(sinTerm, cosTerm).valueRadians();
+    float rollDeg = -Math::RAD2DEG * rollRad;
 
-    // Tu convención humana: roll + = clockwise mirando forward => flip
-    float rollDeg = -Math::RAD2DEG * (rollMathRad);
-
-    Rotator out(pitchDeg, yawDeg, rollDeg);
-    out.normalize();
-    return out;
+    return Rotator(pitchDeg, yawDeg, rollDeg);
   }
 
   Quaternion

@@ -149,7 +149,7 @@ TEST_CASE("Quat: multiplication composes rotations (by effect)",
     Vector3 v = randVec3(-5, 5);
 
     Vector3 direct = (a * b).rotateVector(v);
-    Vector3 step = b.rotateVector(a.rotateVector(v));
+    Vector3 step = a.rotateVector(b.rotateVector(v));
 
     REQUIRE(vec3Near(direct, step, eps));
   }

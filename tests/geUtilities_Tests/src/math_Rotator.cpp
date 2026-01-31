@@ -104,41 +104,76 @@ TEST_CASE("Rotator: matches manual axis-angle composition (yaw->pitch->roll)", "
   Quaternion qM = (qYaw * qPitch * qRoll).getNormalized();
   REQUIRE(quatNearSameRotation(qR, qM, 2e-4f));
 }
-/*
-TEST_CASE("Rotator: Matrix4::rotator round-trip preserves rotation (by effect)", "[Rotator][Matrix][RoundTrip]") {
-  constexpr float eps = 6e-4f;
 
-  for (int i = 0; i < 12000; ++i) {
-    //Rotator r(randRange(-179.f, 179.f), randRange(-179.f, 179.f), randRange(-179.f, 179.f));
-    Rotator r(45, 45, 45);
+static float quatAngleErrorDeg(const Quaternion& a, const Quaternion& b)
+{
+  Quaternion qa = a.getNormalized();
+  Quaternion qb = b.getNormalized();
 
+  // error rotation: qe = inverse(a) * b
+  // Para unit quats, inverse = conjugate
+  Quaternion qe = qa.conjugate() * qb;
+  qe = qe.getNormalized();
+
+  // qe representa una rotación. ángulo = 2*acos(clamp(w))
+  float w = Math::clamp(qe.w, -1.0f, 1.0f);
+  float angleRad = 2.0f * Math::acos(w).valueRadians();
+  return Math::RAD2DEG * angleRad;
+}
+
+TEST_CASE("Rotator <-> Quaternion roundtrip (angular)", "[Math][Rotator]") {
+  Rotator r(10, 20, 30);
+  Quaternion q = r.toQuaternion();
+  Rotator r2 = q.rotator();
+  Quaternion q2 = r2.toQuaternion();
+
+  float err = quatAngleErrorDeg(q, q2);
+  REQUIRE(err < 0.05f); // o 0.1f mientras debuggeas
+}
+
+TEST_CASE("Rotator->Quat->Rotator: pure pitch", "[Diag]") {
+  Rotator r(20, 0, 0);
+  Rotator r2 = r.toQuaternion().rotator();
+  REQUIRE(std::fabs(r2.pitch - 20.0f) < 1e-2f);
+}
+
+TEST_CASE("Rotator->Quat->Rotator: pure yaw", "[Diag]") {
+  Rotator r(0, 20, 0);
+  Rotator r2 = r.toQuaternion().rotator();
+  REQUIRE(std::fabs(r2.yaw - 20.0f) < 1e-2f);
+}
+
+TEST_CASE("Rotator->Quat->Rotator: pure roll", "[Diag]") {
+  Rotator r(0, 0, 20);
+  Rotator r2 = r.toQuaternion().rotator();
+  REQUIRE(std::fabs(r2.roll - 20.0f) < 1e-2f);
+}
+
+TEST_CASE("Diag: q -> rotator -> q preserves rotation (by effect)", "[Rotator][Diag][Extract]")
+{
+  constexpr float eps = 8e-4f;
+
+  for (int i = 0; i < 20000; ++i)
+  {
+    Rotator r(randRange(-179.f, 179.f), randRange(-179.f, 179.f), randRange(-179.f, 179.f));
     Quaternion q0 = r.toQuaternion();
-    Matrix4 M = q0.toMatrix();
 
-    Rotator r2 = M.rotator();
+    Rotator r2 = q0.rotator();
     Quaternion q1 = r2.toQuaternion();
 
     Vector3 v = randVec3(-10, 10);
+
+    CAPTURE(r.pitch, r.yaw, r.roll);
+    CAPTURE(r2.pitch, r2.yaw, r2.roll);
+    auto f0 = q0.rotateVector(Vector3(0, 0, 1));
+    auto f1 = q1.rotateVector(Vector3(0, 0, 1));
+    CAPTURE(f0.x, f0.y, f0.z);
+    CAPTURE(f1.x, f1.y, f1.z);
+
     REQUIRE(vec3Near(q0.rotateVector(v), q1.rotateVector(v), eps));
   }
 }
-*/
-TEST_CASE("Rot", "DetRot") {
-  Rotator r(45.f, 45.f, 45.f);
-  Quaternion qR = r.toQuaternion().getNormalized();
 
-  Quaternion qYaw(Vector3(0, 1, 0), Degree(r.yaw));
-  Quaternion qPitch(Vector3(1, 0, 0), Degree(-r.pitch));
-  Quaternion qRoll(Vector3(0, 0, 1), Degree(-r.roll));
-
-  Quaternion q_engine_YXZ = (qYaw * qPitch * qRoll).getNormalized();
-  Quaternion q_calc_YXZ = (qRoll * qPitch * qYaw).getNormalized();
-
-  CAPTURE(Math::abs(dotQ(qR, q_engine_YXZ)));
-  CAPTURE(Math::abs(dotQ(qR, q_calc_YXZ)));
-}
-
-/*
 TEST_CASE("Rotator: getInverse cancels rotation (by effect)", "[Rotator][Inverse]") {
   constexpr float eps = 6e-4f;
 
@@ -191,4 +226,3 @@ TEST_CASE("AxisAngle: +Yaw around +Y turns forward to right", "[Quat][AxisAngle]
   Vector3 f = q.rotateVector(Vector3(0, 0, 1));
   REQUIRE(vec3Near(f, Vector3(1, 0, 0), 2e-4f));
 }
-*/
