@@ -388,7 +388,7 @@ namespace geEngineSDK {
     /**
      * @brief Set a specified componet of the vector, given a specific axis by enum
      */
-    GE_NODISCARD FORCEINLINE void
+    FORCEINLINE void
     setComponentForAxis(AXIS::E Axis, float Component){
       switch (Axis)
       {
