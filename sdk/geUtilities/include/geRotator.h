@@ -7,6 +7,12 @@
  *
  * All rotation values are stored in degrees.
  *
+ * @note    Rotator contract:
+ *          - pitch: look up/down (+up), applied as -pitch around +X
+ *          - yaw:   turn left/right (+right), around +Y
+ *          - roll:  twist (+clockwise), applied as -roll around +Z
+ *          - order: yaw * pitch * roll
+ * 
  * @bug     No known bugs.
  */
 /*****************************************************************************/
