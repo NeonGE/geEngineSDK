@@ -1,5 +1,6 @@
 version: 2.1
-
+orbs:
+  coveralls: coveralls/coveralls@2.2.5
 jobs:
   test_linux:
     docker:
@@ -42,6 +43,65 @@ jobs:
       - store_artifacts:
           path: build/test-results
           destination: test-results
+
+  coverage_linux:
+    docker:
+      - image: cimg/base:current-22.04
+    environment:
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
+      CTEST_OUTPUT_ON_FAILURE: 1
+    steps:
+      - checkout
+
+      - run:
+          name: Install build tools (with lcov)
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends \
+              cmake ninja-build build-essential git \
+              libicu-dev lcov
+
+      - run:
+          name: Configure (coverage)
+          command: |
+            cmake -S . -B build -G Ninja \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DBUILD_TESTING=ON \
+              -DCMAKE_C_FLAGS="--coverage -O0 -g" \
+              -DCMAKE_CXX_FLAGS="--coverage -O0 -g" \
+              -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+
+      - run:
+          name: Build
+          command: |
+            cmake --build build
+
+      - run:
+          name: Run tests
+          command: |
+            ctest --test-dir build --output-on-failure
+
+      - run:
+          name: Generate lcov report
+          command: |
+            lcov --capture --directory build --output-file coverage.info
+
+            lcov --remove coverage.info \
+              '/usr/*' \
+              '*/_deps/*' \
+              '*/tests/*' \
+              '*/external/*' \
+              '*/external/*' \
+              --output-file coverage.info
+
+            lcov --list coverage.info
+
+      - coveralls/upload:
+          path_to_lcov: coverage.info
+
+      - store_artifacts:
+          path: coverage.info
+          destination: coverage
 
   test_windows:
     machine:
@@ -86,4 +146,5 @@ workflows:
   tests:
     jobs:
       - test_linux
+      - coverage_linux
       - test_windows

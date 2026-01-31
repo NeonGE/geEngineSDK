@@ -116,8 +116,7 @@ namespace geEngineSDK {
     ++idx;
 
     //Third group: 4 digits
-    for (int32 i = 3; i >= 0; --i)
-    {
+    for (int32 i = 3; i >= 0; --i) {
       char charVal = uuid[idx++];
       uint8 hexVal = LITERAL_TO_HEX[static_cast<int>(charVal)];
       m_data[1] |= hexVal << (i * 4);
@@ -126,8 +125,7 @@ namespace geEngineSDK {
     ++idx;
 
     //Fourth group: 4 digits
-    for (int32 i = 7; i >= 4; --i)
-    {
+    for (int32 i = 7; i >= 4; --i) {
       char charVal = uuid[idx++];
       uint8 hexVal = LITERAL_TO_HEX[static_cast<int>(charVal)];
       m_data[2] |= hexVal << (i * 4);
@@ -136,15 +134,13 @@ namespace geEngineSDK {
     ++idx;
 
     //Fifth group: 12 digits
-    for (int32 i = 3; i >= 0; --i)
-    {
+    for (int32 i = 3; i >= 0; --i) {
       char charVal = uuid[idx++];
       uint8 hexVal = LITERAL_TO_HEX[static_cast<int>(charVal)];
       m_data[2] |= hexVal << (i * 4);
     }
 
-    for (int32 i = 7; i >= 0; --i)
-    {
+    for (int32 i = 7; i >= 0; --i) {
       char charVal = uuid[idx++];
       uint8 hexVal = LITERAL_TO_HEX[static_cast<int>(charVal)];
       m_data[3] |= hexVal << (i * 4);
