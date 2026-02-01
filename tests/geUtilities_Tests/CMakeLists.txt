@@ -3,6 +3,7 @@ ge_setup_nlohmann_json()
 add_executable(geUtilities_Tests
   src/core_types.cpp
   src/core_floats.cpp
+  src/core_dependencies.cpp
   src/math_main.cpp
   src/math_angle.cpp
   src/math_Vector2.cpp
@@ -14,6 +15,7 @@ add_executable(geUtilities_Tests
   src/math_Matrix4.cpp
   src/math_Rotator.cpp
   src/math_Transform.cpp
+  src/math_Bounds.cpp
 )
 
 # Mantener mismo layout de outputs (bin/lib) por platform/config

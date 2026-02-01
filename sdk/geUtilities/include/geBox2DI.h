@@ -46,11 +46,13 @@ namespace geEngineSDK {
      * @param InMin The box's minimum point.
      * @param InMax The box's maximum point.
      */
-    Box2DI(const Vector2I& InMin, const Vector2I& InMax)
-      : m_min(InMin),
-        m_max(InMax),
-        m_bIsValid(true)
-    {}
+    Box2DI(const Vector2I& InMin, const Vector2I& InMax) {
+      m_min.x = Math::min(InMin.x, InMax.x);
+      m_min.y = Math::min(InMin.y, InMax.y);
+
+      m_max.x = Math::max(InMin.x, InMax.x);
+      m_max.y = Math::max(InMin.y, InMax.y);
+    }
 
     /**
      * @brief Creates and initializes a new box from the given set of points.
@@ -251,6 +253,17 @@ namespace geEngineSDK {
     isInside(const Vector2I & TestPoint) const {
       return ((TestPoint.x > m_min.x) && (TestPoint.x < m_max.x) &&
               (TestPoint.y > m_min.y) && (TestPoint.y < m_max.y));
+    }
+
+    /**
+     * @brief Checks whether the given point is inside or on this box.
+     * @param p The point to test.
+     * @return true if the point is inside this box, otherwise false.
+     */
+    bool
+    isInsideOrOn(const Vector2I& p) const {
+      return (p.x >= m_min.x && p.x <= m_max.x) &&
+        (p.y >= m_min.y && p.y <= m_max.y);
     }
 
     /**

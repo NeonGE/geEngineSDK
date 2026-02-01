@@ -52,11 +52,17 @@ namespace geEngineSDK {
      * @param InMin The box's minimum point.
      * @param InMax The box's maximum point.
      */
-    AABox(const Vector3& InMin, const Vector3& InMax)
-      : m_min(InMin),
-        m_max(InMax),
-        m_isValid(1)
-    {}
+    AABox(const Vector3& InMin, const Vector3& InMax) {
+      m_min.x = Math::min(InMin.x, InMax.x);
+      m_min.y = Math::min(InMin.y, InMax.y);
+      m_min.z = Math::min(InMin.z, InMax.z);
+
+      m_max.x = Math::max(InMin.x, InMax.x);
+      m_max.y = Math::max(InMin.y, InMax.y);
+      m_max.z = Math::max(InMin.z, InMax.z);
+
+      m_isValid = 1;
+    }
 
     /**
      * @brief Creates and initializes a new box from the given set of points.
