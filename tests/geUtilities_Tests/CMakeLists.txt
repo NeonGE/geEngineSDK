@@ -16,6 +16,7 @@ add_executable(geUtilities_Tests
   src/math_Rotator.cpp
   src/math_Transform.cpp
   src/math_Bounds.cpp
+  src/math_Color.cpp
 )
 
 # Mantener mismo layout de outputs (bin/lib) por platform/config
