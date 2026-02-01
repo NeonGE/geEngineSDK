@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/05j1vydhneortpuk/branch/main?svg=true)](https://ci.appveyor.com/project/NeonGE/geenginesdk/branch/main)
+[![Build status](https://ci.appveyor.com/api/projects/status/05j1vydhneortpuk/branch/main)](https://ci.appveyor.com/project/NeonGE/geenginesdk/branch/main)
 [![Coverage Status](https://coveralls.io/repos/github/NeonGE/geEngineSDK/badge.svg)](https://coveralls.io/github/NeonGE/geEngineSDK)
 
 # geEngineSDK
