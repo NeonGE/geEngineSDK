@@ -161,6 +161,11 @@ namespace geEngineSDK {
     return ge_shared_ptr_new<FileDataStream>(fullPath, accessMode, true);
   }
 
+  uint64
+  FileSystem::getFileSize(const Path& fullPath) {
+    return sys_getFileSize(UTF8::toWide(fullPath.toString()));
+  }
+
   bool
   FileSystem::exists(const Path& fullPath) {
     return sys_pathExists(UTF8::toWide(fullPath.toString()));
