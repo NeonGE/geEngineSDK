@@ -194,9 +194,9 @@ namespace geEngineSDK {
     WString result(currentDir.wstring());
 
     //Append backslash if not present
-    if (!result.empty() && result.back() != L'\\') {
-      result.append(L"\\");
-    }
+    //if (!result.empty() && result.back() != L'\\') {
+    //  result.append(L"\\");
+    //}
 
     return Path(UTF8::fromWide(result));
   }
@@ -207,9 +207,9 @@ namespace geEngineSDK {
     WString result(tempDir.wstring());
 
     //Append backslash if not present
-    if (!result.empty() && result.back() != L'\\') {
-      result.append(L"\\");
-    }
+    //if (!result.empty() && result.back() != L'\\') {
+    //  result.append(L"\\");
+    //}
 
     return Path(UTF8::fromWide(result));
   }

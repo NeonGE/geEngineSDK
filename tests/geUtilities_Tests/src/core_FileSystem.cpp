@@ -21,7 +21,7 @@ namespace
   {
     Path base = FileSystem::getTempDirectoryPath();
     Path root = base;
-    root.append(String(folderName) + "_" + uniqueSuffix() + "\\");
+    root.append(String(folderName) + "_" + uniqueSuffix() + "/");
     FileSystem::createDir(root);
     return root;
   }
@@ -58,11 +58,11 @@ TEST_CASE("FileSystem: exists/isFile/isDirectory/createDir", "[FileSystem]")
 
   // createDir with a file path should create parent dirs (per implementation)
   Path nestedFile = root;
-  nestedFile.append("a\\b\\c\\hello.bin");
+  nestedFile.append("a/b/c/hello.bin");
   FileSystem::createDir(nestedFile);
 
   Path nestedDir = root;
-  nestedDir.append("a\\b\\c\\");
+  nestedDir.append("a/b/c/");
   REQUIRE(FileSystem::exists(nestedDir));
   REQUIRE(FileSystem::isDirectory(nestedDir));
 
@@ -132,8 +132,8 @@ TEST_CASE("FileSystem: getChildren returns files and dirs", "[FileSystem][Childr
 {
   const Path root = makeTempRoot("geFileSystemTests_children");
 
-  Path d1 = root; d1.append("d1\\");
-  Path d2 = root; d2.append("d2\\");
+  Path d1 = root; d1.append("d1/");
+  Path d2 = root; d2.append("d2/");
   FileSystem::createDir(d1);
   FileSystem::createDir(d2);
 
@@ -167,7 +167,7 @@ TEST_CASE("FileSystem: iterate recursive collects nodes", "[FileSystem][Iterate]
 {
   const Path root = makeTempRoot("geFileSystemTests_iterate");
 
-  Path sub = root; sub.append("sub\\");
+  Path sub = root; sub.append("sub/");
   FileSystem::createDir(sub);
 
   Path f1 = root; f1.append("a.txt");
@@ -234,9 +234,9 @@ TEST_CASE("FileSystem: set/get Engine/Plugins/App paths", "[FileSystem][Config]"
 {
   const Path root = makeTempRoot("geFileSystemTests_config");
 
-  Path engine = root;  engine.append("Engine\\");
-  Path plugins = root; plugins.append("Plugins\\");
-  Path app = root;     app.append("App\\");
+  Path engine = root;  engine.append("Engine/");
+  Path plugins = root; plugins.append("Plugins/");
+  Path app = root;     app.append("App/");
   FileSystem::createDir(engine);
   FileSystem::createDir(plugins);
   FileSystem::createDir(app);
