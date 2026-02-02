@@ -20,11 +20,13 @@
 /*****************************************************************************/
 #include "gePlatformDefines.h"
 #include "geMemoryAllocator.h"
+#include "geFwdDeclUtil.h"
 #include <string>
 
 namespace geEngineSDK {
   enum class LogVerbosity;
   class UUID;
+  
 
   /**
    * @brief Defines what type of data should be written during the time_t to
@@ -476,12 +478,12 @@ namespace geEngineSDK {
    * @note Available output formats:
    * 1. When the ISO 8601 format is used
    * - Date: [NumericalYear]-[NumericalMonth]-[NumericalDay]
-   * - Time: [HH]::[MM]::[SS]
-   * - Full: [NumericalYear]-[NumericalMonth]-[NumericalDay]T[HH]::[MM]::[SS]
+   * - Time: [HH]:[MM]:[SS]
+   * - Full: [NumericalYear]-[NumericalMonth]-[NumericalDay]T[HH]:[MM]:[SS]
    * 2. When the custom format is used
    * - Date: [DayOfWeek], [Month] [NumericalDate], [NumericalYear]
-   * - Time: [HH]::[MM]::[SS]
-   * - Full: [DayOfWeek], [Month] [NumericalDate], [NumericalYear] [HH]::[MM]::[SS]
+   * - Time: [HH]:[MM]:[SS]
+   * - Full: [DayOfWeek], [Month] [NumericalDate], [NumericalYear] [HH]:[MM]:[SS]
    * By default will output the local hour in custom format.
    */
   GE_UTILITIES_EXPORT GE_NODISCARD String
@@ -900,10 +902,16 @@ namespace geEngineSDK {
       BasicString<T> delims = singleDelims + doubleDelims;
 
       //Use STL methods 
-      SIZE_T start, pos;
+      SIZE_T start = 0;
+      SIZE_T pos = BasicString<T>::npos;
       T curDoubleDelim = 0;
-      start = 0;
-      do {
+
+      start = str.find_first_not_of(singleDelims, start);
+      if (start == BasicString<T>::npos) {
+        return ret;
+      }
+
+      while (true) {
         if (0 != curDoubleDelim ) {
           pos = str.find(curDoubleDelim, start);
         }
@@ -911,39 +919,50 @@ namespace geEngineSDK {
           pos = str.find_first_of(delims, start);
         }
 
-        if (pos == start) {
-          T curDelim = str.at(pos);
-          if (doubleDelims.find_first_of(curDelim) != BasicString<T>::npos) {
-            curDoubleDelim = curDelim;
-          }
-          // Do nothing
-          start = pos + 1;
-        }
-        else if (pos == BasicString<T>::npos || (maxSplits && numSplits == maxSplits)) {
-          if (curDoubleDelim != 0) {
-            //Missing closer. Warn or throw exception?
-          }
-          // Copy the rest of the string
+        if (pos == BasicString<T>::npos) {
           ret.push_back(str.substr(start));
           break;
         }
-        else {
-          if (curDoubleDelim != 0) {
-            curDoubleDelim = 0;
+
+        if (maxSplits && numSplits == maxSplits) {
+          ret.push_back(str.substr(start));
+          break;
+        }
+
+        if (pos == start) {
+          const T curDelim = str.at(pos);
+          if (doubleDelims.find_first_of(curDelim) != BasicString<T>::npos) {
+            curDoubleDelim = (curDoubleDelim == 0) ? curDelim : 0;
+          }
+          // Do nothing
+          start = pos + 1;
+
+          if (curDoubleDelim == 0) {
+            start = str.find_first_not_of(singleDelims, start);
+            if (start == BasicString<T>::npos) {
+              break;
+            }
           }
 
-          // Copy up to delimiter
-          ret.push_back(str.substr(start, pos - start));
-          start = pos + 1;
+          continue;
         }
-        if (0 == curDoubleDelim) {
-          // parse up to next real data
+
+        if (curDoubleDelim != 0) {
+          curDoubleDelim = 0;
+        }
+
+        ret.push_back(str.substr(start, pos - start));
+        ++numSplits; //Real split happened
+
+        //Advance after delimiter and jump spaces if applicable
+        start = pos + 1;
+        if (curDoubleDelim == 0) {
           start = str.find_first_not_of(singleDelims, start);
+          if (start == BasicString<T>::npos) {
+            break;
+          }
         }
-
-        ++numSplits;
-
-      } while (pos != BasicString<T>::npos);
+      }
 
       return ret;
     }
@@ -953,16 +972,26 @@ namespace geEngineSDK {
     startsWithInternal(const BasicString<T>& str, 
                        const BasicString<T>& pattern, 
                        bool lowerCase) {
-      SIZE_T thisLen = str.length();
-      SIZE_T patternLen = pattern.length();
-      if (thisLen < patternLen || 0 == patternLen) {
+      const SIZE_T thisLen = str.length();
+      const SIZE_T patternLen = pattern.length();
+
+      if (0 == patternLen) {
+        return true; //By convention
+      }
+
+      if (thisLen < patternLen) {
         return false;
       }
 
-      BasicString<T> startOfThis = str.substr(0, patternLen);
-      if (lowerCase) {
-        StringUtil::toLowerCase(startOfThis);
+      if (!lowerCase) {
+        return str.compare(0, patternLen, pattern) == 0;
       }
+
+      BasicString<T> startOfThis = str.substr(0, patternLen);
+      BasicString<T> pat = pattern;
+
+      StringUtil::toLowerCase(startOfThis);
+      StringUtil::toLowerCase(pat);
 
       return (startOfThis == pattern);
     }
@@ -972,18 +1001,29 @@ namespace geEngineSDK {
     endsWithInternal(const BasicString<T>& str, 
                      const BasicString<T>& pattern, 
                      bool lowerCase) {
-      SIZE_T thisLen = str.length();
-      SIZE_T patternLen = pattern.length();
-      if (thisLen < patternLen || 0 == patternLen) {
+      const SIZE_T thisLen = str.length();
+      const SIZE_T patternLen = pattern.length();
+
+      if (0 == patternLen) {
+        return true; //By convention
+      }
+
+      if (thisLen < patternLen) {
         return false;
       }
 
-      BasicString<T> endOfThis = str.substr(thisLen - patternLen, patternLen);
-      if (lowerCase) {
-        StringUtil::toLowerCase(endOfThis);
+      if (!lowerCase) {
+        const SIZE_T start = thisLen - patternLen;
+        return str.compare(start, patternLen, pattern) == 0;
       }
 
-      return (endOfThis == pattern);
+      BasicString<T> endOfThis = str.substr(thisLen - patternLen, patternLen);
+      BasicString<T> pat = pattern;
+
+      StringUtil::toLowerCase(endOfThis);
+      StringUtil::toLowerCase(pat);
+
+      return (endOfThis == pat);
     }
 
     template <class T>
@@ -1041,6 +1081,11 @@ namespace geEngineSDK {
     replaceAllInternal(const BasicString<T>& source, 
                        const BasicString<T>& replaceWhat, 
                        const BasicString<T>& replaceWithWhat) {
+      //Critical edge case: replace with "" would cause infinite loop
+      if (source.empty() || replaceWhat.empty()) {
+        return source;
+      }
+
       BasicString<T> result = source;
       typename BasicString<T>::size_type pos = 0;
       for (;;) {

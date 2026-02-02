@@ -40,13 +40,13 @@ namespace geEngineSDK {
 
   void
   StringUtil::trim(String& str, bool left, bool right) {
-    static const String delims = " \t\r";
+    static const String delims = " \t\n\r";
     trim(str, delims, left, right);
   }
 
   void
   StringUtil::trim(WString& str, bool left, bool right) {
-    static const WString delims = L" \t\r";
+    static const WString delims = L" \t\n\r";
     trim(str, delims, left, right);
   }
 
@@ -744,7 +744,7 @@ namespace geEngineSDK {
         formatInput = "%T";
       }
       else {
-        formatInput = "%FT%TZ";
+        formatInput = isUTC ? "%FT%TZ" : "%FT%T";
       }
     }
     else {
@@ -766,7 +766,11 @@ namespace geEngineSDK {
     else {
       LOCALTIME(&timeinfo, &time);
     }
-    strftime(out, sizeof(out), formatInput.c_str(), &timeinfo);
+
+    const SIZE_T written = strftime(out, sizeof(out), formatInput.c_str(), &timeinfo);
+    if (written == 0) {
+      return String("<invalid time>");
+    }
 
     return String(out);
   }
@@ -792,8 +796,17 @@ namespace geEngineSDK {
   parseFloat(const String& val, float defaultValue) {
     //Use istringstream for direct correspondence with ToString
     StringStream str(val);
-    float ret = defaultValue;
+    float ret;
     str >> ret;
+    if (str.fail()) {
+      return defaultValue;
+    }
+
+    char c;
+    if (str >> c) {
+      return defaultValue;
+    }
+
     return ret;
   }
 
@@ -801,41 +814,95 @@ namespace geEngineSDK {
   parseInt(const String& val, int32 defaultValue) {
     //Use istringstream for direct correspondence with ToString
     StringStream str(val);
-    int32 ret = defaultValue;
+    int32 ret;
     str >> ret;
+    if (str.fail()) {
+      return defaultValue;
+    }
+
+    char c;
+    if (str >> c) {
+      return defaultValue;
+    }
+
     return ret;
   }
 
   uint32
   parseUnsignedInt(const String& val, uint32 defaultValue) {
-    //Use istringstream for direct correspondence with ToString
-    StringStream str(val);
-    int64 ret = defaultValue;
-    str >> ret;
-    if (ret < 0) {
-      //This is a fix for windows systems where if a signed is sent,
-      //it won't return 0
-      return 0;
+    String s = val;
+    StringUtil::trim(s);
+
+    if (s.empty()) {
+      return defaultValue;
     }
 
-    return static_cast<uint32>(ret);
+    //Explicitly check for negative values
+    if (s[0] == '-') {
+      return defaultValue;
+    }
+
+    //Use istringstream for direct correspondence with ToString
+    StringStream str(s);
+    uint32 ret = 0;
+    str >> ret;
+    if (str.fail()) {
+      return defaultValue;
+    }
+
+    char c;
+    if (str >> c) {
+      return defaultValue;
+    }
+
+    return ret;
   }
 
   int64
   parseInt64(const String & val, int64 defaultValue) {
     //Use istringstream for direct correspondence with toString
     StringStream str(val);
-    int64 ret = defaultValue;
+    int64 ret;
     str >> ret;
+    if (str.fail()) {
+      return defaultValue;
+    }
+
+    char c;
+    if (str >> c) {
+      return defaultValue;
+    }
+
     return ret;
   }
 
   uint64
   parseUnsignedInt64(const String & val, uint64 defaultValue) {
-    // Use istringstream for direct correspondence with toString
-    StringStream str(val);
-    uint64 ret = defaultValue;
+    String s = val;
+    StringUtil::trim(s);
+
+    if (s.empty()) {
+      return defaultValue;
+    }
+
+    //Explicitly check for negative values
+    if (s[0] == '-') {
+      return defaultValue;
+    }
+
+    //Use istringstream for direct correspondence with ToString
+    StringStream str(s);
+    uint64 ret = 0;
     str >> ret;
+    if (str.fail()) {
+      return defaultValue;
+    }
+
+    char c;
+    if (str >> c) {
+      return defaultValue;
+    }
+
     return ret;
   }
 

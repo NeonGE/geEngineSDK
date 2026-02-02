@@ -93,21 +93,36 @@ namespace geEngineSDK {
 
       //Determine parameter positions
       int32 lastBracket = -1;
-      bool escaped = false;
       SIZE_T charWriteIdx = 0;
+
       for (SIZE_T i = 0; i < strLength; ++i) {
-        if ('\\' == source[i] && !escaped && MAX_PARAM_REFERENCES > paramRangeWriteIdx) {
-          escaped = true;
-          //TODO: Test -1 this with PS4 or change for MAX_UINT32
-          paramRanges[paramRangeWriteIdx++] = FormatParamRange(charWriteIdx,
-                                                               1,
-                                                               NumLimit::MAX_UINT32);
-          continue;
+        //Brace escaping: "{{" -> "{", "}}" -> "}"
+        if (lastBracket == -1 && (i + 1) < strLength &&
+            paramRangeWriteIdx < MAX_PARAM_REFERENCES) {
+          if (source[i] == '{' && source[i + 1] == '{') {
+            //Remove one '{' from output
+            paramRanges[paramRangeWriteIdx++] =
+              FormatParamRange(charWriteIdx, 1, NumLimit::MAX_UINT32);
+
+            ++charWriteIdx; //one literal '{' remains
+            ++i;            //skip the second '{'
+            continue;
+          }
+
+          if (source[i] == '}' && source[i + 1] == '}') {
+            //Remove one '}' from output
+            paramRanges[paramRangeWriteIdx++] =
+              FormatParamRange(charWriteIdx, 1, NumLimit::MAX_UINT32);
+
+            ++charWriteIdx; //one literal '}' remains
+            ++i;            //skip the second '}'
+            continue;
+          }
         }
 
         if (-1 == lastBracket) {
           //If current char is non-escaped opening bracket start parameter definition
-          if ('{' == source[i] && !escaped) {
+          if ('{' == source[i]) {
             lastBracket = static_cast<int32>(i);
           }
           else {
@@ -120,18 +135,16 @@ namespace geEngineSDK {
           }
           else {
             //If current char is non-escaped closing bracket end parameter definition
-            uint32 numParamChars = bracketWriteIdx;
+            const uint32 numParamChars = bracketWriteIdx;
             bool processedBracket = false;
-            if ('}' == source[i] && 0 < numParamChars && !escaped)
-            {
+            if ('}' == source[i] && 0 < numParamChars) {
               bracketChars[bracketWriteIdx] = '\0';
-              uint32 paramIdx = strToInt(bracketChars);
+              const uint32 paramIdx = strToInt(bracketChars);
 
               //Check if exceeded maximum parameter limit
               if (MAX_PARAMS > paramIdx && MAX_PARAM_REFERENCES > paramRangeWriteIdx) {
-                paramRanges[paramRangeWriteIdx++] = FormatParamRange(charWriteIdx,
-                                                                     numParamChars + 2,
-                                                                     paramIdx);
+                paramRanges[paramRangeWriteIdx++] =
+                  FormatParamRange(charWriteIdx, numParamChars + 2, paramIdx);
                 charWriteIdx += parameters[paramIdx].m_size;
                 processedBracket = true;
               }
@@ -148,12 +161,16 @@ namespace geEngineSDK {
             bracketWriteIdx = 0;
           }
         }
-
-        escaped = false;
       }
 
-      //Copy the clean string into output buffer
-      SIZE_T finalStringSize = charWriteIdx;
+      if (lastBracket != -1) {
+        for (auto j = static_cast<uint32>(lastBracket); j < strLength; ++j) {
+          ++charWriteIdx;
+        }
+      }
+
+      //Copy the clean string into output buffer +1 for null terminator
+      SIZE_T finalStringSize = charWriteIdx + 1;
 
       auto outputBuffer = reinterpret_cast<T*>(ge_alloc(finalStringSize * sizeof(T)));
       SIZE_T copySourceIdx = 0;
@@ -161,7 +178,7 @@ namespace geEngineSDK {
 
       for (SIZE_T i = 0; i < paramRangeWriteIdx; ++i) {
         const FormatParamRange& rangeInfo = paramRanges[i];
-        SIZE_T copySize = rangeInfo.m_start - copyDestIdx;
+        const SIZE_T copySize = rangeInfo.m_start - copyDestIdx;
 
         memcpy(outputBuffer + copyDestIdx, source + copySourceIdx, copySize * sizeof(T));
         copySourceIdx += copySize + rangeInfo.m_identifierSize;
@@ -171,18 +188,19 @@ namespace geEngineSDK {
           continue;
         }
 
-        SIZE_T paramSize = parameters[rangeInfo.m_paramIdx].m_size;
+        const SIZE_T paramSize = parameters[rangeInfo.m_paramIdx].m_size;
         memcpy(outputBuffer + copyDestIdx,
                parameters[rangeInfo.m_paramIdx].m_buffer,
                paramSize * sizeof(T));
         copyDestIdx += paramSize;
       }
 
+      const SIZE_T tailCount = (strLength - copySourceIdx) + 1;
       memcpy(outputBuffer + copyDestIdx, 
              source + copySourceIdx, 
-             (finalStringSize - copyDestIdx) * sizeof(T));
+             tailCount * sizeof(T));
 
-      BasicString<T> outputStr(outputBuffer, finalStringSize);
+      BasicString<T> outputStr(outputBuffer);
       ge_free(outputBuffer);
 
       //Free the memory of all the parameters buffers
