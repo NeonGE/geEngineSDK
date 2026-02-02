@@ -256,7 +256,7 @@ TEST_CASE("FileDataStream: write then read (reopen), skip/seek/tell/eof", "[Data
   // Arrange paths in temp directory
   const Path temp = FileSystem::getTempDirectoryPath();
   Path dir = temp;
-  dir.append("geDataStream_FileDataStream_Tests\\");
+  dir.append("geDataStream_FileDataStream_Tests/");
   FileSystem::createDir(dir);
 
   Path filePath = dir;
