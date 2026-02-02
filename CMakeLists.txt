@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.20)
 
 project(geEngineSDK VERSION 0.1.2026 LANGUAGES C CXX)
 
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5 CACHE STRING "" FORCE)
+
 # -----------------------------
 # Organized Outputs (per Platform + Config)
 # -----------------------------
@@ -21,6 +23,11 @@ function(ge_set_output_dirs targetName)
     ARCHIVE_OUTPUT_DIRECTORY "${_lib_base}"  # .lib/.a
   )
 endfunction()
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+include(Externals_RTTR)
+include(cmake/Link_RTTR.cmake)
 
 # -----------------------------
 # Build settings shared by all targets

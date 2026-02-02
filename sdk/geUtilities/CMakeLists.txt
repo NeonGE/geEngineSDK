@@ -151,6 +151,8 @@ target_link_libraries(geUtilities
 		ge_json
 )
 
+ge_link_rttr(geUtilities)
+
 if(WIN32)
 target_link_libraries(geUtilities
 	PRIVATE

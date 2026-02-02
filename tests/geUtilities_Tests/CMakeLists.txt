@@ -36,5 +36,7 @@ target_link_libraries(geUtilities_Tests
 		ge_build_settings
 )
 
+ge_link_rttr(geUtilities_Tests)
+
 # (Opcional) Para que salga en ctest
 add_test(NAME geUtilities_Tests COMMAND geUtilities_Tests)
