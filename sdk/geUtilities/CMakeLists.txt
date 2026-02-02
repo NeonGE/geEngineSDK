@@ -152,6 +152,7 @@ target_link_libraries(geUtilities
 )
 
 ge_link_rttr(geUtilities)
+ge_copy_rttr_runtime(geUtilities)
 
 if(WIN32)
 target_link_libraries(geUtilities
