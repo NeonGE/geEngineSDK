@@ -5,6 +5,7 @@ add_executable(geUtilities_Tests
   src/core_floats.cpp
   src/core_dependencies.cpp
   src/core_String.cpp
+
   src/math_main.cpp
   src/math_angle.cpp
   src/math_Vector2.cpp
@@ -18,6 +19,9 @@ add_executable(geUtilities_Tests
   src/math_Transform.cpp
   src/math_Bounds.cpp
   src/math_Color.cpp
+
+  src/core_DataStream.cpp
+  src/core_FileSystem.cpp
 )
 
 # Mantener mismo layout de outputs (bin/lib) por platform/config

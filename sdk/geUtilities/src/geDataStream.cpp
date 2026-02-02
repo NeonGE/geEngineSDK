@@ -161,9 +161,9 @@ namespace geEngineSDK {
 
     seek(dataOffset);
 
-    //Read the entire buffer - ideally in one read, but if the size of the
-    //buffer is unknown, do multiple fixed size reads.
-    SIZE_T bufSize = (m_size > 0 ? m_size : 4096);
+    //Read whats left on the buffer, not the full size
+    const SIZE_T remaining = (m_size > dataOffset) ? (m_size - dataOffset) : 0;
+    const SIZE_T bufSize = (remaining > 0 ? remaining : 4096);
     
     //TODO: Change this to use the stack allocator, however right now we
     //haven't initialized the stack yet on the engine
@@ -177,29 +177,46 @@ namespace geEngineSDK {
 
     //TODO: Change this to use the stack allocator, however right now we
     //haven't initialized the stack yet on the engine
-    free(tempBuffer);
+    ge_free(tempBuffer);
 
-    String string = result.str();
+    String raw = result.str();
 
     switch (dataOffset)
     {
       default:
       case 0: //No BOM = assumed UTF-8
       case 3: //UTF-8
-        return String(string.data(), string.length());
+        return String(raw.data(), raw.length());
       case 2: //UTF-16
         {
-          SIZE_T numElems = string.length() / 2;
-          return UTF8::fromUTF16(U16String(reinterpret_cast<char16_t*>(
-                                            const_cast<char*>(string.data())),
-                                           numElems));
+          const SIZE_T byteCount = raw.length();
+          if ((byteCount & 1) != 0) {
+            //non-pair bytes on UTF-16 means the data is invalid
+            GE_LOG(kWarning, Generic, "Invalid UTF-16 byte length");
+            return U8STRING("");
+          }
+
+          const SIZE_T numElems = byteCount / sizeof(char16_t);
+          U16String u16;
+          u16.resize(static_cast<size_t>(numElems));
+          memcpy(u16.data(), raw.data(), static_cast<size_t>(byteCount));
+
+          return UTF8::fromUTF16(u16);
         }
       case 4: //UTF-32
         {
-          SIZE_T numElems = string.length() / 4;
-          return UTF8::fromUTF32(U32String(reinterpret_cast<char32_t*>(
-                                            const_cast<char*>(string.data())),
-                                           numElems));
+          const SIZE_T byteCount = raw.length();
+          if ((byteCount & 3) != 0) {
+            GE_LOG(kWarning, Generic, "Invalid UTF-32 byte length");
+            return U8STRING("");
+          }
+
+          const SIZE_T numElems = byteCount / sizeof(char32_t);
+          U32String u32;
+          u32.resize(static_cast<size_t>(numElems));
+          std::memcpy(u32.data(), raw.data(), static_cast<size_t>(byteCount));
+
+          return UTF8::fromUTF32(u32);
         }
     }
   }
@@ -331,7 +348,9 @@ namespace geEngineSDK {
     if (!copyData) {
       return ge_shared_ptr_new<MemoryDataStream>(m_data, m_size, false);
     }
-    return ge_shared_ptr_new<MemoryDataStream>(*this);
+
+    //Bugfix: Needs to be called like this to avoid slicing
+    return ge_shared_ptr_new<MemoryDataStream>((DataStream&)(*this));
   }
 
   void
@@ -420,7 +439,8 @@ namespace geEngineSDK {
 
   bool
   FileDataStream::isEOF() const {
-    return m_pInStream->eof();
+    //return m_pInStream->eof();
+    return static_cast<SIZE_T>(m_pInStream->tellg()) >= m_size;
   }
 
   SPtr<DataStream>
