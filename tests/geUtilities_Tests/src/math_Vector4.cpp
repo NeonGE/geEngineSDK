@@ -1,4 +1,5 @@
-#include <catch_amalgamated.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 
 #include "geVector4.h"
 
@@ -48,7 +49,7 @@ TEST_CASE("Vector4: arithmetic and dot helpers", "[Math][Vector4]")
 TEST_CASE("Vector4: size and isNearlyZero3", "[Math][Vector4]")
 {
   Vector4 a(3, 4, 0, 123);
-  requireNear(a.size(), std::sqrt(3 * 3 + 4 * 4 + 0 * 0 + 123 * 123), 1e-5f);
+  requireNear(a.size(), std::sqrt(3.f * 3.f + 4.f * 4.f + 0.f * 0.f + 123.f * 123.f), 1e-5f);
 
   Vector4 z(FORCE_INIT::kForceInit);
   REQUIRE(z.isNearlyZero3());

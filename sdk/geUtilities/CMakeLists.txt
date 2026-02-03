@@ -135,6 +135,7 @@ add_library(geUtilities SHARED
 )
 
 ge_set_output_dirs(geUtilities)
+ge_enable_strict_warnings(geUtilities)
 
 #Add the include directories
 target_include_directories(geUtilities

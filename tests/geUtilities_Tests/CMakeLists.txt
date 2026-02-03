@@ -30,18 +30,21 @@ add_executable(geUtilities_Tests
 
 # Mantener mismo layout de outputs (bin/lib) por platform/config
 ge_set_output_dirs(geUtilities_Tests)
+ge_enable_strict_warnings(geUtilities_Tests)
 
 # Link a tu librería bajo prueba
 target_link_libraries(geUtilities_Tests
 	PRIVATE
 		geUtilities
-		ge_catch2
 		ge_json
 		ge_build_settings
 )
+
+target_link_libraries(geUtilities_Tests PRIVATE Catch2::Catch2WithMain)
 
 ge_link_rttr(geUtilities_Tests)
 ge_copy_rttr_runtime(geUtilities_Tests)
 
 # (Opcional) Para que salga en ctest
-add_test(NAME geUtilities_Tests COMMAND geUtilities_Tests)
+#add_test(NAME geUtilities_Tests COMMAND geUtilities_Tests)
+catch_discover_tests(geUtilities_Tests)

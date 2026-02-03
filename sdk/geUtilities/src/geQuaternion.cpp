@@ -128,23 +128,6 @@ namespace geEngineSDK {
     return R * M;
   }
 
-  static float SignedAngleAroundAxisRad(Vector3 a, Vector3 b, Vector3 axis)
-  {
-    a.normalize();
-    b.normalize();
-    axis.normalize();
-
-    const Vector3 c = (a ^ b);
-    const float s = (axis | c);
-    const float d = (a | b);
-    return Math::atan2(s, d).valueRadians();
-  }
-
-  static Vector3 Reject(const Vector3& v, const Vector3& axisUnit)
-  {
-    return v - axisUnit * (v | axisUnit);
-  }
-
   Rotator
   Quaternion::rotator() const {
     Quaternion q = getNormalized();

@@ -1,4 +1,4 @@
-#include <catch_amalgamated.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 #include "geVector2.h"
 #include "geVector3.h" // para ctor Vector2(Vector3)

@@ -1,4 +1,6 @@
-#include <catch_amalgamated.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_get_random_seed.hpp>
+#include <catch2/catch_approx.hpp>
 #include <random>
 
 #include "geQuaternion.h"

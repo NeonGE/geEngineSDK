@@ -27,7 +27,6 @@ endfunction()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(Externals_RTTR)
-include(cmake/Link_RTTR.cmake)
 
 # -----------------------------
 # Build settings shared by all targets
@@ -46,8 +45,9 @@ endif()
 # -----------------------------
 # Subprojects
 # -----------------------------
-include(CTest)     # define BUILD_TESTING option + basic setup
 include(${CMAKE_SOURCE_DIR}/cmake/Externals.cmake)
+include(CTest)     # define BUILD_TESTING option + basic setup
+include(Catch)
 
 add_subdirectory(sdk/geUtilities)
 #add_subdirectory(games/geGame)

@@ -256,7 +256,6 @@ namespace geEngineSDK {
 
     idleThreads.insert(idleThreads.end(), expiredThreads.begin(), expiredThreads.end());
     SIZE_T limit = Math::min(idleThreads.size(), m_defaultCapacity);
-    SIZE_T i = 0;
     m_threads.clear();
 
     for (SIZE_T i = 0; i < idleThreads.size(); ++i) {

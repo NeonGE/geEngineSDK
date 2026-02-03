@@ -1,4 +1,6 @@
-#include <catch_amalgamated.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_get_random_seed.hpp>
+#include <catch2/catch_approx.hpp>
 
 #include <random>
 #include <limits>
@@ -17,12 +19,6 @@ rng() {
   static auto seed = Catch::getSeed();
   static std::mt19937 r(seed);
   return r;
-}
-
-static float
-randFloat(float lo, float hi) {
-  std::uniform_real_distribution<float> dist(lo, hi);
-  return dist(rng());
 }
 
 static int32
