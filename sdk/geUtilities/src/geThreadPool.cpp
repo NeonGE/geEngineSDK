@@ -259,7 +259,8 @@ namespace geEngineSDK {
     SIZE_T i = 0;
     m_threads.clear();
 
-    for (auto& pThread : idleThreads) {
+    for (SIZE_T i = 0; i < idleThreads.size(); ++i) {
+      PooledThread* pThread = idleThreads[i];
       if (i < limit) {
         m_threads.push_back(pThread);
       }
@@ -299,9 +300,13 @@ namespace geEngineSDK {
     }
 
     if (m_threads.size() >= m_maxCapacity) {
+      //This version avoids a crash
+      throw std::runtime_error("ThreadPool exhausted");
+      /*
       GE_EXCEPT(InvalidStateException,
                 "Unable to create a new thread in the pool because "          \
                 "maximum capacity has been reached.");
+      */
     }
 
     PooledThread* newThread = createThread(name);

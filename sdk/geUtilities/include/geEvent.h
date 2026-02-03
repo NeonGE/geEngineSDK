@@ -389,19 +389,20 @@ namespace geEngineSDK {
       //If any new connections were added during the above calls,
       //add them to the connection list
       if (nullptr != internalData->m_newConnections) {
-        BaseConnectionData* lastNewConnection = internalData->m_newConnections;
-        while (nullptr != lastNewConnection) {
-          lastNewConnection = lastNewConnection->m_next;
+        //Find the oldest deferred connection (walk backwards)
+        BaseConnectionData* oldest = internalData->m_newConnections;
+        while (nullptr != oldest->m_prev) {
+          oldest = oldest->m_prev;
         }
 
-        BaseConnectionData* currentConnection = lastNewConnection;
+        BaseConnectionData* currentConnection = oldest;
         while (nullptr != currentConnection) {
-          BaseConnectionData* prevConnection = currentConnection->m_prev;
-          currentConnection->m_next = nullptr;
+          BaseConnectionData* nextCon = currentConnection->m_next;
           currentConnection->m_prev = nullptr;
+          currentConnection->m_next = nullptr;
 
           m_internalData->connect(currentConnection);
-          currentConnection = prevConnection;
+          currentConnection = nextCon;
         }
 
         internalData->m_newConnections = nullptr;

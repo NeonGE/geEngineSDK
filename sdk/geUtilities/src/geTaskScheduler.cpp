@@ -149,6 +149,10 @@ namespace geEngineSDK {
   TaskScheduler::addTask(SPtr<Task> task) {
     Lock lock(m_readyMutex);
 
+    if (task->isCanceled()) {
+      return;
+    }
+
     GE_ASSERT(1 != task->m_state &&
               "Task is already executing, it cannot be executed again until "
               "it finishes.");
