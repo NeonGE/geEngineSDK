@@ -176,8 +176,8 @@ namespace geEngineSDK {
 
   WString
   toWString(const String& source) {
-    auto beg = (String::const_iterator)source.begin();
-    auto end = (String::const_iterator)source.end();
+    String::const_iterator beg = source.begin();
+    String::const_iterator end = source.end();
 
     return WString(beg, end);
   }
@@ -729,45 +729,52 @@ namespace geEngineSDK {
 # define GMTIME(tm, t) (*(tm) = *gmtime(t))
 #endif
 
+  static bool
+  getTimeInfo(std::tm& out, const std::time_t& t, bool utc) {
+#if USING(GE_PLATFORM_WINDOWS)
+    return utc ? (gmtime_s(&out, &t) == 0) : (localtime_s(&out, &t) == 0);
+#else
+    return utc ? (gmtime_r(&t, &out) != nullptr) : (localtime_r(&t, &out) != nullptr);
+#endif
+  }
+
   String
   toString(time_t time,
            bool isUTC,
            bool useISO8601,
            TIME_TO_STRING_CONVERSION_TYPE::E type) {
     char out[100];
-    String formatInput;
-    if (useISO8601) {
-      if (TIME_TO_STRING_CONVERSION_TYPE::kDate == type) {
-        formatInput = "%F";
-      }
-      else if (TIME_TO_STRING_CONVERSION_TYPE::kTime == type) {
-        formatInput = "%T";
-      }
-      else {
-        formatInput = isUTC ? "%FT%TZ" : "%FT%T";
-      }
+
+    std::tm timeinfo{};
+    if (!getTimeInfo(timeinfo, time, isUTC)) {
+      return String("<invalid time>");
     }
-    else {
-      if (TIME_TO_STRING_CONVERSION_TYPE::kDate == type) {
-        formatInput = "%A, %B %d, %Y";
+
+    size_t written = 0;
+
+    if (useISO8601) {
+      if (type == TIME_TO_STRING_CONVERSION_TYPE::kDate) {
+        written = std::strftime(out, sizeof(out), "%F", &timeinfo);
       }
       else if (type == TIME_TO_STRING_CONVERSION_TYPE::kTime) {
-        formatInput = "%T";
+        written = std::strftime(out, sizeof(out), "%T", &timeinfo);
       }
       else {
-        formatInput = "%A, %B %d, %Y %T";
+        written = std::strftime(out, sizeof(out), isUTC ? "%FT%TZ" : "%FT%T", &timeinfo);
+      }
+    }
+    else {
+      if (type == TIME_TO_STRING_CONVERSION_TYPE::kDate) {
+        written = std::strftime(out, sizeof(out), "%A, %B %d, %Y", &timeinfo);
+      }
+      else if (type == TIME_TO_STRING_CONVERSION_TYPE::kTime) {
+        written = std::strftime(out, sizeof(out), "%T", &timeinfo);
+      }
+      else {
+        written = std::strftime(out, sizeof(out), "%A, %B %d, %Y %T", &timeinfo);
       }
     }
 
-    tm timeinfo;
-    if (isUTC) {
-      GMTIME(&timeinfo, &time);
-    }
-    else {
-      LOCALTIME(&timeinfo, &time);
-    }
-
-    const SIZE_T written = strftime(out, sizeof(out), formatInput.c_str(), &timeinfo);
     if (written == 0) {
       return String("<invalid time>");
     }

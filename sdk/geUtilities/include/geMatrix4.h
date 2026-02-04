@@ -1290,7 +1290,7 @@ namespace geEngineSDK {
     Vector3 Scale3D(1, 1, 1);
 
     //For each row, find magnitude, and if its non-zero re-scale so its unit length.
-    for (int32 i = 0; i<3; ++i) {
+    for (uint32 i = 0; i<3; ++i) {
       const float SquareSum = (m[i][0] * m[i][0]) + (m[i][1] * m[i][1]) + (m[i][2] * m[i][2]);
       if (SquareSum > Tolerance) {
         Scale3D[i] = Math::sqrt(SquareSum);
@@ -2393,12 +2393,12 @@ namespace std {
   {
     size_t
     operator()(const geEngineSDK::Matrix4& matrix) const {
-      size_t hash = 0;
+      size_t hashVal = 0;
 
       for (float i : matrix._m) {
-        geEngineSDK::ge_hash_combine(hash, i);
+        geEngineSDK::ge_hash_combine(hashVal, i);
       }
-      return hash;
+      return hashVal;
     }
   };
 }

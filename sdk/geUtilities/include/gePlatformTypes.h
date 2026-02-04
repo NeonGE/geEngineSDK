@@ -24,10 +24,12 @@
 # include <scebase.h>
 #endif
 
+
 #if USING(GE_CPP20_OR_LATER)
 # include <bit>
 #else
 # include <cstring>
+# include <type_traits>
 #endif
 
 #include "gePlatformDefines.h"
@@ -80,7 +82,7 @@ namespace geEngineSDK {
 #else
   template <class To, class From>
   GE_NODISCARD inline To
-    bit_cast(const From& src) noexcept {
+  bit_cast(const From& src) _NOEXCEPT {
     static_assert(sizeof(To) == sizeof(From),
       "bit_cast requires source and destination to be the same size");
 

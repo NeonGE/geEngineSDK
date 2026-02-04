@@ -130,9 +130,15 @@ namespace geEngineSDK {
 
     __cpuid(CPUInfo, 0);
     output.cpuManufacturer = String(12, ' ');
-    memcpy(cast::re<char*>(output.cpuManufacturer.data()) + 0, &CPUInfo[1], 4);
-    memcpy(cast::re<char*>(output.cpuManufacturer.data()) + 4, &CPUInfo[3], 4);
-    memcpy(cast::re<char*>(output.cpuManufacturer.data()) + 8, &CPUInfo[2], 4);
+
+#if USING(GE_CPP17_OR_LATER)
+    auto pCPUManuf = output.cpuManufacturer.data();
+#else
+    auto pCPUManuf = &output.cpuManufacturer[0];
+#endif
+    memcpy(cast::re<char*>(pCPUManuf) + 0, &CPUInfo[1], 4);
+    memcpy(cast::re<char*>(pCPUManuf) + 4, &CPUInfo[3], 4);
+    memcpy(cast::re<char*>(pCPUManuf) + 8, &CPUInfo[2], 4);
 
     String brandString;
     brandString.resize(48);

@@ -54,9 +54,12 @@ namespace geEngineSDK {
      * @brief Helper method for implementing variable-parameter Math::min.
      */
     template<typename A, typename B>
-    std::common_type_t<A, B>
+    CONSTEXPR std::common_type_t<A, B>
     min(const A& a, const B& b) {
-      return a < b ? a : b;
+      using Imp = std::common_type_t<A, B>;
+      const Imp iA = static_cast<Imp>(a);
+      const Imp iB = static_cast<Imp>(b);
+      return (iA < iB) ? iA : iB;
     }
 
     /**
@@ -80,9 +83,12 @@ namespace geEngineSDK {
 
     /** Helper method for implementing variable-parameter Math::max. */
     template<typename A, typename B>
-    std::common_type_t<A, B>
+    CONSTEXPR std::common_type_t<A, B>
     max(const A& a, const B& b) {
-      return a > b ? a : b;
+      using Imp = std::common_type_t<A, B>;
+      const Imp iA = static_cast<Imp>(a);
+      const Imp iB = static_cast<Imp>(b);
+      return (iA > iB) ? iA : iB;
     }
 
     /** Helper method for implementing variable-parameter Math::max. */

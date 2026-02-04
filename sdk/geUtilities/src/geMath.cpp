@@ -25,16 +25,16 @@
 
 namespace geEngineSDK {
   /*!< PI constant */
-  const float Math::PI = static_cast<float>(4.0f * std::atan(1.0f));
+  const float Math::PI = 4.0f * std::atan(1.0f);
 
   /*!< Inverse of PI */
-  const float Math::INV_PI = static_cast<float>(1.0f / PI);
+  const float Math::INV_PI = 1.0f / PI;
   
   /*!< Half PI  */
-  const float Math::HALF_PI = static_cast<float>(0.5f * PI);
+  const float Math::HALF_PI = 0.5f * PI;
   
   /*!< 2 Times PI */
-  const float Math::TWO_PI = static_cast<float>(2.0f * PI);	
+  const float Math::TWO_PI = 2.0f * PI;	
 
   /*!< Euler number or Napier constant (1+1/N)^N */
   const float Math::EULERS_NUMBER = (2.71828182845904523536f);
@@ -43,9 +43,9 @@ namespace geEngineSDK {
   const float Math::KINDA_SMALL_NUMBER  = (1.e-4f);
   const float Math::BIG_NUMBER          = (3.4e+38f);
 
-  const float Math::DEG2RAD = static_cast<float>(PI / 180.0f);
-  const float Math::RAD2DEG = static_cast<float>(180.0f / PI);
-  const float Math::LOG2 = static_cast<float>(std::log(2.0f));
+  const float Math::DEG2RAD = PI / 180.0f;
+  const float Math::RAD2DEG = 180.0f / PI;
+  const float Math::LOG2 = std::log(2.0f);
 
   const float  Math::DELTA = (0.00001f);
 
@@ -116,41 +116,42 @@ namespace geEngineSDK {
 #if USING(GE_PLATFORM_WINDOWS)
   uint32
   Math::countLeadingZeros(uint32 Value) {
-    //Use BSR to return the log2 of the integer
-    unsigned long Log2;
-    if (_BitScanReverse(&Log2, Value) != 0) {
-      return static_cast<uint32>(31 - Log2);
+    if (Value == 0u) {
+      return 32u;
     }
-    return 32;
+
+    unsigned long Log2 = 0;
+    _BitScanReverse(&Log2, Value);
+    return 31u - static_cast<uint32>(Log2);
   }
 #else
   uint32
   Math::countLeadingZeros(uint32 Value) {
-    if (0 == Value) {
-      return 32;
+    if (Value == 0u) {
+      return 32u;
     }
-    return __builtin_clz(Value);
+    return static_cast<uint32>(__builtin_clz(Value));
   }
 #endif
 
 #if USING(GE_PLATFORM_WINDOWS)
   uint32
   Math::countTrailingZeros(uint32 Value) {
-    if (0 == Value ) {
-      return 32;
+    if (Value == 0u) {
+      return 32u;
     }
 
-    unsigned long BitIndex; //0-based, where the LSB is 0 and MSB is 31
-    _BitScanForward(&BitIndex, Value);  //Scans from LSB to MSB
-    return BitIndex;
+    unsigned long BitIndex = 0;
+    _BitScanForward(&BitIndex, Value);
+    return static_cast<uint32>(BitIndex);
   }
 #else
   uint32
   Math::countTrailingZeros(uint32 Value) {
-    if (0 == Value) {
-      return 32;
+    if (Value == 0u) {
+      return 32u;
     }
-    return __builtin_ctz(Value);
+    return static_cast<uint32>(__builtin_ctz(Value));
   }
 #endif
 

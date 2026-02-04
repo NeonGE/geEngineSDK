@@ -12,11 +12,6 @@
 using namespace geEngineSDK;
 using Catch::Approx;
 
-static float
-dot(const Vector3& a, const Vector3& b) {
-  return (a | b);
-}
-
 static bool
 near(float a, float b, float eps) {
   return std::fabs(a - b) <= eps;
