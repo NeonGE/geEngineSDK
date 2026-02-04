@@ -128,12 +128,12 @@ namespace std {
   {
     size_t
     operator()(const geEngineSDK::UUID& value) const {
-      size_t hash = 0;
-      geEngineSDK::ge_hash_combine(hash, value.m_data[0]);
-      geEngineSDK::ge_hash_combine(hash, value.m_data[1]);
-      geEngineSDK::ge_hash_combine(hash, value.m_data[2]);
-      geEngineSDK::ge_hash_combine(hash, value.m_data[3]);
-      return hash;
+      size_t hashVal = 0;
+      geEngineSDK::ge_hash_combine(hashVal, value.m_data[0]);
+      geEngineSDK::ge_hash_combine(hashVal, value.m_data[1]);
+      geEngineSDK::ge_hash_combine(hashVal, value.m_data[2]);
+      geEngineSDK::ge_hash_combine(hashVal, value.m_data[3]);
+      return hashVal;
     }
   };
 }

@@ -182,7 +182,7 @@ namespace geEngineSDK {
      */
     Vector2
     getCenter() const {
-      return Vector2((m_min + m_max) * 0.5f);
+      return (m_min + m_max) * 0.5f;
     }
 
     /**

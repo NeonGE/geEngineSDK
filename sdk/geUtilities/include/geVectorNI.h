@@ -25,7 +25,7 @@ namespace geEngineSDK {
   /**
    * @brief A N dimensional vector with integer coordinates.
    */
-  template<int N>
+  template<SIZE_T N>
   class VectorNI
   {
    public:

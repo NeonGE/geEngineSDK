@@ -85,31 +85,31 @@ namespace geEngineSDK {
   }
 
   void
-  DataStream::writeString(const String& string, STRING_ENCODING::E encoding) {
+  DataStream::writeString(const String& str, STRING_ENCODING::E encoding) {
     if (STRING_ENCODING::kUTF16 == encoding) {
       //Write BOM
       uint8 bom[2] = { 0xFF, 0xFE };
       write(bom, sizeof(bom));
 
-      U16String u16string = UTF8::toUTF16(string);
+      U16String u16string = UTF8::toUTF16(str);
       write(u16string.data(), u16string.length() * sizeof(char16_t));
     }
     else {
       // Write BOM
       uint8 bom[3] = { 0xEF, 0xBB, 0xBF };
       write(bom, sizeof(bom));
-      write(string.data(), string.length());
+      write(str.data(), str.length());
     }
   }
 
   void
-  DataStream::writeString(const WString& string, STRING_ENCODING::E encoding) {
+  DataStream::writeString(const WString& str, STRING_ENCODING::E encoding) {
     if (STRING_ENCODING::kUTF16 == encoding) {
       //Write BOM
       uint8 bom[2] = { 0xFF, 0xFE };
       write(bom, sizeof(bom));
 
-      String u8string = UTF8::fromWide(string);
+      String u8string = UTF8::fromWide(str);
       U16String u16string = UTF8::toUTF16(u8string);
       write(u16string.data(), u16string.length() * sizeof(char16_t));
     }
@@ -118,7 +118,7 @@ namespace geEngineSDK {
       uint8 bom[3] = { 0xEF, 0xBB, 0xBF };
       write(bom, sizeof(bom));
 
-      String u8string = UTF8::fromWide(string);
+      String u8string = UTF8::fromWide(str);
       write(u8string.data(), u8string.length());
     }
   }
@@ -199,7 +199,12 @@ namespace geEngineSDK {
           const SIZE_T numElems = byteCount / sizeof(char16_t);
           U16String u16;
           u16.resize(static_cast<size_t>(numElems));
-          memcpy(u16.data(), raw.data(), static_cast<size_t>(byteCount));
+#if USING(GE_CPP17_OR_LATER)
+          auto u16Data = u16.data();
+#else
+          auto u16Data = &u16[0];
+#endif
+          memcpy(u16Data, raw.data(), static_cast<size_t>(byteCount));
 
           return UTF8::fromUTF16(u16);
         }
@@ -214,7 +219,12 @@ namespace geEngineSDK {
           const SIZE_T numElems = byteCount / sizeof(char32_t);
           U32String u32;
           u32.resize(static_cast<size_t>(numElems));
-          std::memcpy(u32.data(), raw.data(), static_cast<size_t>(byteCount));
+#if USING(GE_CPP17_OR_LATER)
+          auto u32Data = u32.data();
+#else
+          auto u32Data = &u32[0];
+#endif
+          std::memcpy(u32Data, raw.data(), static_cast<size_t>(byteCount));
 
           return UTF8::fromUTF32(u32);
         }
@@ -322,7 +332,7 @@ namespace geEngineSDK {
 
   void
   MemoryDataStream::skip(SIZE_T count) {
-    SIZE_T newpos = static_cast<SIZE_T>((m_pos - m_data) + count);
+    SIZE_T newpos = (m_pos - m_data) + count;
     GE_ASSERT(m_data + newpos <= m_end);
     m_pos = m_data + newpos;
   }

@@ -106,7 +106,7 @@ namespace geEngineSDK {
       }
 
       // Round and pack (11 bits: 5 exponent + 6 mantissa)
-      m_encoded = static_cast<uint32>(((val + 0xFFFFu + ((val >> 17) & 1u)) >> 17) & 2047u);
+      m_encoded = ((val + 0xFFFFu + ((val >> 17) & 1u)) >> 17) & 2047u;
     }
 
     /**

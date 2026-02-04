@@ -24,6 +24,12 @@
 # include <scebase.h>
 #endif
 
+#if USING(GE_CPP20_OR_LATER)
+# include <bit>
+#else
+# include <cstring>
+#endif
+
 #include "gePlatformDefines.h"
 
 namespace geEngineSDK {
@@ -94,7 +100,13 @@ namespace geEngineSDK {
      */
     operator int64
     () const {
-      return static_cast<uint64>(m_lower);
+#if USING(GE_CPP20_OR_LATER)
+      return std::bit_cast<int64>(m_lower);
+#else
+      int64 value;
+      std::memcpy(&value, &m_lower, sizeof(value));
+      return value;
+#endif
     }
 
    public:

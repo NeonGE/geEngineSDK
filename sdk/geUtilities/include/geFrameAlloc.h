@@ -18,8 +18,6 @@
  * Includes
  */
 /*****************************************************************************/
-#include <new>
-
 #include "gePlatformDefines.h"
 #include "gePlatformTypes.h"
 #include "geNumericLimits.h"
@@ -397,7 +395,7 @@ namespace geEngineSDK {
     T* data = ge_frame_alloc<T>(count);
 
     for (SIZE_T i = 0; i < count; ++i) {
-      new ((void*)&data[i]) T;
+      new (static_cast<void*>(&data[i])) T;
     }
     return data;
   }
@@ -412,7 +410,7 @@ namespace geEngineSDK {
     T* data = ge_frame_alloc<T>(count);
 
     for (SIZE_T i = 0; i < count; ++i) {
-      new ((void*)&data[i]) T(forward<Args>(args)...);
+      new (static_cast<void*>(&data[i])) T(forward<Args>(args)...);
     }
     return data;
   }
@@ -525,7 +523,7 @@ namespace geEngineSDK {
      */
     static void*
     allocateAligned(size_t bytes, size_t alignment) {
-#if GE_PROFILING_ENABLED
+#if defined(GE_PROFILING_ENABLED) && GE_PROFILING_ENABLED
       incAllocCount();
 #endif
       return ge_frame_alloc_aligned(bytes, alignment);
@@ -536,7 +534,7 @@ namespace geEngineSDK {
      */
     static void*
     allocateAligned16(size_t bytes) {
-#if GE_PROFILING_ENABLED
+#if defined(GE_PROFILING_ENABLED) && GE_PROFILING_ENABLED
       incAllocCount();
 #endif
       return ge_frame_alloc_aligned(bytes, 16);
@@ -555,7 +553,7 @@ namespace geEngineSDK {
      */
     static void
     freeAligned(void* ptr) {
-#if GE_PROFILING_ENABLED
+#if defined(GE_PROFILING_ENABLED) && GE_PROFILING_ENABLED
       incFreeCount();
 #endif
       ge_frame_free_aligned(ptr);
@@ -566,7 +564,7 @@ namespace geEngineSDK {
      */
     static void
     freeAligned16(void* ptr) {
-#if GE_PROFILING_ENABLED
+#if defined(GE_PROFILING_ENABLED) && GE_PROFILING_ENABLED
       incFreeCount();
 #endif
       ge_frame_free_aligned(ptr);

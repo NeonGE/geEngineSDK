@@ -88,8 +88,9 @@ TEST_CASE("Transform multiply matches matrices", "[Math][Transform]") {
   Matrix4 Bm = B.toMatrixWithScale();
   Matrix4 Cm = C.toMatrixWithScale();
 
-  // dependiendo de tu operador de Matrix4, aquí puede ser Am*Bm o Bm*Am
-  // Lo importante: ajusta UNA vez y ya.
+  GE_UNREFERENCED_PARAMETER(Am);
+  GE_UNREFERENCED_PARAMETER(Bm);
+  GE_UNREFERENCED_PARAMETER(Cm);
 }
 
 TEST_CASE("Transform: rotation only matches quaternion rotateVector", "[Math][Transform]")

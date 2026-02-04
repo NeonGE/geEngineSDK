@@ -40,7 +40,7 @@ namespace geEngineSDK {
    * @tparam  DynamicAllocator  Allocator to fall-back to when static buffer is
    *                            full.
    */
-  template<int BlockSize = 512, class DynamicAllocator = TFrameAlloc<BlockSize>>
+  template<SIZE_T BlockSize = 512, class DynamicAllocator = TFrameAlloc<BlockSize>>
   class StaticAlloc
   {
    private:
@@ -193,7 +193,7 @@ namespace geEngineSDK {
       T* data = reinterpret_cast<T*>(alloc(sizeof(T) * count));
 
       for (SIZE_T i = 0; i < count; ++i) {
-        new ((void*)(&data[i])) T;
+        new (static_cast<void*>(&data[i])) T;
       }
 
       return data;
@@ -209,7 +209,7 @@ namespace geEngineSDK {
       T* data = reinterpret_cast<T*>(alloc(sizeof(T) * count));
 
       for (SIZE_T i = 0; i < count; ++i) {
-        new ((void*)(&data[i])) T(forward<Args>(args)...);
+        new (static_cast<void*>(&data[i])) T(forward<Args>(args)...);
       }
 
       return data;
@@ -261,7 +261,7 @@ namespace geEngineSDK {
    * @brief Allocator for the standard library that internally uses a static
    *        allocator.
    */
-  template<int32 BlockSize, class T>
+  template<SIZE_T BlockSize, class T>
   class StdStaticAlloc
   {
    public:
@@ -343,7 +343,7 @@ namespace geEngineSDK {
       new(p) U(forward<Args>(args)...);
     }
 
-    template<class T1, int32 N1, class T2, int32 N2>
+    template<class T1, SIZE_T N1, class T2, SIZE_T N2>
     friend bool
     operator==(const StdStaticAlloc<N1, T1>& a,
                const StdStaticAlloc<N2, T2>& b) throw();
@@ -354,7 +354,7 @@ namespace geEngineSDK {
    * @brief Return that all specializations of this allocator are
    *        interchangeable.
    */
-  template<class T1, int N1, class T2, int N2>
+  template<class T1, SIZE_T N1, class T2, SIZE_T N2>
   bool
   operator==(const StdStaticAlloc<N1, T1>& a,
              const StdStaticAlloc<N2, T2>& b) throw() {
@@ -365,7 +365,7 @@ namespace geEngineSDK {
    * @brief Return that all specializations of this allocator are
    *        interchangeable.
    */
-  template<class T1, int N1, class T2, int N2>
+  template<class T1, SIZE_T N1, class T2, SIZE_T N2>
   bool
   operator!=(const StdStaticAlloc<N1, T1>& a,
              const StdStaticAlloc<N2, T2>& b) throw() {
@@ -377,6 +377,6 @@ namespace geEngineSDK {
    *        until the number of elements exceeds @p Count.
    * Requires allocator to be explicitly provided.
    */
-  template<typename T, int32 Count>
+  template<typename T, SIZE_T Count>
   using StaticVector = vector<T, StdStaticAlloc<sizeof(T) * Count, T>>;
 }

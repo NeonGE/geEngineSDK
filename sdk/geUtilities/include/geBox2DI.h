@@ -184,7 +184,7 @@ namespace geEngineSDK {
      */
     Vector2I
     getCenter() const {
-      return Vector2I((m_min + m_max) / 2);
+      return (m_min + m_max) / 2;
     }
 
     /**

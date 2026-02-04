@@ -104,7 +104,7 @@ namespace geEngineSDK {
         val = fp32Bits + 0xC8000000u;
       }
 
-      m_encoded = static_cast<uint32>(((val + 0x1FFFFu + ((val >> 18) & 1u)) >> 18) & 1023u);
+      m_encoded = ((val + 0x1FFFFu + ((val >> 18) & 1u)) >> 18) & 1023u;
     }
 
     /**

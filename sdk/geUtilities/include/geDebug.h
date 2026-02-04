@@ -167,12 +167,12 @@ bool LogCategory##name::s_registered = Log::_registerCategory(LogCategory##name:
 #define GE_LOG(verbosity, category, message, ...)                             \
   do {                                                                        \
   using namespace ::geEngineSDK;                                              \
-  IF_CONSTEXPR ((int32)LogVerbosity::verbosity <= (int32)GE_LOG_VERBOSITY) {  \
+  IF_CONSTEXPR (int32(LogVerbosity::verbosity) <= int32(GE_LOG_VERBOSITY)) {  \
     g_debug().log(StringUtil::format(message, ##__VA_ARGS__) +                \
                           String("\n\t\t in ") +                              \
                           __PRETTY_FUNCTION__ +                               \
                           " [" + __FILE__ + ":" +                             \
-                          toString(static_cast<int32>(__LINE__)) + "]\n",     \
+                          toString(__LINE__) + "]\n",                         \
                   LogVerbosity::verbosity, LogCategory##category::_id);       \
   }} while (0)
 

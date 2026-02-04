@@ -16,7 +16,7 @@ TEST_CASE("Vector2Half: conversion roundtrip", "[Math][Vector2Half]") {
   //ctor from Vector2
   Vector2Half h(v);
 
-  Vector2 back = (Vector2)h;
+  Vector2 back = static_cast<Vector2>(h);
   requireNear(back.x, v.x);
   requireNear(back.y, v.y);
 }

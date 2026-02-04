@@ -1112,13 +1112,13 @@ namespace std {
   template<>
   struct hash<geEngineSDK::String>
   {
-    size_t operator()(const geEngineSDK::String& string) const {
-      size_t hash = 0;
-      for (char i : string) {
-        hash = 65599 * hash + i;
+    size_t operator()(const geEngineSDK::String& str) const {
+      size_t hashVal = 0;
+      for (auto i : str) {
+        hashVal = 65599u * hashVal + static_cast<size_t>(i);
       }
 
-      return hash ^ (hash >> 16);
+      return hashVal ^ (hashVal >> 16);
     }
   };
 
@@ -1128,12 +1128,12 @@ namespace std {
   template<>
   struct hash<geEngineSDK::WString>
   {
-    size_t operator()(const geEngineSDK::WString& string) const {
-      size_t hash = 0;
-      for (unsigned short i : string) {
-        hash = 65599 * hash + i;
+    size_t operator()(const geEngineSDK::WString& str) const {
+      size_t hashVal = 0;
+      for (auto i : str) {
+        hashVal = 65599u * hashVal + static_cast<size_t>(i);
       }
-      return hash ^ (hash >> 16);
+      return hashVal ^ (hashVal >> 16);
     }
   };
 }

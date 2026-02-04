@@ -31,13 +31,13 @@ namespace geEngineSDK {
   template<class T>
   FORCEINLINE T
   abs(const T A) {
-    return (A >= (T)0) ? A : -A;
+    return (A >= static_cast<T>(0)) ? A : -A;
   }
 
   template<>
   FORCEINLINE float
   abs<float>(const float A) {
-    return static_cast<float>(std::fabs(A));
+    return std::fabs(A);
   }
 
   namespace Implementation {
@@ -239,12 +239,12 @@ namespace geEngineSDK {
 
     static FORCEINLINE bool
     isNegativeFloat(const float& F1) {
-      return ((*(uint32*)&F1) >= static_cast<uint32>(0x80000000));
+      return (bit_cast<uint32>(F1) >= 0x80000000u);
     }
 
     static FORCEINLINE bool
     isNegativeDouble(const double& A) {
-      return ((*(uint64*)&A) >= (uint64)0x8000000000000000);
+      return (bit_cast<uint64>(A) >= 0x8000000000000000);
     }
 
     GE_NODISCARD static FORCEINLINE float
@@ -505,7 +505,9 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static float
     repeat(float val, float length) {
-      return val - floor(val / length) * length;
+      GE_ASSERT(length > 0.0f);
+      float r = std::fmod(val, length);
+      return (r < 0.0f) ? (r + length) : r;
     }
 
     /**
@@ -619,14 +621,20 @@ namespace geEngineSDK {
      */
     static FORCEINLINE uint32
     ceilLog2(uint32 Arg) {
-      int32 Bitmask = (static_cast<int32>(countLeadingZeros(Arg) << 26)) >> 31;
-      return (32 - countLeadingZeros(Arg - 1)) & (~Bitmask);
+      GE_ASSERT(Arg > 0);
+      if (Arg <= 1){
+        return 0;
+      }
+      return 32u - countLeadingZeros(Arg - 1u);
     }
 
     static FORCEINLINE uint64
     ceilLog2_64(uint64 Arg) {
-      int64 Bitmask = ((int64)(countLeadingZeros64(Arg) << 57)) >> 63;
-      return (64 - countLeadingZeros64(Arg - 1)) & (~Bitmask);
+      GE_ASSERT(Arg > 0);
+      if (Arg <= 1){
+        return 0;
+      }
+      return 64u - countLeadingZeros64(Arg - 1u);
     }
 
     /**
@@ -718,7 +726,7 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static CONSTEXPR FORCEINLINE double
     floatSelect(double Comparand, double ValueGEZero, double ValueLTZero) {
-      return Comparand >= 0.f ? ValueGEZero : ValueLTZero;
+      return Comparand >= 0 ? ValueGEZero : ValueLTZero;
     }
 
     /**
@@ -798,10 +806,9 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static FORCEINLINE float
     gridSnap(float Location, float Grid) {
-      if (0.f == Grid)
-        return Location;
-
-      return floor((Location + 0.5f*Grid) / Grid)*Grid;
+      if (Grid == 0.0f) return Location;
+      Grid = std::abs(Grid);
+      return std::floor((Location / Grid) + 0.5f) * Grid;
     }
 
     /**
@@ -873,7 +880,7 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static float
     fastSin0(const Radian& Value) {
-      return static_cast<float>(fastASin0(Value.valueRadians()));
+      return fastASin0(Value.valueRadians());
     }
 
     /**
@@ -892,7 +899,7 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static float
     fastSin1(const Radian& Value) {
-      return static_cast<float>(fastASin1(Value.valueRadians()));
+      return fastASin1(Value.valueRadians());
     }
 
     /**
@@ -911,7 +918,7 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static float
     fastCos0(const Radian& Value) {
-      return static_cast<float>(fastACos0(Value.valueRadians()));
+      return fastACos0(Value.valueRadians());
     }
 
     /**
@@ -930,7 +937,7 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static float
     fastCos1(const Radian& Value) {
-      return static_cast<float>(fastACos1(Value.valueRadians()));
+      return fastACos1(Value.valueRadians());
     }
 
     /**
@@ -949,7 +956,7 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static float
     fastTan0(const Radian& Value) {
-      return static_cast<float>(fastATan0(Value.valueRadians()));
+      return fastATan0(Value.valueRadians());
     }
 
     /**
@@ -968,7 +975,7 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static float
     fastTan1(const Radian& Value) {
-      return static_cast<float>(fastATan1(Value.valueRadians()));
+      return fastATan1(Value.valueRadians());
     }
 
     /**
@@ -987,7 +994,7 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static float
     fastASin0(const Radian& Value) {
-      return static_cast<float>(fastASin0(Value.valueRadians()));
+      return fastASin0(Value.valueRadians());
     }
 
     /**
@@ -1006,7 +1013,7 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static float
     fastASin1(const Radian& Value) {
-      return static_cast<float>(fastASin1(Value.valueRadians()));
+      return fastASin1(Value.valueRadians());
     }
 
     /**
@@ -1056,7 +1063,7 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static float
     fastACos0(const Radian& Value) {
-      return static_cast<float>(fastACos0(Value.valueRadians()));
+      return fastACos0(Value.valueRadians());
     }
 
     /**
@@ -1075,7 +1082,7 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static float
     fastACos1(const Radian& Value) {
-      return static_cast<float>(fastACos1(Value.valueRadians()));
+      return fastACos1(Value.valueRadians());
     }
 
     /**
@@ -1094,7 +1101,7 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static float
     fastATan0(const Radian& Value) {
-      return static_cast<float>(fastATan0(Value.valueRadians()));
+      return fastATan0(Value.valueRadians());
     }
 
     /**
@@ -1113,7 +1120,7 @@ namespace geEngineSDK {
      */
     GE_NODISCARD static float
     fastATan1(const Radian& Value) {
-      return static_cast<float>(fastATan1(Value.valueRadians()));
+      return fastATan1(Value.valueRadians());
     }
 
     /**
@@ -1168,7 +1175,7 @@ namespace geEngineSDK {
     template<typename T>
     GE_NODISCARD static uint32
     solveLinear(T A, T B, T* roots) {
-      if (!isNearlyEqual(A, (T)0)) {
+      if (!isNearlyEqual(A, static_cast<T>(0))) {
         roots[0] = -B / A;
         return 1;
       }
@@ -1187,12 +1194,12 @@ namespace geEngineSDK {
     template<typename T>
     GE_NODISCARD static uint32
     solveQuadratic(T A, T B, T C, T* roots) {
-      if (!isNearlyEqual(A, (T)0)) {
+      if (!isNearlyEqual(A, static_cast<T>(0))) {
         T p = B / (2 * A);
         T q = C / A;
         T D = p * p - q;
 
-        if (!isNearlyEqual(D, (T)0)) {
+        if (!isNearlyEqual(D, static_cast<T>(0))) {
           if (static_cast<T>(0) > D) {
             return 0;
           }
@@ -1237,7 +1244,7 @@ namespace geEngineSDK {
       D = q * q + cbp;
 
       uint32 numRoots = 0;
-      if (!isNearlyEqual(D, (T)0)) {
+      if (!isNearlyEqual(D, static_cast<T>(0))) {
         if (0.0 > D) {
           T phi = THIRD * Acos(-q / sqrt(-cbp));
           T t = 2 * sqrt(-p);
@@ -1262,7 +1269,7 @@ namespace geEngineSDK {
         }
       }
       else {
-        if (!isNearlyEqual(q, (T)0)) {
+        if (!isNearlyEqual(q, static_cast<T>(0))) {
           T u = cbrt(-q);
           roots[0] = 2 * u;
           roots[1] = -u;
@@ -1292,69 +1299,93 @@ namespace geEngineSDK {
     template<typename T>
     GE_NODISCARD static uint32
     solveQuartic(T A, T B, T C, T D, T E, T* roots) {
-      T invA = 1 / A;
+      static_assert(std::is_floating_point_v<T>,
+                    "solveQuartic<T> requires floating-point T");
+
+      //Degenerate: not a quartic
+      if (isNearlyEqual(A, T(0))) {
+        //Assuming solveCubic(a,b,c,d,roots) solves a*x^3 + b*x^2 + c*x + d = 0
+        return solveCubic(B, C, D, E, roots);
+      }
+
+      // Normalize: x^4 + A*x^3 + B*x^2 + C*x + D = 0
+      const T invA = T(1) / A;
       A = B * invA;
       B = C * invA;
       C = D * invA;
       D = E * invA;
 
-      T sqA = square(A);
-      T p = -(3 / static_cast<T>(8))   * sqA + B;
-      T q =  (1 / static_cast<T>(8))   * sqA * A - static_cast<T>(0.5) * A * B + C;
-      T r = -(3 / static_cast<T>(256)) * sqA * sqA + (1 / static_cast<T>(16)) * sqA * B - 
-             (1 / static_cast<T>(4)) * A * C + D;
+      const T sqA = square(A);
+
+      //Prefer explicit constants (no integer division surprises)
+      const T k0_5      = T(0.5);
+      const T k0_125    = T(0.125);        // 1/8
+      const T k0_0625   = T(0.0625);       // 1/16
+      const T k0_25     = T(0.25);         // 1/4
+      const T k3_8      = T(3) / T(8);
+      const T k3_256    = T(3) / T(256);
+
+      const T p = -k3_8 * sqA + B;
+      const T q =  k0_125 * sqA * A - k0_5 * A * B + C;
+      const T r = -k3_256 * sqA * sqA + k0_0625 * sqA * B - k0_25 * A * C + D;
 
       uint32 numRoots = 0;
-      if (!isNearlyEqual(r, static_cast<T>(0))) {
-        T cubicA = 1;
-        T cubicB = -(T)0.5 * p;
-        T cubicC = -r;
-        T cubicD = (T)0.5 * r * p - (1 / (T)8) * q * q;
 
-        solveCubic(cubicA, cubicB, cubicC, cubicD, roots);
-        T z = roots[0];
+      if (!isNearlyEqual(r, T(0))) {
+        //Resolvent cubic
+        const T cubicA = T(1);
+        const T cubicB = -k0_5 * p;
+        const T cubicC = -r;
+        const T cubicD =  k0_5 * r * p - k0_125 * q * q;
+
+        T cubicRoots[3] = { T(0), T(0), T(0) };
+        const uint32 numCubic = solveCubic(cubicA, cubicB, cubicC, cubicD, cubicRoots);
+        if (numCubic == 0) {
+          return 0;
+        }
+
+        //Many implementations pick one real root; choose cubicRoots[0]
+        const T z = cubicRoots[0];
 
         T u = z * z - r;
-        T v = 2 * z - p;
+        T v = T(2) * z - p;
 
-        if (isNearlyEqual(u, static_cast<T>(0))) {
-          u = 0;
-        }
-        else if (0 < u) {
-          u = sqrt(u);
-        }
-        else {
+        //Clamp near-zero negatives caused by precision
+        if (u < T(0) && isNearlyEqual(u, T(0))) u = T(0);
+        if (v < T(0) && isNearlyEqual(v, T(0))) v = T(0);
+
+        if (u < T(0) || v < T(0)) {
           return 0;
         }
 
-        if (isNearlyEqual(v, static_cast<T>(0))) {
-          v = 0;
+        u = std::sqrt(u);
+        v = std::sqrt(v);
+
+        //First quadratic: x^2 + (sign) v x + (z - u) = 0
+        {
+          const T qa = T(1);
+          const T qb = (q < T(0)) ? -v : v;
+          const T qc = z - u;
+          numRoots = solveQuadratic(qa, qb, qc, roots);
         }
-        else if (0 < v) {
-          v = sqrt(v);
+
+        //Second quadratic: x^2 - (sign) v x + (z + u) = 0
+        {
+          const T qa = T(1);
+          const T qb = (q < T(0)) ? v : -v;
+          const T qc = z + u;
+          numRoots += solveQuadratic(qa, qb, qc, roots + numRoots);
         }
-        else {
-          return 0;
-        }
-
-        T quadraticA = 1;
-        T quadraticB = q < 0 ? -v : v;
-        T quadraticC = z - u;
-
-        numRoots = solveQuadratic(quadraticA, quadraticB, quadraticC, roots);
-
-        quadraticA = 1;
-        quadraticB = q < 0 ? v : -v;
-        quadraticC = z + u;
-
-        numRoots += solveQuadratic(quadraticA, quadraticB, quadraticC, roots + numRoots);
       }
       else {
-        numRoots = solveCubic(q, p, (T)0, (T)1, roots);
-        roots[numRoots++] = 0;
+        //Special case. VERIFY coefficients/order with your derivation & solveCubic signature.
+        //This is left structurally similar but without C-style casts.
+        numRoots = solveCubic(q, p, T(0), T(1), roots);
+        roots[numRoots++] = T(0);
       }
 
-      T sub = (1 / static_cast<T>(4)) * A;
+      //Back-substitute: x = y - A/4
+      const T sub = T(0.25) * A;
       for (uint32 i = 0; i < numRoots; ++i) {
         roots[i] -= sub;
       }

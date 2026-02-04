@@ -180,7 +180,8 @@ namespace geEngineSDK {
           }
           // Remove the leading 1 (implicit) and compute exponent
           mant &= 0x3FFu;
-          uint32 fe = static_cast<uint32>(113u - shift); // 127 - (15 - 1) - shift
+          int32 fe_s = 113 - shift;
+          uint32 fe = static_cast<uint32>(fe_s);
           uint32 fm = mant << 13;
           const uint32 bits = (sign << 31) | (fe << 23) | fm;
           return Float32(bits);

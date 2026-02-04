@@ -24,8 +24,10 @@
 #include <iterator>
 
 namespace geEngineSDK {
+#if USING(GE_CPP20_OR_LATER)
   using std::random_access_iterator;
   using std::output_iterator;
+#endif
 
   /**
    * @brief Converts an UTF-8 encoded character (possibly multibyte)

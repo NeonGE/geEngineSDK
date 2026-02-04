@@ -437,10 +437,10 @@ namespace geEngineSDK {
      * @return Distance(Manhattan) between the two rotators.
      */
     GE_NODISCARD FORCEINLINE float
-    getManhattanDistance(const Rotator& Rotator) const {
-      return Math::abs<float>(pitch - Rotator.pitch) +
-             Math::abs<float>(yaw - Rotator.yaw) +
-             Math::abs<float>(roll - Rotator.roll);
+    getManhattanDistance(const Rotator& other) const {
+      return Math::abs<float>(pitch - other.pitch) +
+             Math::abs<float>(yaw - other.yaw) +
+             Math::abs<float>(roll - other.roll);
     }
 
     /**

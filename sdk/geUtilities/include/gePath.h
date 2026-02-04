@@ -592,16 +592,16 @@ namespace std {
   {
     size_t
       operator()(const geEngineSDK::Path& path) const {
-      size_t hash = 0;
-      geEngineSDK::ge_hash_combine(hash, path.m_filename);
-      geEngineSDK::ge_hash_combine(hash, path.m_device);
-      geEngineSDK::ge_hash_combine(hash, path.m_node);
+      size_t hashVal = 0;
+      geEngineSDK::ge_hash_combine(hashVal, path.m_filename);
+      geEngineSDK::ge_hash_combine(hashVal, path.m_device);
+      geEngineSDK::ge_hash_combine(hashVal, path.m_node);
 
       for (const auto& dir : path.m_directories) {
-        geEngineSDK::ge_hash_combine(hash, dir);
+        geEngineSDK::ge_hash_combine(hashVal, dir);
       }
 
-      return hash;
+      return hashVal;
     }
   };
 }

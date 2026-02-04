@@ -65,6 +65,10 @@
 #   include <optional>
 #endif
 
+#if USING(GE_CPP20_OR_LATER)
+#   include <bit>
+#endif
+
 #include <unordered_map>
 #include <unordered_set>
 
@@ -314,6 +318,32 @@ namespace geEngineSDK {
    */
   template<class... T>
   using Variant = std::variant<T...>;
+#endif
+
+  /***************************************************************************/
+  /**
+   * bit_cast for C++17 and earlier
+   */
+  /***************************************************************************/
+#if USING(GE_CPP20_OR_LATER)
+  using std::bit_cast;
+#else
+  template <class To, class From>
+  GE_NODISCARD inline To
+  bit_cast(const From& src) noexcept {
+    static_assert(sizeof(To) == sizeof(From),
+      "bit_cast requires source and destination to be the same size");
+
+    static_assert(std::is_trivially_copyable<From>::value,
+      "From must be trivially copyable");
+
+    static_assert(std::is_trivially_copyable<To>::value,
+      "To must be trivially copyable");
+
+    To dst;
+    memcpy(&dst, &src, sizeof(To));
+    return dst;
+  }
 #endif
 
   /***************************************************************************/

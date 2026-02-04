@@ -23,10 +23,6 @@
 #include "gePlatformDefines.h"
 #include "gePlatformTypes.h"
 
-#include <bit>
-
-using std::bit_cast;
-
 namespace geEngineSDK {
   /**
    * @brief 32 bit float components
@@ -59,7 +55,13 @@ namespace geEngineSDK {
     operator=(const Float32& FP32Value) _NOEXCEPT = default;
 
     operator float() const _NOEXCEPT {
+#if USING(GE_CPP20_OR_LATER)
       return bit_cast<float>(m_encoded);
+#else
+      float fVal;
+      memcpy(&fVal, &m_encoded, sizeof(fVal));
+      return fVal;
+#endif
     }
 
     void

@@ -32,54 +32,59 @@ namespace geEngineSDK {
   const Vector3 Vector3::FORWARD  = Vector3(0.f, 0.f, 1.f);
   const Vector3 Vector3::BACKWARD = Vector3(0.f, 0.f,-1.f);
   const Vector3 Vector3::RIGHT    = Vector3(1.f, 0.f, 0.f);
-  const Vector3 Vector3::LEFT     = Vector3(-1.f, 0.f, 0.f);
+  const Vector3 Vector3::LEFT     = Vector3(-1.f,0.f, 0.f);
 
   Rotator
   Vector3::toOrientationRotator() const {
     Rotator R;
+    Vector3 n = getSafeNormal();
+    if (n.isZero()) {
+      return Rotator::ZERO;
+    }
 
-    //Find yaw.
-    R.yaw = Math::atan2(y, x).valueDegrees();
+    //Yaw: +right, 0 = forward (+Z)
+    R.yaw = Math::atan2(n.x, n.z).valueDegrees();
 
-    // Find pitch.
-    R.pitch = Math::atan2(z, Math::sqrt(x*x + y*y)).valueDegrees();
+    //Pitch: +up
+    const float horiz = Math::sqrt(n.x * n.x + n.z * n.z);
+    R.pitch = Math::atan2(n.y, horiz).valueDegrees();
 
-    //Find roll.
-    R.roll = 0;
+    R.roll = 0.0f;
 
-# if USING(GE_DEBUG_MODE)
+#if USING(GE_DEBUG_MODE)
     if (R.containsNaN()) {
-      GE_LOG(kWarning, Generic, "Vector::rotation(): Rotator result contains NaN!");
+      GE_LOG(kWarning,
+             Generic,
+             "Vector::toOrientationRotator(): Rotator result contains NaN!");
       R = Rotator::ZERO;
     }
-# endif
+#endif
+
+    R.normalize();
     return R;
   }
 
   Quaternion
   Vector3::toOrientationQuat() const {
-    //Essentially an optimized Vector->Rotator->Quat made possible by knowing
-    //Roll == 0, and avoiding radians->degrees->radians.
-    //This is done to avoid adding any roll (which our API states as a constraint).
-    const float YawRad = Math::atan2(y, x).valueRadians();
-    const float PitchRad = Math::atan2(z, Math::sqrt(x*x + y*y)).valueRadians();
+    Vector3 n = getSafeNormal();
+    if (n.isZero()) {
+      return Quaternion::IDENTITY;
+    }
 
-    const float DIVIDE_BY_2 = 0.5f;
-    float SP, SY;
-    float CP, CY;
+    const Radian yaw = Math::atan2(n.x, n.z);
+    const float horiz = Math::sqrt(n.x * n.x + n.z * n.z);
+    const Radian pitchHuman = Math::atan2(n.y, horiz);
+    const Radian pitchMath = -pitchHuman;
 
-    Math::sin_cos(&SP, &CP, PitchRad * DIVIDE_BY_2);
-    Math::sin_cos(&SY, &CY, YawRad * DIVIDE_BY_2);
+    Quaternion qYaw(Vector3(0, 1, 0), yaw);
+    Quaternion qPitch(Vector3(1, 0, 0), pitchMath);
 
-    Quaternion RotationQuat;
-    RotationQuat.x = SP*SY;
-    RotationQuat.y = -SP*CY;
-    RotationQuat.z = CP*SY;
-    RotationQuat.w = CP*CY;
-    return RotationQuat;
+    Quaternion q = (qYaw * qPitch).getNormalized();
+    return q;
   }
 
-  Rotator Vector3::rotation() const {
+  Rotator
+  Vector3::rotation() const {
     return toOrientationRotator();
   }
 

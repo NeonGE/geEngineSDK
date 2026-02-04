@@ -64,7 +64,8 @@ namespace geEngineSDK {
      */
     float
     getFixedFrameDelta() const {
-      return static_cast<float>(m_fixedStep * MICROSEC_TO_SEC);
+      double seconds = static_cast<double>(m_fixedStep) * MICROSEC_TO_SEC;
+      return static_cast<float>(seconds);
     }
 
     /**
@@ -72,7 +73,8 @@ namespace geEngineSDK {
      */
     float
     getLastFrameTime() const {
-      return static_cast<float>(m_lastFrameTime * MICROSEC_TO_SEC);
+      double seconds = static_cast<double>(m_lastFrameTime) * MICROSEC_TO_SEC;
+      return static_cast<float>(seconds);
     }
 
     /**
@@ -80,7 +82,8 @@ namespace geEngineSDK {
      */
     float
     getLastFixedUpdateTime() const {
-      return static_cast<float>(m_lastFixedUpdateTime * MICROSEC_TO_SEC);
+      double seconds = static_cast<double>(m_lastFixedUpdateTime) * MICROSEC_TO_SEC;
+      return static_cast<float>(seconds);
     }
 
     /**

@@ -499,10 +499,10 @@ namespace geEngineSDK {
 
     void
     operator+=(const Color& C) {
-      r = static_cast<int8>(Math::min(static_cast<int32>(r) + static_cast<int32>(C.r), 255));
-      g = static_cast<int8>(Math::min(static_cast<int32>(g) + static_cast<int32>(C.g), 255));
-      b = static_cast<int8>(Math::min(static_cast<int32>(b) + static_cast<int32>(C.b), 255));
-      a = static_cast<int8>(Math::min(static_cast<int32>(a) + static_cast<int32>(C.a), 255));
+      r = static_cast<uint8>(Math::min<uint32>(r + C.r, 255u));
+      g = static_cast<uint8>(Math::min<uint32>(g + C.g, 255u));
+      b = static_cast<uint8>(Math::min<uint32>(b + C.b, 255u));
+      a = static_cast<uint8>(Math::min<uint32>(a + C.a, 255u));
     }
 
     /**
@@ -633,13 +633,13 @@ namespace std {
   struct hash<geEngineSDK::LinearColor>
   {
     size_t operator()(const geEngineSDK::LinearColor& color) const {
-      size_t hash = 0;
-      geEngineSDK::ge_hash_combine(hash, color.r);
-      geEngineSDK::ge_hash_combine(hash, color.g);
-      geEngineSDK::ge_hash_combine(hash, color.b);
-      geEngineSDK::ge_hash_combine(hash, color.a);
+      size_t hashVal = 0;
+      geEngineSDK::ge_hash_combine(hashVal, color.r);
+      geEngineSDK::ge_hash_combine(hashVal, color.g);
+      geEngineSDK::ge_hash_combine(hashVal, color.b);
+      geEngineSDK::ge_hash_combine(hashVal, color.a);
 
-      return hash;
+      return hashVal;
     }
   };
   
@@ -648,13 +648,13 @@ namespace std {
   struct hash<geEngineSDK::Color>
   {
     size_t operator()(const geEngineSDK::Color& color) const {
-      size_t hash = 0;
-      geEngineSDK::ge_hash_combine(hash, color.r);
-      geEngineSDK::ge_hash_combine(hash, color.g);
-      geEngineSDK::ge_hash_combine(hash, color.b);
-      geEngineSDK::ge_hash_combine(hash, color.a);
+      size_t hashVal = 0;
+      geEngineSDK::ge_hash_combine(hashVal, color.r);
+      geEngineSDK::ge_hash_combine(hashVal, color.g);
+      geEngineSDK::ge_hash_combine(hashVal, color.b);
+      geEngineSDK::ge_hash_combine(hashVal, color.a);
 
-      return hash;
+      return hashVal;
     }
   };
 }

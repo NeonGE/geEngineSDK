@@ -19,19 +19,17 @@
  */
 /*****************************************************************************/
 #include "gePrerequisitesUtilities.h"
-#include "geNumericLimits.h"
 #include "geVector2.h"
 #include "geVector3.h"
 #include "geMath.h"
 
 namespace geEngineSDK {
-  class GE_SCRIPT_EXPORT(m:Math) Random
+  class Random
   {
    public:
     /**
      * @brief Initializes a new generator using the specified seed.
      */
-    GE_SCRIPT_EXPORT()
     Random(uint32 seed = 0) {
       setSeed(seed);
     }
@@ -39,7 +37,7 @@ namespace geEngineSDK {
     /**
      * @brief Changes the seed of the generator to the specified value.
      */
-    GE_SCRIPT_EXPORT() void
+    void
     setSeed(uint32 seed) {
       m_seed[0] = seed;
       m_seed[1] = seed * 0x1496934D + 1; // Arbitrary random numbers
@@ -50,7 +48,7 @@ namespace geEngineSDK {
     /**
      * @brief Returns a random value in range [0, NumLimits::MAX_UINT32].
      */
-    GE_SCRIPT_EXPORT() uint32
+    uint32
     get() const {
       //Using xorshift128 algorithm
       uint32 t = m_seed[3];
@@ -72,7 +70,7 @@ namespace geEngineSDK {
     /**
      * @brief Returns a random value in range [min, max].
      */
-    GE_SCRIPT_EXPORT() int32
+    int32
     getRange(int32 min, int32 max) const {
       GE_ASSERT(max > min);
 
@@ -85,7 +83,7 @@ namespace geEngineSDK {
     /**
      * @brief Returns a random value in range [0, 1].
      */
-    GE_SCRIPT_EXPORT() float
+    float
     getUNorm() const {
       //Mask first 23 bits and divide by 2^23-1
       return static_cast<float>(get() & 0x007FFFFF) / 8388607.0f;
@@ -94,7 +92,7 @@ namespace geEngineSDK {
     /**
      * @brief Returns a random value in range [-1, 1].
      */
-    GE_SCRIPT_EXPORT() float
+    float
     getSNorm() const {
       return 2.0f * getUNorm() - 1.0f;
     }
@@ -102,7 +100,7 @@ namespace geEngineSDK {
     /**
      * @brief Returns a random unit vector in three dimensions.
      */
-    GE_SCRIPT_EXPORT() Vector3
+    Vector3
     getUnitVector() const {
       //Pick a random number on a unit cube and use the result only if squared
       //size less than 1. This is faster than most other methods, and generally
@@ -124,7 +122,7 @@ namespace geEngineSDK {
     /**
      * @brief Returns a random unit vector in two dimensions.
      */
-    GE_SCRIPT_EXPORT() Vector2
+    Vector2
     getUnitVector2D() const {
       //Pick a random number on a unit square and use the result only if
       //squared size less than 1. This is faster than most other methods, and
@@ -145,7 +143,7 @@ namespace geEngineSDK {
     /**
      * @brief Returns a random point inside a unit sphere.
      */
-    GE_SCRIPT_EXPORT() Vector3
+    Vector3
     getPointInSphere() const {
       const Vector3 dir = getUnitVector();
       return dir * Math::pow(getUNorm(), 1.0f / 3.0f);
@@ -159,7 +157,7 @@ namespace geEngineSDK {
      *        the entire sphere volume. Intermediate values represent the
      *        shell, which is a volume between two concentric spheres.
      */
-    GE_SCRIPT_EXPORT() Vector3
+    Vector3
     getPointInSphereShell(float thickness) const {
       const float minRadius = 1.0f - thickness;
       const Vector3 dir = getUnitVector();
@@ -169,7 +167,7 @@ namespace geEngineSDK {
     /**
      * @brief Returns a random point inside a unit circle.
      */
-    GE_SCRIPT_EXPORT() Vector2
+    Vector2
     getPointInCircle() const {
       const Vector2 dir = getUnitVector2D();
       return dir * Math::pow(getUNorm(), 1.0f / 2.0f);
@@ -183,7 +181,7 @@ namespace geEngineSDK {
      *        entire circle surface. Intermediate values represent the shell,
      *        which is the surface between two concentric circles.
      */
-    GE_SCRIPT_EXPORT() Vector2
+    Vector2
     getPointInCircleShell(float thickness) const {
       const float minRadius = 1.0f - thickness;
 
@@ -195,7 +193,7 @@ namespace geEngineSDK {
      * @brief Returns a random point on a unit arc with the specified length
      *        (angle). Angle of 360 represents a circle.
      */
-    GE_SCRIPT_EXPORT() Vector2
+    Vector2
     getPointInArc(Degree angle) const {
       float val = getUNorm() * angle.valueRadians();
       return Vector2(Math::cos(val), Math::sin(val));
@@ -210,7 +208,7 @@ namespace geEngineSDK {
      *        Intermediate values represent the shell, which is the surface
      *        between two concentric circles.
      */
-    GE_SCRIPT_EXPORT() Vector2
+    Vector2
     getPointInArcShell(Degree angle, float thickness) const {
       const float minRadius = 1.0f - thickness;
       const float val = getUNorm() * angle.valueRadians();
@@ -222,7 +220,7 @@ namespace geEngineSDK {
      * @brief Returns a random set of Barycentric coordinates that may be used
      *        for generating random points on a triangle.
      */
-    GE_SCRIPT_EXPORT() Vector3
+    Vector3
     getBarycentric() const {
       float u = getUNorm();
       float v = getUNorm();

@@ -91,7 +91,7 @@ namespace geEngineSDK {
       construct(name);
     }
 
-    template<int N>
+    template<SIZE_T N>
     StringID(const ANSICHAR name[N]) {
       construct(static_cast<const ANSICHAR*>(name));
     }
@@ -135,7 +135,7 @@ namespace geEngineSDK {
     /** Returns the unique identifier of the string. */
     uint32
     id() const {
-      return m_data ? m_data->m_id : -1;
+      return m_data ? m_data->m_id : NumLimit::MAX_UINT32;
     }
 
    private:

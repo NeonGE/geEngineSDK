@@ -79,16 +79,14 @@ namespace geEngineSDK {
       SIZE_T strLength = getLength(source);
 
       //Create an array to store the parameters and fill it with the parameters sent
-      ParamData<T> parameters[MAX_PARAMS];
-      memset(parameters, 0, sizeof(parameters));
+      ParamData<T> parameters[MAX_PARAMS]{};
       getParams(parameters, 0U, std::forward<Args>(args)...);
 
       //Brackets characters plus NULL terminator
       T bracketChars[MAX_IDENTIFIER_SIZE + 1];
       uint32 bracketWriteIdx = 0;
 
-      FormatParamRange paramRanges[MAX_PARAM_REFERENCES];
-      memset(paramRanges, 0, sizeof(paramRanges));
+      FormatParamRange paramRanges[MAX_PARAM_REFERENCES]{};
       SIZE_T paramRangeWriteIdx = 0;
 
       //Determine parameter positions

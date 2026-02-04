@@ -19,6 +19,7 @@
 #include <cstdlib>
 
 #include "geColor.h"
+#include "geFloat32.h"
 #include "geFloat16Color.h"
 #include "geVector3.h"
 #include "geVector4.h"
@@ -123,19 +124,18 @@ namespace geEngineSDK {
     const float	Primary = Math::max3(r, g, b);
     Color rColor;
 
-    if (Primary < 1E-32) {
+    if (Primary < Math::SMALL_NUMBER) {
       rColor = Color(0, 0, 0, 0);
     }
     else {
       int32 Exponent;
-      const float Scale = frexp(Primary, &Exponent) / Primary * 255.f;
+      const float Scale = frexpf(Primary, &Exponent) / Primary * 255.f;
+      Exponent = Math::clamp(Exponent, -128, 127);
 
       rColor.r = static_cast<uint8>(Math::clamp(Math::trunc(r * Scale), 0, 255));
       rColor.g = static_cast<uint8>(Math::clamp(Math::trunc(g * Scale), 0, 255));
       rColor.b = static_cast<uint8>(Math::clamp(Math::trunc(b * Scale), 0, 255));
-      rColor.a = static_cast<uint8>(Math::clamp(Math::trunc(static_cast<float>(Exponent)),
-                                                -128,
-                                                127)) + 128;
+      rColor.a = static_cast<uint8>(Exponent + 128);
     }
 
     return rColor;
@@ -187,8 +187,9 @@ namespace geEngineSDK {
 
   LinearColor
   LinearColor::makeRandomColor() {
-    const auto Hue = static_cast<uint8>((static_cast<float>(rand()) / 
-                                         static_cast<float>(RAND_MAX)) * 255.f);
+    float t = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    t = Math::clamp(t, 0.0f, 1.0f);
+    const uint8 Hue = static_cast<uint8>(Math::floor(t * 255.0f));
     return LinearColor::getHSV(Hue, 0, 255);
   }
 

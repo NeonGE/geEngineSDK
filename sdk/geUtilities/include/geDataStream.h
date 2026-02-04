@@ -128,7 +128,7 @@ namespace geEngineSDK {
      * @param[in] encoding Encoding to convert the string to before writing.
      */
     virtual void
-    writeString(const String& string, STRING_ENCODING::E encoding = STRING_ENCODING::kUTF8);
+    writeString(const String& str, STRING_ENCODING::E encoding = STRING_ENCODING::kUTF8);
 
     /**
      * @brief Writes the provided wide string to the steam. String is converted
@@ -138,7 +138,7 @@ namespace geEngineSDK {
      * @param[in]	encoding	Encoding to convert the string to before writing.
      */
     virtual void
-    writeString(const WString& string, STRING_ENCODING::E encoding = STRING_ENCODING::kUTF16);
+    writeString(const WString& str, STRING_ENCODING::E encoding = STRING_ENCODING::kUTF16);
 
     /**
      * @brief Returns a string containing the entire stream.

@@ -25,6 +25,8 @@ namespace geEngineSDK {
   template<typename Enum, typename Storage = uint32>
   class Flags
   {
+    static_assert(std::is_unsigned_v<Storage>, "Flags Storage must be unsigned");
+
    public:
     using InternalType = Storage;
 
@@ -193,7 +195,7 @@ namespace geEngineSDK {
     Flags<Enum, Storage>
     operator~() const {
       Flags<Enum, Storage> out;
-      out.m_bits = (Storage)~m_bits;
+      out.m_bits = static_cast<Storage>(~m_bits);
       return out;
     }
 
