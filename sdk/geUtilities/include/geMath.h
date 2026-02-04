@@ -162,7 +162,7 @@ namespace geEngineSDK {
 
     GE_NODISCARD static FORCEINLINE float
     fmod(float X, float Y) {
-      return std::fmodf(X, Y);
+      return std::fmod(X, Y);
     }
 
     GE_NODISCARD static FORCEINLINE float
