@@ -228,7 +228,8 @@ namespace geEngineSDK {
     GE_ASSERT(NumPoints > 1);
 
     //var q is the change in t between successive evaluations.
-    const float q = 1.f / (NumPoints - 1); //q is dependent on the number of GAPS = POINTS-1
+    //q is dependent on the number of GAPS = POINTS-1
+    const float q = 1.0f / static_cast<float>(NumPoints - 1);
 
     //Recreate the names used in the derivation
     const LinearColor& P0 = ControlPoints[0];
@@ -278,11 +279,12 @@ namespace geEngineSDK {
     const float RGBMax = Math::max3(r, g, b);
     const float RGBRange = RGBMax - RGBMin;
 
-    const float Hue = (RGBMax == RGBMin ? 0.0f :
-                       RGBMax == r ? fmod((((g - b) / RGBRange) * 60.0f) + 360.0f, 360.0f) :
-                       RGBMax == g ? (((b - r) / RGBRange) * 60.0f) + 120.0f :
-                       RGBMax == b ? (((r - g) / RGBRange) * 60.0f) + 240.0f :
-                       0.0f);
+    float Hue = 0.0f;
+    if (RGBMax != RGBMin) {
+      if (RGBMax == r)      Hue = Math::fmod((((g - b) / RGBRange) * 60.0f) + 360.0f, 360.0f);
+      else if (RGBMax == g) Hue = (((b - r) / RGBRange) * 60.0f) + 120.0f;
+      else                  Hue = (((r - g) / RGBRange) * 60.0f) + 240.0f;
+    }
 
     const float Saturation = (RGBMax == 0.0f ? 0.0f : RGBRange / RGBMax);
     const float Value = RGBMax;
