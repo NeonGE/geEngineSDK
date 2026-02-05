@@ -20,6 +20,10 @@
 #include "geRotator.h"
 #include "geQuaternion.h"
 
+#if USING(GE_REFLECTION)
+# include "geRTTRMeta.h"
+#endif
+
 namespace geEngineSDK {
   const Vector4 Vector4::ZERO = Vector4(0.f, 0.f, 0.f, 0.f);
 
@@ -27,22 +31,22 @@ namespace geEngineSDK {
   Vector4::toOrientationRotator() const {
     Rotator R;
 
-    //Find yaw.
-    R.yaw = Math::atan2(y, x).valueDegrees();
+    //yaw around +Y (up), from XZ plane
+    R.yaw = Math::atan2(z, x).valueDegrees();
 
-    //Find pitch.
-    R.pitch = Math::atan2(z, Math::sqrt(x*x + y*y)).valueDegrees();
+    //pitch around +X, elevation from XZ plane
+    R.pitch = Math::atan2(y, Math::sqrt(x * x + z * z)).valueDegrees();
 
-    //Find roll.
-    R.roll = 0;
+    R.roll = 0.0f;
 
-# if USING(GE_DEBUG_MODE)
+#if USING(GE_DEBUG_MODE)
     if (R.containsNaN()) {
-      GE_LOG(kWarning, Generic, "Vector4::toRotation(): Rotator result "
-             "contains NaN!");
+      GE_LOG(kWarning,
+             Generic,
+             "Vector4::toOrientationRotator(): Rotator result contains NaN!");
       R = Rotator::ZERO;
     }
-# endif
+#endif
     return R;
   }
 
@@ -53,33 +57,103 @@ namespace geEngineSDK {
 
   Quaternion
   Vector4::toOrientationQuat() const {
-    //Essentially an optimized Vector->Rotator->Quat made possible by knowing Roll == 0,
-    //and avoiding radians->degrees->radians. This is done to avoid adding any roll
-    //(which our API states as a constraint).
-    const float YawRad = Math::atan2(y, x).valueRadians();
-    const float PitchRad = Math::atan2(z, Math::sqrt(x*x + y*y)).valueRadians();
+    //roll=0
+    const Radian yawRad = Math::atan2(z, x);
+    const Radian pitchRad = Math::atan2(y, Math::sqrt(x * x + z * z));
 
-    const float DIVIDE_BY_2 = 0.5f;
-    float SP, SY;
-    float CP, CY;
-
-    Math::sin_cos(&SP, &CP, PitchRad * DIVIDE_BY_2);
-    Math::sin_cos(&SY, &CY, YawRad * DIVIDE_BY_2);
-
-    Quaternion RotationQuat;
-    RotationQuat.x = SP*SY;
-    RotationQuat.y = -SP*CY;
-    RotationQuat.z = CP*SY;
-    RotationQuat.w = CP*CY;
-    return RotationQuat;
+    Rotator r(pitchRad.valueDegrees(), yawRad.valueDegrees(), 0.0f);
+    return r.toQuaternion();
   }
 
   Vector3
   Rotator::toVector() const {
-    float CP, SP, CY, SY;
-    Math::sin_cos(&SP, &CP, Math::DEG2RAD * pitch);
-    Math::sin_cos(&SY, &CY, Math::DEG2RAD * yaw);
+    float SP, CP, SY, CY;
+    Math::sin_cos(&SP, &CP, pitch * Math::DEG2RAD);
+    Math::sin_cos(&SY, &CY, yaw * Math::DEG2RAD);
 
-    return Vector3(CP*CY, CP*SY, SP);
+    // forward = +X, up = +Y
+    return Vector3(CP * CY, SP, CP * SY);
   }
+
+#if USING(GE_REFLECTION)
+  RTTR_REGISTRATION
+  {
+    using namespace rttr;
+    registration::class_<Vector4>("Vector4")
+      .constructor<>()(
+        metaScriptable(),
+        metaTooltip("Default constructor with non-initialized values."),
+        metaCategory("[Math]"))
+
+      .constructor<float, float, float, float>()(
+        metaScriptable(),
+        metaTooltip("Constructs and initializes a Vector4 from the given components."),
+        metaCategory("[Math]"))
+
+      //Properties
+      .property("x", &Vector4::x)(
+        metaScriptable(),
+        metaCategory("[Math]"),
+        metaTooltip("X component"))
+
+      .property("y", &Vector4::y)(
+        metaScriptable(),
+        metaCategory("[Math]"),
+        metaTooltip("Y component"))
+
+      .property("z", &Vector4::z)(
+        metaScriptable(),
+        metaCategory("[Math]"),
+        metaTooltip("Z component"))
+
+      .property("w", &Vector4::w)(
+        metaScriptable(),
+        metaCategory("[Math]"),
+        metaTooltip("W component"))
+
+      //Constants
+      .property_readonly("ZERO", &Vector4::ZERO)(
+        metaScriptable(),
+        metaReadOnly(),
+        metaTooltip("Constant vector (0, 0, 0, 0)."),
+        metaCategory("[Math]"))
+
+      //Methods
+      .method("size", &Vector4::size)(
+        metaScriptable(),
+        metaTooltip("Calculates the length of the vector."),
+        metaCategory("[Math]"))
+
+      .method("sizeSquared", &Vector4::sizeSquared)(
+        metaScriptable(),
+        metaTooltip("Calculates the squared length of the vector."),
+        metaCategory("[Math]"))
+
+      .method("size3", &Vector4::size3)(
+        metaScriptable(),
+        metaTooltip("Calculates the length of the 3D vector (ignoring W component)."),
+        metaCategory("[Math]"))
+
+      .method("sizeSquared3", &Vector4::sizeSquared3)(
+        metaScriptable(),
+        metaTooltip("Calculates the squared length of the 3D vector (ignoring W component)."),
+        metaCategory("[Math]"))
+
+      .method("toOrientationRotator", &Vector4::toOrientationRotator)(
+        metaScriptable(),
+        metaTooltip("Converts this vector into an orientation rotator."),
+        metaCategory("[Math]"))
+
+      .method("toOrientationQuat", &Vector4::toOrientationQuat)(
+        metaScriptable(),
+        metaTooltip("Converts this vector into an orientation quaternion."),
+        metaCategory("[Math]"))
+
+      .method("rotation", &Vector4::rotation)(
+        metaScriptable(),
+        metaTooltip("Gets the rotation corresponding to this vector."),
+        metaCategory("[Math]"))
+      ;
+  }
+#endif
 }

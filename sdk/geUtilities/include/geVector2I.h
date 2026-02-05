@@ -24,10 +24,6 @@
 #include "gePrerequisitesUtilities.h"
 #include "geMath.h"
 
-#if USING(GE_REFLECTION)
-# include <rttr/type>
-#endif
-
 namespace geEngineSDK {
   /**
    * @brief Structure for integer points in 2-d space.
@@ -330,8 +326,6 @@ namespace geEngineSDK {
      * @brief An integer point with zeroed values.
      */
     GE_UTILITIES_EXPORT static const Vector2I ZERO;
-
-    GE_REFLECTED_CLASS()
   };
 
   /***************************************************************************/

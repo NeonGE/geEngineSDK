@@ -28,13 +28,9 @@
 #include "geVector2.h"
 #include "geVector3.h"
 
-#if USING(GE_REFLECTION)
-# include <rttr/type>
-#endif
-
 namespace geEngineSDK {
   /**
-  * 
+  * @brief A 4D homogeneous vector, 4x1 FLOATs, 16-byte aligned.
   */
   class ALIGN_AS(16) Vector4
   {

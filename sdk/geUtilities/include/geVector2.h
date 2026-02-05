@@ -25,10 +25,6 @@
 #include "gePrerequisitesUtilities.h"
 #include "geMath.h"
 
-#if USING(GE_REFLECTION)
-# include <rttr/type>
-#endif
-
 namespace geEngineSDK {
   class Vector3;
 
@@ -534,8 +530,6 @@ namespace geEngineSDK {
      * @brief Global 2D unit vector Y constant (0,1)
      */
     static GE_UTILITIES_EXPORT const Vector2 UNIT_Y;
-
-    GE_REFLECTED_CLASS()
   };
 
   /***************************************************************************/

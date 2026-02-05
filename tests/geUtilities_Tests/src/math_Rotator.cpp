@@ -58,6 +58,14 @@ quatNearSameRotation(const Quaternion& a, const Quaternion& b, float eps) {
   return (1.0f - d) <= eps;
 }
 
+TEST_CASE("Diag: Rotator::toVector up=+Y", "[Diag]") {
+  Rotator r(0, 0, 0);
+  vec3Near(r.toVector(), Vector3(1, 0, 0), 1e-4f);
+
+  Rotator u(90, 0, 0);
+  vec3Near(u.toVector(), Vector3(0, 1, 0), 1e-3f);
+}
+
 TEST_CASE("Rotator: identity looks forward +Z", "[Rotator][Contract]") {
   Rotator r(0, 0, 0);
   Quaternion q = r.toQuaternion();

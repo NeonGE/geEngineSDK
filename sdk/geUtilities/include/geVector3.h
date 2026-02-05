@@ -25,10 +25,6 @@
 #include "gePrerequisitesUtilities.h"
 #include "geMath.h"
 
-#if USING(GE_REFLECTION)
-# include <rttr/type>
-#endif
-
 namespace geEngineSDK {
   /**
    * @brief A vector in 3-D space composed of components (x, y, z) with
@@ -967,8 +963,6 @@ namespace geEngineSDK {
     * @brief Right vector (0,-1,0)
     */
     static GE_UTILITIES_EXPORT const Vector3 LEFT;
-
-    GE_REFLECTED_CLASS()
   };
 
   /***************************************************************************/
