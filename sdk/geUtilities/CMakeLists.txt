@@ -83,6 +83,9 @@ add_library(geUtilities SHARED
 	include/geVector3.h
 	include/geVector4.h
 	include/geVectorNI.h
+	
+	include/geRTTRMeta.h
+	
 	include/win32/geMinWindows.h
 	include/externals/md5.h
 

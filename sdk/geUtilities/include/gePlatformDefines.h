@@ -509,5 +509,26 @@
 //Features implementations
 #define GE_FEATURE_THREADING IN_USE
 
-#define GE_USE_GENERIC_FILESYSTEM     USE_IF(!USING(GE_PLATFORM_WINDOWS) && USING(GE_CPP17_OR_LATER))
+#define GE_USE_GENERIC_FILESYSTEM     USE_IF(!USING(GE_PLATFORM_WINDOWS) &&   \
+                                      USING(GE_CPP17_OR_LATER))
 /*****************************************************************************/
+
+/*****************************************************************************/
+/**
+ * Engine features
+ */
+/*****************************************************************************/
+#define GE_REFLECTION IN_USE  //Enable reflection system (RTTR based)
+
+/*****************************************************************************/
+/**
+ * Reflection macros
+ */
+/*****************************************************************************/
+#if USING(GE_REFLECTION)
+# define GE_REFLECTED_CLASS()         RTTR_ENABLE()
+# define GE_REFLECTED_STRUCT()        RTTR_ENABLE()
+#else
+# define GE_REFLECTED_CLASS()
+# define GE_REFLECTED_STRUCT()
+#endif

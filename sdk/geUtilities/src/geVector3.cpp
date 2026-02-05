@@ -21,6 +21,10 @@
 #include "geRotator.h"
 #include "geQuaternion.h"
 
+#if USING(GE_REFLECTION)
+# include "geRTTRMeta.h"
+#endif
+
 namespace geEngineSDK {
   const Vector3 Vector3::ZERO     = Vector3(0.f, 0.f, 0.f);
   const Vector3 Vector3::UNIT     = Vector3(1.f, 1.f, 1.f);
@@ -275,4 +279,168 @@ namespace geEngineSDK {
       }
     }
   }
+
+#if USING(GE_REFLECTION)
+  RTTR_REGISTRATION
+  {
+    using namespace rttr;
+    registration::class_<Vector3>("Vector3")
+      .constructor<>()(
+        metaScriptable(),
+        metaTooltip("Default constructor with non-initialized values."),
+        metaCategory("[Math]"))
+
+      .constructor<float, float, float>()(
+        metaScriptable(),
+        metaTooltip("Constructs and initializes a Vector3 from the given components."),
+        metaCategory("[Math]"))
+
+      //Properties
+      .property("x", &Vector3::x)(
+        metaScriptable(),
+        metaCategory("[Math]"),
+        metaTooltip("X component"))
+
+      .property("y", &Vector3::y)(
+        metaScriptable(),
+        metaCategory("[Math]"),
+        metaTooltip("Y component"))
+
+      .property("z", &Vector3::z)(
+        metaScriptable(),
+        metaCategory("[Math]"),
+        metaTooltip("Z component"))
+
+      //Constants
+      .property_readonly("ZERO", &Vector3::ZERO)(
+        metaScriptable(),
+        metaReadOnly(),
+        metaTooltip("Constant vector (0, 0, 0)."),
+        metaCategory("[Math]"))
+
+      .property_readonly("UNIT", &Vector3::UNIT)(
+        metaScriptable(),
+        metaReadOnly(),
+        metaTooltip("Constant vector (1, 1, 1)."),
+        metaCategory("[Math]"))
+
+      .property_readonly("UNIT_X", &Vector3::UNIT_X)(
+        metaScriptable(),
+        metaReadOnly(),
+        metaTooltip("Constant vector (1, 0, 0)."),
+        metaCategory("[Math]"))
+
+      .property_readonly("UNIT_Y", &Vector3::UNIT_Y)(
+        metaScriptable(),
+        metaReadOnly(),
+        metaTooltip("Constant vector (0, 1, 0)."),
+        metaCategory("[Math]"))
+
+      .property_readonly("UNIT_Z", &Vector3::UNIT_Z)(
+        metaScriptable(),
+        metaReadOnly(),
+        metaTooltip("Constant vector (0, 0, 1)."),
+        metaCategory("[Math]"))
+
+      //Methods
+      .method("size", &Vector3::size)(
+        metaScriptable(),
+        metaTooltip("Calculates the size (magnitude) of this vector."),
+        metaCategory("[Math]"))
+      .method("sizeSquared", &Vector3::sizeSquared)(
+        metaScriptable(),
+        metaTooltip("Calculates the squared size of this vector."),
+        metaCategory("[Math]"))
+      .method("size2D", &Vector3::size2D)(
+        metaScriptable(),
+        metaTooltip("Calculates the size (magnitude) of this vector projected "
+                    "onto the XY plane."),
+        metaCategory("[Math]"))
+      .method("sizeSquared2D", &Vector3::sizeSquared2D)(
+        metaScriptable(),
+        metaTooltip("Calculates the squared size of this vector projected "
+                    "onto the XY plane."),
+        metaCategory("[Math]"))
+
+      .method("dot", &Vector3::operator|)(
+        metaScriptable(),
+        metaTooltip("Calculates the dot (scalar) product of this vector and another."),
+        metaCategory("[Math]"))
+      .method("cross", &Vector3::operator^)(
+        metaScriptable(),
+        metaTooltip("Calculates the cross (vector) product of this vector and another."),
+        metaCategory("[Math]"))
+
+      .method("component",
+          rttr::select_overload<float(const uint32) const>(&Vector3::component))(
+        metaScriptable(),
+        metaTooltip("Returns the specified component of the vector (0 = X, 1 = Y, 2 = Z)."),
+        metaCategory("[Math]"))
+
+      .method("getMax", &Vector3::getMax)(
+        metaScriptable(),
+        metaTooltip("Returns a vector containing the largest components of this" \
+                    "and the given vector."),
+        metaCategory("[Math]"))
+      .method("getAbsMax", &Vector3::getAbsMax)(
+        metaScriptable(),
+        metaTooltip("Returns the largest absolute value among the components "\
+                    "of this vector."),
+        metaCategory("[Math]"))
+      .method("getMin", &Vector3::getMin)(
+        metaScriptable(),
+        metaTooltip("Returns a vector containing the smallest components of this" \
+                    "and the given vector."),
+        metaCategory("[Math]"))
+      .method("getAbsMin", &Vector3::getAbsMin)(
+        metaScriptable(),
+        metaTooltip("Returns the smallest absolute value among the components "\
+                    "of this vector."),
+        metaCategory("[Math]"))
+      .method("getAbs", &Vector3::getAbs)(
+        metaScriptable(),
+        metaTooltip("Returns a copy of this vector with absolute value of each component."),
+        metaCategory("[Math]"))
+      .method("isZero", &Vector3::isZero)(
+        metaScriptable(),
+        metaTooltip("Checks whether this vector is exactly zero."),
+        metaCategory("[Math]"))
+      .method("reciprocal", &Vector3::reciprocal)(
+        metaScriptable(),
+        metaTooltip("Returns a vector that is the reciprocal of this vector."),
+        metaCategory("[Math]"))
+
+      .method("normalize", &Vector3::normalize)(
+        metaScriptable(),
+        metaTooltip("Normalizes this vector in place if it is large enough." \
+                    "Returns true if the vector was normalized."),
+        metaCategory("[Math]"))
+      .method("getNormalized", &Vector3::getSafeNormal)(
+        metaScriptable(),
+        metaTooltip("Returns a normalized copy of this vector if it is large enough." \
+                    "Returns zero vector otherwise."),
+        metaCategory("[Math]"))
+      
+      //Vector arithmetic operators
+      .method("add",
+        rttr::select_overload<Vector3(const Vector3&) const>(&Vector3::operator+))(
+        metaScriptable(),
+        metaTooltip("Adds this vector and another."),
+        metaCategory("[Math]"))
+
+      .method("sub",
+        rttr::select_overload<Vector3(const Vector3&) const>(&Vector3::operator-))(
+        metaScriptable(),
+        metaTooltip("Subtracts another vector from this vector."),
+        metaCategory("[Math]"))
+
+      .method("equals",
+          rttr::select_overload<bool(const Vector3&) const>(&Vector3::operator==))(
+        metaScriptable(),
+        metaTooltip("Checks whether this vector is equal to another."),
+        metaCategory("[Math]"))
+
+    ;
+  }
+#endif
 }

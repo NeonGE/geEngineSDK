@@ -28,11 +28,11 @@
 #include "geColor.h"
 #include "geVector2.h"
 
-namespace geEngineSDK {
-  /**
-   * .
-   */
+#if USING(GE_REFLECTION)
+# include <rttr/type>
+#endif
 
+namespace geEngineSDK {
   /**
    * @brief A vector in 3-D space composed of components (x, y, z) with
    *        floating point precision.
@@ -193,7 +193,7 @@ namespace geEngineSDK {
      * @param v The vector to check against.
      * @return true if the vectors are equal, false otherwise.
      */
-    bool
+    FORCEINLINE bool
     operator==(const Vector3& v) const;
 
     /**
@@ -201,7 +201,7 @@ namespace geEngineSDK {
      * @param v The vector to check against.
      * @return true if the vectors are not equal, false otherwise.
      */
-    bool
+    FORCEINLINE bool
     operator!=(const Vector3& v) const;
 
     /**
@@ -970,6 +970,8 @@ namespace geEngineSDK {
     * @brief Right vector (0,-1,0)
     */
     static GE_UTILITIES_EXPORT const Vector3 LEFT;
+
+    GE_REFLECTED_CLASS()
   };
 
   /***************************************************************************/
