@@ -31,16 +31,6 @@ vec3Near(const Vector3& a, const Vector3& b, float eps) {
   return near(a.x, b.x, eps) && near(a.y, b.y, eps) && near(a.z, b.z, eps);
 }
 
-static float
-dot(const Vector3& a, const Vector3& b) {
-  return (a | b);
-}
-
-static Vector3
-cross(const Vector3& a, const Vector3& b) {
-  return (a ^ b);
-}
-
 static Vector3
 randVec3(float minv = -1.0f, float maxv = 1.0f) {
   return Vector3{ randRange(minv,maxv), randRange(minv,maxv), randRange(minv,maxv) };

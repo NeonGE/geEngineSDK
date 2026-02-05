@@ -24,11 +24,15 @@
 #include "gePrerequisitesUtilities.h"
 #include "geMath.h"
 
+#if USING(GE_REFLECTION)
+# include <rttr/type>
+#endif
+
 namespace geEngineSDK {
   /**
    * @brief Structure for integer points in 2-d space.
    */
-  class GE_UTILITIES_EXPORT Vector2I
+  class Vector2I
   {
    public:
     /**
@@ -217,17 +221,17 @@ namespace geEngineSDK {
     operator[](uint32 Index) const;
 
    public:
-     /**
-      * @brief Exchange the contents of this vector with another.
-      */
-     FORCEINLINE void
-     swap(Vector2I& other);
+    /**
+     * @brief Exchange the contents of this vector with another.
+     */
+    FORCEINLINE void
+    swap(Vector2I& other);
 
-     /**
-      * @brief  Returns the Manhattan distance between this and another point.
-      */
-     FORCEINLINE uint32
-     manhattanDist(const Vector2I& other) const;
+    /**
+     * @brief  Returns the Manhattan distance between this and another point.
+     */
+    FORCEINLINE uint32
+    manhattanDist(const Vector2I& other) const;
 
     /**
      * @brief Get the component-wise min of two vectors.
@@ -325,7 +329,9 @@ namespace geEngineSDK {
     /**
      * @brief An integer point with zeroed values.
      */
-    static const Vector2I ZERO;
+    GE_UTILITIES_EXPORT static const Vector2I ZERO;
+
+    GE_REFLECTED_CLASS()
   };
 
   /***************************************************************************/

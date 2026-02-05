@@ -18,6 +18,7 @@
  */
 /*****************************************************************************/
 #include "geVector2.h"
+#include "geVector2I.h"
 #include "geVector3.h"
 
 #if USING(GE_REFLECTION)
@@ -33,6 +34,16 @@ namespace geEngineSDK {
   Vector2::Vector2(const Vector3& V) {
     x = V.x;
     y = V.y;
+  }
+
+  Vector2::Vector2(const Vector2I& InPos) {
+    x = static_cast<float>(InPos.x);
+    y = static_cast<float>(InPos.y);
+  }
+
+  Vector2I
+  Vector2::toVector2I() const {
+    return Vector2I(Math::round(x), Math::round(y));
   }
 
   Vector3

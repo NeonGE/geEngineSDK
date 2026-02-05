@@ -18,6 +18,9 @@
  */
 /*****************************************************************************/
 #include "geVector3.h"
+#include "geVector2.h"
+#include "geVector2I.h"
+#include "geColor.h"
 #include "geRotator.h"
 #include "geQuaternion.h"
 
@@ -278,6 +281,28 @@ namespace geEngineSDK {
         Clusters.erase(nth);
       }
     }
+  }
+
+  Vector3::Vector3(const Vector2& v, float inZ) : x(v.x), y(v.y), z(inZ) {}
+
+  Vector3::Vector3(Vector2I& inVector)
+    : x(static_cast<float>(inVector.x)),
+      y(static_cast<float>(inVector.y)),
+      z(0.f)
+  {}
+
+  Vector3::Vector3(const LinearColor& InColor)
+    : x(InColor.r), 
+      y(InColor.g), 
+      z(InColor.b)
+  {}
+
+  Vector2
+    Vector3::unitCartesianToSpherical() const {
+    GE_ASSERT(isUnit());
+    const Radian Theta = Math::acos(z / size());
+    const Radian Phi = Math::atan2(y, x);
+    return Vector2(Theta.valueRadians(), Phi.valueRadians());
   }
 
 #if USING(GE_REFLECTION)

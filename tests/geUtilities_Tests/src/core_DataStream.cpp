@@ -140,18 +140,6 @@ TEST_CASE("UTF8: toUTF16/fromUTF16 roundtrip", "[Unicode][UTF16]")
   REQUIRE(UTF8::fromUTF16(u16) == msg);
 }
 
-static String hexBytes(const String& s)
-{
-  String out;
-  for (unsigned char c : s)
-  {
-    char buf[8];
-    std::snprintf(buf, sizeof(buf), "%02X ", (unsigned)c);
-    out += buf;
-  }
-  return out;
-}
-
 TEST_CASE("DataStream: writeString/getAsString UTF-16LE (BOM)", "[DataStream][String][UTF16]")
 {
   const String msg =

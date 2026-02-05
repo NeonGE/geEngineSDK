@@ -181,11 +181,11 @@ TEST_CASE("FileSystem: iterate recursive collects nodes", "[FileSystem][Iterate]
 
   const bool ok = FileSystem::iterate(
     root,
-    [&](const Path& p) {
+    [&](const Path&) {
       ++fileCount;
       return true; // continue
     },
-    [&](const Path& p) {
+    [&](const Path&) {
       ++dirCount;
       return true; // continue
     },

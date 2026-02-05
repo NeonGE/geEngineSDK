@@ -24,9 +24,6 @@
 /*****************************************************************************/
 #include "gePrerequisitesUtilities.h"
 #include "geMath.h"
-#include "geNumericLimits.h"
-#include "geColor.h"
-#include "geVector2.h"
 
 #if USING(GE_REFLECTION)
 # include <rttr/type>
@@ -64,7 +61,7 @@ namespace geEngineSDK {
      * @param v Vector to copy from.
      * @param inZ Z Coordinate.
      */
-    explicit FORCEINLINE Vector3(const Vector2 v, float inZ);
+    GE_UTILITIES_EXPORT Vector3(const Vector2& v, float inZ);
 
     /**
      * @brief Constructor using the XYZ components from a 4D vector.
@@ -76,13 +73,13 @@ namespace geEngineSDK {
      * @brief Constructs a vector from an LinearColor.
      * @param inColor Color to copy from.
      */
-    explicit Vector3(const LinearColor& inColor);
+    GE_UTILITIES_EXPORT explicit Vector3(const LinearColor& inColor);
 
     /**
      * @brief Constructs a vector from an Vector2I.
      * @param inVector Vector2I to copy from.
      */
-    explicit Vector3(Vector2I inVector);
+    GE_UTILITIES_EXPORT explicit Vector3(Vector2I& inVector);
 
     /**
      * @brief Constructor which initializes all components to zero.
@@ -666,7 +663,7 @@ namespace geEngineSDK {
      * @return  Output Theta will be in the range [0, PI], and output Phi will
      *          be in the range [-PI, PI].
      */
-    Vector2
+    GE_UTILITIES_EXPORT Vector2
     unitCartesianToSpherical() const;
 
     /**
@@ -1031,8 +1028,6 @@ namespace geEngineSDK {
     return DistSquared;
   }
 
-  FORCEINLINE Vector3::Vector3(const Vector2 v, float inZ) : x(v.x), y(v.y), z(inZ) {}
-
   inline Vector3
   Vector3::rotateAngleAxis(const float angleDeg, const Vector3& axis) const {
     float S, C;
@@ -1177,16 +1172,6 @@ namespace geEngineSDK {
   FORCEINLINE Vector3::Vector3(float InF) : x(InF), y(InF), z(InF) {}
 
   FORCEINLINE Vector3::Vector3(float InX, float InY, float InZ) : x(InX), y(InY), z(InZ) {}
-
-  FORCEINLINE Vector3::Vector3(const LinearColor& InColor)
-    : x(InColor.r), 
-      y(InColor.g), 
-      z(InColor.b) {}
-
-  FORCEINLINE Vector3::Vector3(Vector2I inVector)
-    : x(static_cast<float>(inVector.x)),
-      y(static_cast<float>(inVector.y)),
-      z(0.f) {}
 
   FORCEINLINE Vector3::Vector3(FORCE_INIT::E) : x(0.0f), y(0.0f), z(0.0f) {}
 
@@ -1641,14 +1626,6 @@ namespace geEngineSDK {
   FORCEINLINE bool
   Vector3::isUnit(float lengthSquaredTolerance) const {
     return Math::abs(1.0f - sizeSquared()) < lengthSquaredTolerance;
-  }
-
-  FORCEINLINE Vector2
-  Vector3::unitCartesianToSpherical() const {
-    GE_ASSERT(isUnit());
-    const Radian Theta = Math::acos(z / size());
-    const Radian Phi = Math::atan2(y, x);
-    return Vector2(Theta.valueRadians(), Phi.valueRadians());
   }
 
   FORCEINLINE float

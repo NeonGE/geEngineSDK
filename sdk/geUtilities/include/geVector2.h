@@ -24,7 +24,6 @@
 /*****************************************************************************/
 #include "gePrerequisitesUtilities.h"
 #include "geMath.h"
-#include "geVector2I.h"
 
 #if USING(GE_REFLECTION)
 # include <rttr/type>
@@ -53,7 +52,7 @@ namespace geEngineSDK {
      * @brief Constructs a vector from a Vector2I.
      * @param InPos Integer point used to set this vector.
      */
-    explicit FORCEINLINE Vector2(Vector2I InPos);
+    GE_UTILITIES_EXPORT explicit Vector2(const Vector2I& InPos);
 
     /**
      * @brief Constructor which initializes all components to zero.
@@ -464,7 +463,7 @@ namespace geEngineSDK {
      * @brief Get this vector as an Int Vector.
      * @return New Int Vector from this vector.
      */
-    Vector2I
+    GE_UTILITIES_EXPORT Vector2I
     toVector2I() const;
 
     /**
@@ -551,11 +550,6 @@ namespace geEngineSDK {
   }
 
   FORCEINLINE Vector2::Vector2(float InX, float InY) : x(InX), y(InY) {}
-
-  FORCEINLINE Vector2::Vector2(Vector2I InPos) {
-    x = static_cast<float>(InPos.x);
-    y = static_cast<float>(InPos.y);
-  }
 
   FORCEINLINE Vector2::Vector2(FORCE_INIT::E) : x(0), y(0) {}
 
@@ -853,11 +847,6 @@ namespace geEngineSDK {
   FORCEINLINE float
   Vector2::component(uint32 Index) const {
     return (&x)[Index];
-  }
-
-  FORCEINLINE Vector2I
-  Vector2::toVector2I() const {
-    return Vector2I(Math::round(x), Math::round(y));
   }
 
   FORCEINLINE Vector2

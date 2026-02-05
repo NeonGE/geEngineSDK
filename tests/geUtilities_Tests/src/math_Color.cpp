@@ -69,7 +69,6 @@ namespace
 }
 
 TEST_CASE("LinearColor: default / FORCE_INIT", "[Math][Color][LinearColor]") {
-  LinearColor d;
   LinearColor z(FORCE_INIT::kForceInit);
   REQUIRE(z.r == 0.0f);
   REQUIRE(z.g == 0.0f);

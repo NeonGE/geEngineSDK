@@ -53,6 +53,7 @@
 #include "geMemoryAllocator.h"      //Memory Allocator
 #include "geThreading.h"            //Threading Defines
 #include "geStdHeaders.h"           //Commonly used standard headers
+#include "geNumericLimits.h"        //Numeric limits for built-in types
 
 #include "geFwdDeclUtil.h"          //Forward declarations
 

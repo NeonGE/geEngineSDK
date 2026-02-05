@@ -28,6 +28,10 @@
 #include "geVector2.h"
 #include "geVector3.h"
 
+#if USING(GE_REFLECTION)
+# include <rttr/type>
+#endif
+
 namespace geEngineSDK {
   /**
   * 
