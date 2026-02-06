@@ -549,7 +549,7 @@ namespace geEngineSDK {
     template<class... Args>
     static void
     construct(pointer p, Args&& ...args) {
-      new(p) T(std::forward<Args>(args)...);
+      new (static_cast<void*>(p)) T(std::forward<Args>(args)...);
     }
   };
 }

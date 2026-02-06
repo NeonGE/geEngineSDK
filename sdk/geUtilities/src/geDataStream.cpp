@@ -380,7 +380,16 @@ namespace geEngineSDK {
     }
 
     //Bugfix: Needs to be called like this to avoid slicing
-    return ge_shared_ptr_new<MemoryDataStream>(static_cast<const DataStream&>(*this));
+    
+    //This version works but gives a warning about deprecated cast
+    //return ge_shared_ptr_new<MemoryDataStream>((DataStream&)(*this));
+    
+    //This version does not work because it tries to cast away constness
+    //return ge_shared_ptr_new<MemoryDataStream>(static_cast<const DataStream&>(*this));
+
+    //This version works without warnings
+    return ge_shared_ptr_new<MemoryDataStream>(
+      static_cast<DataStream&>(*const_cast<MemoryDataStream*>(this)));
   }
 
   void
