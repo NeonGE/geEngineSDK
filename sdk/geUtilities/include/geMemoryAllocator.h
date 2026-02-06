@@ -181,7 +181,7 @@ namespace geEngineSDK {
    public:
     static void*
     allocate(size_t bytes) {
-#if GE_PROFILING_ENABLED
+#if defined(GE_PROFILING_ENABLED) && GE_PROFILING_ENABLED
       incAllocCount();
 #endif
       return malloc(bytes);
@@ -195,7 +195,7 @@ namespace geEngineSDK {
      */
     static void*
     allocateAligned(size_t bytes, size_t alignment) {
-#if GE_PROFILING_ENABLED
+#if defined(GE_PROFILING_ENABLED) && GE_PROFILING_ENABLED
       incAllocCount();
 #endif
       return platformAlignedAlloc(bytes, alignment);
@@ -206,7 +206,7 @@ namespace geEngineSDK {
      */
     static void*
     allocateAligned16(size_t bytes) {
-#if GE_PROFILING_ENABLED
+#if defined(GE_PROFILING_ENABLED) && GE_PROFILING_ENABLED
       incAllocCount();
 #endif
       return platformAlignedAlloc16(bytes);
@@ -214,7 +214,7 @@ namespace geEngineSDK {
 
     static void
     free(void* ptr) {
-#if GE_PROFILING_ENABLED
+#if defined(GE_PROFILING_ENABLED) && GE_PROFILING_ENABLED
       incFreeCount();
 #endif
       ::free(ptr);
@@ -225,7 +225,7 @@ namespace geEngineSDK {
      */
     static void
     freeAligned(void* ptr) {
-#if GE_PROFILING_ENABLED
+#if defined(GE_PROFILING_ENABLED) && GE_PROFILING_ENABLED
       incFreeCount();
 #endif
       platformAlignedFree(ptr);
@@ -236,7 +236,7 @@ namespace geEngineSDK {
      */
     static void
     freeAligned16(void* ptr) {
-#if GE_PROFILING_ENABLED
+#if defined(GE_PROFILING_ENABLED) && GE_PROFILING_ENABLED
       incFreeCount();
 #endif
       platformAlignedFree16(ptr);

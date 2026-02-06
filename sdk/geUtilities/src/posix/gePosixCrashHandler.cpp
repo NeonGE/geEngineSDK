@@ -10,13 +10,13 @@
  *
  * @bug	    No known bugs.
  */
- /*****************************************************************************/
+/*****************************************************************************/
 #ifndef _WIN32
 /*****************************************************************************/
 /**
  * Includes
  */
- /*****************************************************************************/
+/*****************************************************************************/
 #include "gePrerequisitesUtilities.h"
 #include "geCrashHandler.h"
 #include "geDebug.h"
@@ -109,7 +109,7 @@ namespace geEngineSDK {
   CrashHandler::getStackTrace() {
 #if defined(__unix__) || defined(__APPLE__)
     void* addrs[GE_MAX_STACKTRACE_DEPTH];
-    const int n = ::backtrace(addrs, static_cast<int>(GE_MAX_STACKTRACE_DEPTH));
+    const int n = ::backtrace(addrs, GE_MAX_STACKTRACE_DEPTH);
 
     StringStream ss;
     ss << "Stack frames: " << n << "\n";

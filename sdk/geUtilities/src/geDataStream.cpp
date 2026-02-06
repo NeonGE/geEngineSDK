@@ -172,7 +172,7 @@ namespace geEngineSDK {
     StringStream result;
     while (!isEOF()) {
       SIZE_T numReadBytes = read(tempBuffer, bufSize);
-      result.write(tempBuffer, numReadBytes);
+      result.write(tempBuffer, static_cast<std::streamsize>(numReadBytes));
     }
 
     //TODO: Change this to use the stack allocator, however right now we
@@ -293,48 +293,64 @@ namespace geEngineSDK {
 
   SIZE_T
   MemoryDataStream::read(void* buf, SIZE_T count) {
-    SIZE_T cnt = count;
-
-    if (m_pos + cnt > m_end) {
-      cnt = m_end - m_pos;
+    if (count == 0) {
+      return 0;
     }
-    if (0 == cnt) {
+    GE_ASSERT(buf != nullptr);
+
+    const SIZE_T pos = static_cast<SIZE_T>(m_pos - m_data);
+    const SIZE_T end = static_cast<SIZE_T>(m_end - m_data);
+    GE_ASSERT(pos <= end);
+
+    SIZE_T cnt = count;
+    const SIZE_T avail = end - pos;
+    if (cnt > avail) {
+      cnt = avail;
+    }
+    if (cnt == 0) {
       return 0;
     }
 
-    GE_ASSERT(cnt <= count);
-
     memcpy(buf, m_pos, cnt);
     m_pos += cnt;
-
     return cnt;
   }
 
   SIZE_T
   MemoryDataStream::write(const void* buf, SIZE_T count) {
-    SIZE_T written = 0;
-    if (isWriteable()) {
-      written = count;
+    if (!isWriteable() || count == 0) {
+      return 0;
+    }
+    GE_ASSERT(buf != nullptr);
 
-      if (m_pos + written > m_end) {
-        written = m_end - m_pos;
-      }
-      if (0 == written) {
-        return 0;
-      }
+    const SIZE_T pos = static_cast<SIZE_T>(m_pos - m_data);
+    const SIZE_T end = static_cast<SIZE_T>(m_end - m_data);
+    GE_ASSERT(pos <= end);
 
-      memcpy(m_pos, buf, written);
-      m_pos += written;
+    SIZE_T written = count;
+    const SIZE_T avail = end - pos;
+    if (written > avail) {
+      written = avail;
+    }
+    if (written == 0) {
+      return 0;
     }
 
+    memcpy(m_pos, buf, written);
+    m_pos += written;
     return written;
   }
 
   void
   MemoryDataStream::skip(SIZE_T count) {
-    SIZE_T newpos = (m_pos - m_data) + count;
-    GE_ASSERT(m_data + newpos <= m_end);
-    m_pos = m_data + newpos;
+    const SIZE_T pos = static_cast<SIZE_T>(m_pos - m_data);
+    const SIZE_T end = static_cast<SIZE_T>(m_end - m_data);
+    GE_ASSERT(pos <= end);
+
+    const SIZE_T avail = end - pos;
+    GE_ASSERT(count <= avail);
+
+    m_pos += count;
   }
 
   void
@@ -345,7 +361,11 @@ namespace geEngineSDK {
 
   SIZE_T
   MemoryDataStream::tell() const {
-    return m_pos - m_data;
+    GE_ASSERT(m_pos >= m_data);
+    GE_ASSERT(m_pos <= m_end);
+
+    const ptrdiff_t d = m_pos - m_data;
+    return static_cast<SIZE_T>(d);
   }
 
   bool
@@ -360,7 +380,7 @@ namespace geEngineSDK {
     }
 
     //Bugfix: Needs to be called like this to avoid slicing
-    return ge_shared_ptr_new<MemoryDataStream>((DataStream&)(*this));
+    return ge_shared_ptr_new<MemoryDataStream>(static_cast<const DataStream&>(*this));
   }
 
   void
@@ -432,7 +452,8 @@ namespace geEngineSDK {
   void
   FileDataStream::skip(SIZE_T count) {
     m_pInStream->clear(); //Clear fail status in case eof was set
-    m_pInStream->seekg(static_cast<std::ifstream::pos_type>(count), std::ios::cur);
+    const auto offset = static_cast<std::istream::off_type>(count);
+    m_pInStream->seekg(offset, std::ios::cur);
   }
 
   void
