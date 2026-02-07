@@ -1,6 +1,7 @@
 ge_setup_lz4()
 ge_setup_nlohmann_json()
 ge_setup_sol2()
+ge_setup_lua()
 
 add_library(geUtilities SHARED
 	include/geBitmapWriter.h
@@ -183,6 +184,7 @@ endif()
 target_link_libraries(geUtilities
 	PRIVATE
 		ge_sol2
+		ge_lua
 )
 
 get_target_property(GEUTIL_SOURCES geUtilities SOURCES)

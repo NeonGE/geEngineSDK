@@ -397,7 +397,7 @@ namespace geEngineSDK {
         metaCategory("[Math]"))
 
       .method("component",
-          rttr::select_overload<float(const uint32) const>(&Vector3::component))(
+        rttr::select_overload<float(const uint32) const>(&Vector3::component))(
         metaScriptable(),
         metaTooltip("Returns the specified component of the vector (0 = X, 1 = Y, 2 = Z)."),
         metaCategory("[Math]"))

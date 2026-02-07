@@ -4,6 +4,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/Externals_Catch2.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Link_RTTR.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Warnings.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Externals_Sol2.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/Externals_Lua.cmake)
 
 function(ge_setup_test_dependencies)
   ge_setup_nlohmann_json()
