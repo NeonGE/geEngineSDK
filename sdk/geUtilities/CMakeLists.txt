@@ -1,5 +1,6 @@
 ge_setup_lz4()
 ge_setup_nlohmann_json()
+ge_setup_sol2()
 
 add_library(geUtilities SHARED
 	include/geBitmapWriter.h
@@ -178,6 +179,11 @@ target_link_libraries(geUtilities
 		ICU::data
 )
 endif()
+
+target_link_libraries(geUtilities
+	PRIVATE
+		ge_sol2
+)
 
 get_target_property(GEUTIL_SOURCES geUtilities SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${GEUTIL_SOURCES})

@@ -19,6 +19,7 @@
 #include "geSphere.h"
 #include "geBox.h"
 #include "geMatrix4.h"
+#include "geTransform.h"
 
 namespace geEngineSDK {
 

@@ -19,10 +19,29 @@
 /*****************************************************************************/
 #include "geBoxSphereBounds.h"
 #include "geMatrix4.h"
+#include "geTransform.h"
 
 namespace geEngineSDK {
+  void
+  BoxSphereBounds::diagnosticCheckNaN() const {
+# if USING(GE_DEBUG_MODE)
+    if (m_origin.containsNaN()) {
+      GE_LOG(kError, Generic, "Origin contains NaN");
+      const_cast<BoxSphereBounds*>(this)->m_origin = Vector3::ZERO;
+    }
+    if (m_boxExtent.containsNaN()) {
+      GE_LOG(kError, Generic, "BoxExtent contains NaN");
+      const_cast<BoxSphereBounds*>(this)->m_boxExtent = Vector3::ZERO;
+    }
+    if (Math::isNaN(m_sphereRadius) || !Math::isFinite(m_sphereRadius)) {
+      GE_LOG(kError, Generic, "SphereRadius contains NaN");
+      const_cast<BoxSphereBounds*>(this)->m_sphereRadius = 0.f;
+    }
+# endif
+  }  
+
   BoxSphereBounds
-    BoxSphereBounds::transformBy(const Matrix4& M) const {
+  BoxSphereBounds::transformBy(const Matrix4& M) const {
 # if USING(GE_DEBUG_MODE)
     if (M.containsNaN()) {
       GE_LOG(kError, Generic, "Input Matrix contains NaN/Inf!");

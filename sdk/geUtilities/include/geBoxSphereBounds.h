@@ -251,26 +251,8 @@ namespace geEngineSDK {
       return Result;
     }
 
-# if USING(GE_DEBUG_MODE)
-    FORCEINLINE void
-    diagnosticCheckNaN() const {
-      if (m_origin.containsNaN()) {
-        GE_LOG(kError, Generic, "Origin contains NaN");
-        const_cast<BoxSphereBounds*>(this)->m_origin = Vector3::ZERO;
-      }
-      if (m_boxExtent.containsNaN()) {
-        GE_LOG(kError, Generic, "BoxExtent contains NaN");
-        const_cast<BoxSphereBounds*>(this)->m_boxExtent = Vector3::ZERO;
-      }
-      if (Math::isNaN(m_sphereRadius) || !Math::isFinite(m_sphereRadius)) {
-        GE_LOG(kError, Generic, "SphereRadius contains NaN");
-        const_cast<BoxSphereBounds*>(this)->m_sphereRadius = 0.f;
-      }
-    }
-# else
-    FORCEINLINE void
-    diagnosticCheckNaN() const {}
-# endif
+    GE_UTILITIES_EXPORT void
+    diagnosticCheckNaN() const;
 
     inline bool
     containsNaN() const {

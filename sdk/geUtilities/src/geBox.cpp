@@ -21,17 +21,10 @@
 #include "geBox.h"
 #include "geVector4.h"
 #include "geMatrix4.h"
+#include "geTransform.h"
 
-#define SIMDPP_ARCH_X86_SSE4_1
-
-#if USING(GE_COMPILER_MSVC)
-# pragma warning(disable: 4127)
-# pragma warning(disable: 4244)
-#endif
-
-#if USING(GE_COMPILER_MSVC)
-# pragma warning(default: 4127)
-# pragma warning(default: 4244)
+#if USING(GE_REFLECTION)
+# include "geRTTRMeta.h"
 #endif
 
 namespace geEngineSDK {
@@ -163,4 +156,136 @@ namespace geEngineSDK {
 
     return AABox(MinVector, MaxVector);
   }
+
+#if USING(GE_REFLECTION)
+  RTTR_REGISTRATION
+  {
+    using namespace rttr;
+    registration::class_<AABox>("AABox")
+    .constructor<>()(
+      metaScriptable(),
+      metaTooltip("Default constructor with non-initialized values."),
+      metaCategory("[Math]"))
+    .constructor<const Vector3&, const Vector3&>()(
+      metaScriptable(),
+      metaTooltip("Constructs and initializes an AABox from the given minimum and maximum points."),
+      metaCategory("[Math]"))
+
+    //Properties
+    .property("min", &AABox::m_min)(
+      metaScriptable(),
+      metaCategory("[Math]"),
+      metaTooltip("Minimum point of the box."))
+    .property("max", &AABox::m_max)(
+      metaScriptable(),
+      metaCategory("[Math]"),
+      metaTooltip("Maximum point of the box."))
+
+    //Methods
+    .method("computeSquaredDistanceToPoint", &AABox::computeSquaredDistanceToPoint)(
+      metaScriptable(),
+      metaTooltip("Computes the squared distance from a point to the box."),
+      metaCategory("[Math]"))
+
+    .method("expandBy",
+      rttr::select_overload<AABox(float)const>(&AABox::expandBy))(
+      metaScriptable(),
+      metaTooltip("Expands the box by a given distance in all directions."),
+      metaCategory("[Math]"))
+    .method("expandBy",
+      rttr::select_overload<AABox(const Vector3&)const>(&AABox::expandBy))(
+      metaScriptable(),
+      metaTooltip("Expands the box by a given vector, where each component "  \
+                  "specifies the expansion distance in that direction."),
+      metaCategory("[Math]"))
+    .method("expandBy",
+      rttr::select_overload<AABox(const Vector3&, const Vector3&)const>(&AABox::expandBy))(
+      metaScriptable(),
+      metaTooltip("Expands the box by given minimum and maximum vectors."),
+      metaCategory("[Math]"))
+    .method("shiftBy", &AABox::shiftBy)(
+      metaScriptable(),
+      metaTooltip("Shifts the box by the given vector."),
+      metaCategory("[Math]"))
+    .method("moveTo", &AABox::moveTo)(
+      metaScriptable(),
+      metaTooltip("Moves the box to the specified location, keeping its size."),
+      metaCategory("[Math]"))
+    .method("getCenter", &AABox::getCenter)(
+      metaScriptable(),
+      metaTooltip("Gets the center point of the box."),
+      metaCategory("[Math]"))
+    .method("getClosestPointTo", &AABox::getClosestPointTo)(
+      metaScriptable(),
+      metaTooltip("Gets the closest point on the box to the specified point."),
+      metaCategory("[Math]"))
+    .method("getExtent", &AABox::getExtent)(
+      metaScriptable(),
+      metaTooltip("Gets the extent (size) of the box."),
+      metaCategory("[Math]"))
+    .method("getSize", &AABox::getSize)(
+      metaScriptable(),
+      metaTooltip("Gets the size of the box."),
+      metaCategory("[Math]"))
+    .method("getVolume", &AABox::getVolume)(
+      metaScriptable(),
+      metaTooltip("Gets the volume of the box."),
+      metaCategory("[Math]"))
+    .method("intersect", &AABox::intersect)(
+      metaScriptable(),
+      metaTooltip("Checks if this box intersects with another box."),
+      metaCategory("[Math]"))
+    .method("intersectXY", &AABox::intersectXY)(
+      metaScriptable(),
+      metaTooltip("Checks if this box intersects with another box in the XY plane."),
+      metaCategory("[Math]"))
+    .method("overlap", &AABox::overlap)(
+      metaScriptable(),
+      metaTooltip("Calculates the overlapping box between this box and another box."),
+      metaCategory("[Math]"))
+    .method("isInside",
+      rttr::select_overload<bool(const Vector3&) const>(&AABox::isInside))(
+      metaScriptable(),
+      metaTooltip("Checks if a point is inside the box."),
+      metaCategory("[Math]"))
+    .method("isInsideOrOn", &AABox::isInsideOrOn)(
+      metaScriptable(),
+      metaTooltip("Checks if a point is inside or on the boundary of the box."),
+      metaCategory("[Math]"))
+    .method("isInside",
+      rttr::select_overload<bool(const AABox&) const>(&AABox::isInside))(
+      metaScriptable(),
+      metaTooltip("Checks if another box is completely inside this box."),
+      metaCategory("[Math]"))
+    .method("isInsideXY",
+      rttr::select_overload<bool(const Vector3&) const>(&AABox::isInsideXY))(
+      metaScriptable(),
+      metaTooltip("Checks if a point is inside the box in the XY plane."),
+      metaCategory("[Math]"))
+    .method("isInsideXY",
+      rttr::select_overload<bool(const AABox&) const>(&AABox::isInsideXY))(
+      metaScriptable(),
+      metaTooltip("Checks if another box is completely inside this box in the XY plane."),
+      metaCategory("[Math]"))
+    .method("transformBy",
+      rttr::select_overload<AABox(const Matrix4&) const>(&AABox::transformBy))(
+      metaScriptable(),
+      metaTooltip("Transforms the box by the given matrix."),
+      metaCategory("[Math]"))
+    .method("transformBy",
+      rttr::select_overload<AABox(const Transform&) const>(&AABox::transformBy))(
+      metaScriptable(),
+      metaTooltip("Transforms the box by the given Transform object."),
+      metaCategory("[Math]"))
+    .method("inverseTransformBy", &AABox::inverseTransformBy)(
+      metaScriptable(),
+      metaTooltip("Inverse transforms the box by the given Transform object."),
+      metaCategory("[Math]"))
+    .method("transformProjectBy", &AABox::transformProjectBy)(
+      metaScriptable(),
+      metaTooltip("Transforms the box by the given projection matrix."),
+      metaCategory("[Math]"))
+    ;
+  }
+#endif
 }

@@ -21,7 +21,6 @@
 /*****************************************************************************/
 #include "gePrerequisitesUtilities.h"
 #include "geVector3.h"
-#include "geTransform.h"
 
 namespace geEngineSDK {
   /**
@@ -36,14 +35,14 @@ namespace geEngineSDK {
     /**
      * @brief Default constructor (no initialization).
      */
-    AABox() = default;
+    CONSTEXPR AABox() = default;
 
     /**
     * @brief Creates and initializes a new box with zero extent and marks it as
     *        invalid.
     * @param FORCE_INIT enum.
     */
-    explicit AABox(FORCE_INIT::E) {
+    FORCEINLINE explicit AABox(FORCE_INIT::E) {
       init();
     }
 

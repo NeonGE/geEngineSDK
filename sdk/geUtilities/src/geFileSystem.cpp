@@ -107,15 +107,20 @@ namespace geEngineSDK {
 
   uint64
   sys_getFileSize(const WString& path) {
-    fileSys::path filePath = path;
+    fileSys::path filePath{ path };
 
-    //Check if the path exists and is a regular file
-    fileSys::file_status status = fileSys::status(filePath);
-    if (fileSys::exists(status) && fileSys::is_regular_file(status)) {
-      return static_cast<uint64>(fileSys::file_size(filePath));
+    std::error_code ec;
+    const auto st = fileSys::status(filePath, ec);
+    if (ec || !fileSys::is_regular_file(st)) {
+      return 0;
     }
 
-    return 0;
+    const auto sz = fileSys::file_size(filePath, ec);
+    if (ec) {
+      return 0;
+    }
+
+    return static_cast<uint64>(sz);
   }
 
   time_t
@@ -154,8 +159,7 @@ namespace geEngineSDK {
 
     ACCESS_MODE::E accessMode = ACCESS_MODE::kREAD;
     if (!readOnly) {
-      accessMode = static_cast<ACCESS_MODE::E>(accessMode |
-                     static_cast<uint32>(ACCESS_MODE::kWRITE));
+      accessMode = static_cast<ACCESS_MODE::E>(accessMode | ACCESS_MODE::kWRITE);
     }
 
     return ge_shared_ptr_new<FileDataStream>(fullPath, accessMode, true);
