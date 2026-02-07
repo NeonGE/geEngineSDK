@@ -51,11 +51,14 @@ function(ge_setup_lua)
   # SHA256 for lua-5.5.0.tar.gz from lua.org download page (recommended)
   set(GE_LUA_SHA256  "57ccc32bbbd005cab75bcc52444052535af691789dba2b9016d5c50640d68b3d")
 
+  if(POLICY CMP0135)
+    cmake_policy(SET CMP0135 NEW)
+  endif()
+
   FetchContent_Declare(
     lua_upstream
     URL ${GE_LUA_URL}
     URL_HASH SHA256=${GE_LUA_SHA256}
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
   )
 
   FetchContent_MakeAvailable(lua_upstream)
