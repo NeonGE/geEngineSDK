@@ -53,7 +53,7 @@ function(ge_setup_lua)
 
   FetchContent_Declare(
     lua_upstream
-    URL      ${GE_LUA_URL}
+    URL ${GE_LUA_URL}
     URL_HASH SHA256=${GE_LUA_SHA256}
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
   )
