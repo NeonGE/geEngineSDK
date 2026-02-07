@@ -181,7 +181,7 @@ namespace geEngineSDK {
     TASKPRIORITY::E m_priority;
     function<void(uint32)> m_taskWorker;
     SPtr<Task> m_taskDependency;
-    atomic<uint32> m_numRemainingTasks{ m_count };
+    atomic<uint32> m_numRemainingTasks{ 0 };
 
     TaskScheduler* m_parent = nullptr;
   };

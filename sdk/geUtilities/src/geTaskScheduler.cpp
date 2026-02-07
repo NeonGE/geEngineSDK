@@ -83,7 +83,8 @@ namespace geEngineSDK {
       m_count(count),
       m_priority(priority),
       m_taskWorker(std::move(taskWorker)),
-      m_taskDependency(std::move(dependency))
+      m_taskDependency(std::move(dependency)),
+      m_numRemainingTasks(count)
   {}
 
   SPtr<TaskGroup>
@@ -172,11 +173,13 @@ namespace geEngineSDK {
   TaskScheduler::addTaskGroup(const SPtr<TaskGroup>& taskGroup) {
     Lock lock(m_readyMutex);
 
+    taskGroup->m_numRemainingTasks.store(taskGroup->m_count, std::memory_order_relaxed);
+
     for (uint32 i = 0; i < taskGroup->m_count; ++i) {
       const auto worker = [i, taskGroup]
       {
         taskGroup->m_taskWorker(i);
-        --taskGroup->m_numRemainingTasks;
+        taskGroup->m_numRemainingTasks.fetch_sub(1, std::memory_order_acq_rel);
       };
 
       SPtr<Task> task = Task::create(taskGroup->m_name,
@@ -309,24 +312,28 @@ namespace geEngineSDK {
       return;
     }
 
-    {
-      Lock lock(m_completeMutex);
-
-      while (!task->isComplete()) {
-        addWorker();
-        m_taskCompleteCond.wait(lock);
-        removeWorker();
+    while (!task->isComplete()) {
+      addWorker();
+      {
+        Lock lock(m_completeMutex);
+        while (!task->isComplete()) {
+          m_taskCompleteCond.wait(lock);
+        }
       }
+      removeWorker();
     }
   }
 
   void
   TaskScheduler::waitUntilComplete(const TaskGroup* taskGroup) {
-    Lock lock(m_completeMutex);
-
-    while (0 < taskGroup->m_numRemainingTasks) {
+    while (taskGroup->m_numRemainingTasks.load(std::memory_order_acquire) > 0) {
       addWorker();
-      m_taskCompleteCond.wait(lock);
+      {
+        Lock lock(m_completeMutex);
+        while (taskGroup->m_numRemainingTasks.load(std::memory_order_acquire) > 0) {
+          m_taskCompleteCond.wait(lock);
+        }
+      }
       removeWorker();
     }
   }
