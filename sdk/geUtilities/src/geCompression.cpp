@@ -48,12 +48,12 @@ namespace geEngineSDK {
 
     //Check return_value to determine what happened.
     if (compSize < 0) {
-      reportProgress(1.0f);
+      if (reportProgress) reportProgress(1.0f);
       GE_LOG(kError, Generic, "Failure trying to compress the data.");
       return nullptr;
     }
     else if (compSize == 0) {
-      reportProgress(1.0f);
+      if (reportProgress) reportProgress(1.0f);
       GE_LOG(kError, Generic, "Destination buffer couldn't hold all the information.");
       return nullptr;
     }
@@ -93,8 +93,9 @@ namespace geEngineSDK {
       if (reportProgress) {
         reportProgress(1.0f);
       }
-      GE_LOG(kError, Generic, "Invalid compressed data");
-      return nullptr;
+      auto out = ge_shared_ptr_new<MemoryDataStream>(0);
+      out->seek(0);
+      return out;
     }
 
     //Create a buffer the size of the original data

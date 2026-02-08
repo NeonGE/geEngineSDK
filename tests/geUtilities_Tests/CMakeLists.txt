@@ -22,6 +22,7 @@ add_executable(geUtilities_Tests
 
   src/core_DataStream.cpp
   src/core_FileSystem.cpp
+  src/core_Compression.cpp
   src/core_Event.cpp
   src/core_Threading.cpp
   src/core_ThreadPool.cpp
