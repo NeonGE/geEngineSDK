@@ -27,6 +27,8 @@ add_executable(geUtilities_Tests
   src/core_Threading.cpp
   src/core_ThreadPool.cpp
   src/core_TaskScheduler.cpp
+  src/core_Time.cpp
+  src/core_UUID.cpp
 )
 
 # Mantener mismo layout de outputs (bin/lib) por platform/config

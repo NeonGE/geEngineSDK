@@ -207,7 +207,7 @@ namespace geEngineSDK {
     }
 
     friend Degree
-    operator+(Degree& lhs, float rhs) {
+    operator+(const Degree& lhs, float rhs) {
       return Degree(lhs.m_degree + rhs);
     }
     

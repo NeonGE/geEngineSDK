@@ -208,7 +208,7 @@ namespace geEngineSDK {
     }
     
     friend Radian
-    operator+(Radian& lhs, float rhs) {
+    operator+(const Radian& lhs, float rhs) {
       return Radian(lhs.m_radian + rhs);
     }
     
