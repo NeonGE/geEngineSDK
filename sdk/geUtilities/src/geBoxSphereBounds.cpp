@@ -21,6 +21,10 @@
 #include "geMatrix4.h"
 #include "geTransform.h"
 
+#if USING(GE_REFLECTION)
+# include "geRTTRMeta.h"
+#endif
+
 namespace geEngineSDK {
   void
   BoxSphereBounds::diagnosticCheckNaN() const {
@@ -85,4 +89,98 @@ namespace geEngineSDK {
     BoxSphereBounds Result = transformBy(Mat);
     return Result;
   }
+
+#if USING(GE_REFLECTION)
+  RTTR_REGISTRATION
+  {
+    using namespace rttr;
+    registration::class_<BoxSphereBounds>("BoxSphereBounds")
+    .constructor<>()(
+      metaScriptable(),
+      metaTooltip("Default constructor with non-initialized values."),
+      metaCategory("[Math]"))
+    .constructor<const Vector3&, const Vector3&, float>()(
+      metaScriptable(),
+      metaTooltip("Constructs and initializes a BoxSphereBounds from the given parameters."),
+      metaCategory("[Math]"))
+    .constructor<const AABox&, const Sphere&>()(
+      metaScriptable(),
+      metaTooltip("Constructs and initializes a BoxSphereBounds from the "    \
+                  "given Box and Sphere."),
+      metaCategory("[Math]"))
+    .constructor<const AABox&>()(
+      metaScriptable(),
+      metaTooltip("Constructs and initializes a BoxSphereBounds from the given Box."),
+      metaCategory("[Math]"))
+    .constructor<const Sphere&>()(
+      metaScriptable(),
+      metaTooltip("Constructs and initializes a BoxSphereBounds from the given Sphere."),
+      metaCategory("[Math]"))
+
+    //Properties
+    .property("origin", &BoxSphereBounds::m_origin)(
+      metaScriptable(),
+      metaCategory("[Math]"),
+      metaTooltip("The origin of the bounding box and sphere."))
+
+    .property("boxExtent", &BoxSphereBounds::m_boxExtent)(
+      metaScriptable(),
+      metaCategory("[Math]"),
+      metaTooltip("The extent of the bounding box."))
+
+    .property("sphereRadius", &BoxSphereBounds::m_sphereRadius)(
+      metaScriptable(),
+      metaCategory("[Math]"),
+      metaTooltip("The radius of the bounding sphere."))
+
+    //Methods
+    .method("transformBy",
+      select_overload<BoxSphereBounds(const Matrix4&) const>(&BoxSphereBounds::transformBy))(
+      metaScriptable(),
+      metaTooltip("Transforms this bounding volume by the given matrix and "  \
+                  "returns the result."),
+      metaCategory("[Math]"))
+    .method("transformBy",
+      select_overload<BoxSphereBounds(const Transform&) const>(&BoxSphereBounds::transformBy))(
+      metaScriptable(),
+      metaTooltip("Transforms this bounding volume by the given transform "   \
+                  "and returns the result."),
+      metaCategory("[Math]"))
+    .method("expandBy", &BoxSphereBounds::expandBy)(
+      metaScriptable(),
+      metaTooltip("Returns a new bounding volume with the box and sphere "    \
+                  "expanded by the given amount."),
+      metaCategory("[Math]"))
+    .method("getBox", &BoxSphereBounds::getBox)(
+      metaScriptable(),
+      metaTooltip("Returns the bounding box."),
+      metaCategory("[Math]"))
+    .method("getSphere", &BoxSphereBounds::getSphere)(
+      metaScriptable(),
+      metaTooltip("Returns the bounding sphere."),
+      metaCategory("[Math]"))
+    .method("getBoxExtrema", &BoxSphereBounds::getBoxExtrema)(
+      metaScriptable(),
+      metaTooltip("Returns the bounding box extrema. Pass 1 for positive "    \
+                  "extrema from the origin, else negative."),
+      metaCategory("[Math]"))
+    .method("computeSquaredDistanceFromBoxToPoint",
+            &BoxSphereBounds::computeSquaredDistanceFromBoxToPoint)(
+      metaScriptable(),
+      metaTooltip("Computes the squared distance from the bounding box to a point."),
+      metaCategory("[Math]"))
+    .method("spheresIntersect", &BoxSphereBounds::spheresIntersect)(
+      metaScriptable(),
+      metaTooltip("Checks whether the bounding sphere of this volume "        \
+                  "intersects with that of another."),
+      metaCategory("[Math]"))
+
+    .method("boxesIntersect", &BoxSphereBounds::boxesIntersect)(
+      metaScriptable(),
+      metaTooltip("Checks whether the bounding box of this volume "          \
+                  "intersects with that of another."),
+      metaCategory("[Math]"))
+    ;
+  }
+#endif
 }
