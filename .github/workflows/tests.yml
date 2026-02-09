@@ -31,7 +31,8 @@ jobs:
 
       - name: Build
         run: |
-          cmake --build build
+           mkdir -p build/logs
+           cmake --build build 2>&1 | tee build/logs/build.log
 
       - name: Run tests (CTest -> JUnit)
         run: |
