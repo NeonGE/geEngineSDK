@@ -34,6 +34,7 @@ add_library(geUtilities SHARED
 	include/geFwdDeclUtil.h
 	include/geGroupAlloc.h
 	include/geLog.h
+	include/geLookupTable.h
 	include/geMacroUtil.h
 	include/geMath.h
 	include/geMatrix4.h
@@ -61,6 +62,7 @@ add_library(geUtilities SHARED
 	include/geRect2.h
 	include/geRotator.h
 	include/geSmallVector.h
+	include/geSmartEnum.h
 	include/geSphere.h
 	include/geSpinLock.h
 	include/geStackAlloc.h

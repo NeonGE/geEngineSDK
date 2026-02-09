@@ -185,7 +185,7 @@ bool LogCategory##name::s_registered = Log::_registerCategory(LogCategory##name:
                           String("\n\t\t in ") +                              \
                           __PRETTY_FUNCTION__ +                               \
                           " [" + __FILE__ + ":" +                             \
-                          toString(__LINE__) + "]\n",                         \
+                          toString(int32(__LINE__)) + "]\n",                  \
                   LogVerbosity::verbosity, LogCategory##category::_id);       \
   }} while (0)
 

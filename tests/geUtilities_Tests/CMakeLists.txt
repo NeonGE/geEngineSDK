@@ -30,6 +30,7 @@ add_executable(geUtilities_Tests
   src/core_Time.cpp
   src/core_UUID.cpp
   src/core_Random.cpp
+  src/core_SmartEnum.cpp
 )
 
 # Mantener mismo layout de outputs (bin/lib) por platform/config
