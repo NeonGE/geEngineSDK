@@ -1,0 +1,142 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test_linux:
+    runs-on: ubuntu-22.04
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
+      CTEST_OUTPUT_ON_FAILURE: 1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build build-essential git \
+            libicu-dev
+
+      - name: Configure
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DBUILD_TESTING=ON
+
+      - name: Build
+        run: |
+          cmake --build build
+
+      - name: Run tests (CTest -> JUnit)
+        run: |
+          mkdir -p build/test-results
+          ctest --test-dir build --output-junit build/test-results/ctest.xml
+
+      - name: Upload test results (JUnit XML)
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-linux
+          path: build/test-results
+
+  coverage_linux:
+    runs-on: ubuntu-22.04
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
+      CTEST_OUTPUT_ON_FAILURE: 1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build tools (with lcov)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build build-essential git \
+            libicu-dev lcov
+
+      - name: Configure (coverage)
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_TESTING=ON \
+            -DCMAKE_C_FLAGS="--coverage -O0 -g" \
+            -DCMAKE_CXX_FLAGS="--coverage -O0 -g" \
+            -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+
+      - name: Build
+        run: |
+          cmake --build build
+
+      - name: Run tests
+        run: |
+          ctest --test-dir build --output-on-failure
+
+      - name: Generate lcov report
+        run: |
+          lcov --capture --directory build --output-file coverage.info
+          lcov --remove coverage.info \
+            '/usr/*' \
+            '*/_deps/*' \
+            '*/tests/*' \
+            --output-file coverage.info
+          lcov --list coverage.info
+
+      - name: Upload to Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          file: coverage.info
+          format: lcov
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-linux
+          path: coverage.info
+
+  test_windows:
+    runs-on: windows-2022
+    env:
+      CTEST_OUTPUT_ON_FAILURE: 1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build tools (Chocolatey)
+        shell: powershell
+        run: |
+          choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+          choco install -y ninja
+
+      - name: Configure (VS 2022)
+        shell: powershell
+        run: |
+          cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DBUILD_TESTING=ON
+
+      - name: Build
+        shell: powershell
+        run: |
+          cmake --build build --config RelWithDebInfo
+
+      - name: Run tests (CTest -> JUnit)
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force build\test-results | Out-Null
+          ctest --test-dir build -C RelWithDebInfo --output-junit build\test-results\ctest.xml
+
+      - name: Upload test results (JUnit XML)
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-windows
+          path: build/test-results
