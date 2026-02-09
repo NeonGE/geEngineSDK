@@ -64,33 +64,27 @@ namespace geEngineSDK {
   GE_LOG_CATEGORY_IMPL(Platform);
   GE_LOG_CATEGORY_IMPL(Serialization);
 
+  const char*
+  verbosityToString(LogVerbosity v) {
+    switch (v)
+    {
+    case LogVerbosity::kFatal:       return "FATAL";
+    case LogVerbosity::kError:       return "ERROR";
+    case LogVerbosity::kWarning:     return "WARNING";
+    case LogVerbosity::kInfo:        return "INFO";
+    case LogVerbosity::kVerbose:     return "VERBOSE";
+    case LogVerbosity::kVeryVerbose: return "VERY_VERBOSE";
+    default:                         return "LOG";
+    }
+  }
+
   void
   Debug::log(const String& message, LogVerbosity verbosity, uint32 category) {
     m_log.logMsg(message, verbosity, category);
 
-    if (LogVerbosity::kLog != verbosity) {
-      switch (verbosity)
-      {
-      case LogVerbosity::kFatal:
-        logToIDEConsole(message, "FATAL");
-        break;
-      case LogVerbosity::kError:
-        logToIDEConsole(message, "ERROR");
-        break;
-      case LogVerbosity::kWarning:
-        logToIDEConsole(message, "WARNING");
-        break;
-      default:
-      case LogVerbosity::kInfo:
-        logToIDEConsole(message, "INFO");
-        break;
-      case LogVerbosity::kVerbose:
-        logToIDEConsole(message, "VERBOSE");
-        break;
-      case LogVerbosity::kVeryVerbose:
-        logToIDEConsole(message, "VERY_VERBOSE");
-        break;
-      }
+    //Filter console output
+    if (verbosity <= m_consoleVerbosity) {
+      logToIDEConsole(message, verbosityToString(verbosity));
     }
   }
 

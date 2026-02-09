@@ -12,6 +12,7 @@ using namespace geEngineSDK;
 
 TEST_CASE("RTTR Dependency Testing", "[CORE][RTTR]")
 {
+  /*
   std::cout << "RTTR Dependency Testing:\n";
 
   std::cout << "Class: Vector3\n";
@@ -35,6 +36,7 @@ TEST_CASE("RTTR Dependency Testing", "[CORE][RTTR]")
       }
     }
   }
+  */
 }
 
 #endif // USING(GE_REFLECTION)

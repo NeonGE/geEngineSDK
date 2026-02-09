@@ -21,6 +21,7 @@
  */
 /*****************************************************************************/
 #include "geMatrix4.h"
+#include "geQuaternion.h"
 
 namespace geEngineSDK {
   const Matrix4 Matrix4::ZERO(0.0f, 0.0f, 0.0f, 0.0f,
@@ -266,5 +267,20 @@ namespace geEngineSDK {
     const Vector3 NewY = NewZ ^ NewX;
 
     return Matrix4(NewX, NewY, NewZ, Vector3::ZERO);
+  }
+
+  InverseRotationMatrix::InverseRotationMatrix(const Rotator& Rot)
+    : Matrix4(FORCE_INIT::kForceInit) {
+    // Build the "official" rotation the same way RotationTranslationMatrix does.
+    Quaternion q = Rot.toQuaternion().getNormalized();
+    Matrix4 R = q.toMatrix();
+
+    // Inverse of an orthonormal rotation is transpose (3x3).
+    m[0][0] = R.m[0][0]; m[0][1] = R.m[1][0]; m[0][2] = R.m[2][0]; m[0][3] = 0.f;
+    m[1][0] = R.m[0][1]; m[1][1] = R.m[1][1]; m[1][2] = R.m[2][1]; m[1][3] = 0.f;
+    m[2][0] = R.m[0][2]; m[2][1] = R.m[1][2]; m[2][2] = R.m[2][2]; m[2][3] = 0.f;
+
+    // No translation in inverse-rotation matrix.
+    m[3][0] = 0.f; m[3][1] = 0.f; m[3][2] = 0.f; m[3][3] = 1.f;
   }
 }

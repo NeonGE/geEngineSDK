@@ -114,7 +114,10 @@ TEST_CASE("Compression: decompress accepts header with original size = 0 (empty 
   REQUIRE(out->size() == 0);
 }
 
+#include <geDebug.h>
+
 TEST_CASE("Compression: decompress rejects stream smaller than header", "[Compression]") {
+  g_debug().setConsoleVerbosity(LogVerbosity::kFatal); //Avoid logging to console
   auto s = ge_shared_ptr_new<MemoryDataStream>(4); // < sizeof(uint64)
   uint32 junk = 0x12345678;
   s->write(&junk, sizeof(junk));
@@ -126,6 +129,7 @@ TEST_CASE("Compression: decompress rejects stream smaller than header", "[Compre
 }
 
 TEST_CASE("Compression: decompress fails on corrupted payload", "[Compression]") {
+  g_debug().setConsoleVerbosity(LogVerbosity::kFatal); //Avoid logging to console
   auto s = ge_shared_ptr_new<MemoryDataStream>(sizeof(uint64) + 8);
   uint64 original = 64;
   uint8 payload[8] = { 1,2,3,4,5,6,7,8 }; // basura
@@ -140,6 +144,7 @@ TEST_CASE("Compression: decompress fails on corrupted payload", "[Compression]")
 
 
 TEST_CASE("Compression: decompress fails on truncated payload", "[Compression]") {
+  g_debug().setConsoleVerbosity(LogVerbosity::kFatal); //Avoid logging to console
   // header dice que original size = 16, pero payload es basura/truncado
   auto bad = ge_shared_ptr_new<MemoryDataStream>(sizeof(uint64) + 4);
   uint64 original = 16;

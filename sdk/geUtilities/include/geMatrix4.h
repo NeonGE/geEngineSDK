@@ -25,7 +25,7 @@
 #include "geVector3.h"
 #include "geVector4.h"
 #include "geRotator.h"
-#include "geQuaternion.h"
+//#include "geQuaternion.h"
 #include "gePlane.h"
 
 namespace geEngineSDK {
@@ -2295,43 +2295,8 @@ namespace geEngineSDK {
      * @brief Constructor.
      * @param Rot rotation
      */
-    InverseRotationMatrix(const Rotator& Rot);
-  };
-
-  FORCEINLINE InverseRotationMatrix::InverseRotationMatrix(const Rotator& Rot) : Matrix4(
-      Matrix4( //Yaw
-        Plane(+Math::cos(Rot.yaw * Math::DEG2RAD),
-              -Math::sin(Rot.yaw * Math::DEG2RAD),
-              0.0f,
-              0.0f),
-        Plane(+Math::sin(Rot.yaw * Math::DEG2RAD),
-              +Math::cos(Rot.yaw * Math::DEG2RAD),
-              0.0f,
-              0.0f),
-        Plane(0.0f, 0.0f, 1.0f, 0.0f),
-        Plane(0.0f, 0.0f, 0.0f, 1.0f)) *
-      Matrix4( //Pitch
-        Plane(+Math::cos(Rot.pitch * Math::DEG2RAD),
-              0.0f,
-              -Math::sin(Rot.pitch * Math::DEG2RAD),
-              0.0f),
-        Plane(0.0f, 1.0f, 0.0f, 0.0f),
-        Plane(+Math::sin(Rot.pitch * Math::DEG2RAD),
-              0.0f,
-              +Math::cos(Rot.pitch * Math::DEG2RAD),
-              0.0f),
-        Plane(0.0f, 0.0f, 0.0f, 1.0f)) *
-      Matrix4( //Roll
-        Plane(1.0f, 0.0f, 0.0f, 0.0f),
-        Plane(0.0f,
-              +Math::cos(Rot.roll * Math::DEG2RAD),
-              +Math::sin(Rot.roll * Math::DEG2RAD),
-              0.0f),
-        Plane(0.0f,
-              -Math::sin(Rot.roll * Math::DEG2RAD),
-              +Math::cos(Rot.roll * Math::DEG2RAD),
-              0.0f),
-        Plane(0.0f, 0.0f, 0.0f, 1.0f))) {}
+    GE_UTILITIES_EXPORT InverseRotationMatrix(const Rotator& Rot);
+  }; 
 }
 
 namespace geEngineSDK {

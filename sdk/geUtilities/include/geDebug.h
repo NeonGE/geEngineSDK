@@ -123,12 +123,25 @@ namespace geEngineSDK {
     void
     _triggerCallbacks();
 
+    /**
+     * @brief Sets the verbosity level at which log messages will be printed to the console.
+     *        Messages with higher verbosity will not be printed to the console, but will
+     *        still be logged in the log file and trigger callbacks.
+     */
+    void
+    setConsoleVerbosity(LogVerbosity verbosity) {
+      m_consoleVerbosity = verbosity;
+    }
+
    private:
     uint64 m_logHash = 0;
     Log m_log;
     function<bool(const String& message,
                   LogVerbosity verbosity,
                   uint32 category)> m_customLogCallback;
+
+    //At what verbosity should the log message be printed to the console
+    LogVerbosity m_consoleVerbosity = LogVerbosity::kError;
   };
 
   /**
