@@ -116,7 +116,7 @@ namespace geEngineSDK {
     return Type##_ENUM_NAMES.at(static_cast<int32>(value));                   \
   }                                                                           \
                                                                               \
-  inline const Type                                                           \
+  inline Type                                                                 \
   Type##_toEnum(const String& name) {                                         \
     return static_cast<Type>(Type##_ENUM_VALUES.at(name));                    \
   }
@@ -135,7 +135,7 @@ namespace geEngineSDK {
     return Type##_ENUM_NAMES.at(static_cast<int32>(value));                   \
   }                                                                           \
                                                                               \
-  inline const Type                                                           \
+  inline Type                                                                 \
   Type##_toEnum(const String& name) {                                         \
     return static_cast<Type>(Type##_ENUM_VALUES.at(name));                    \
   }
