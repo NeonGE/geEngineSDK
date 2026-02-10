@@ -26,23 +26,38 @@ function(ge_enable_strict_warnings target)
     )
 
   else() # GCC / Clang
+     # Base común (GCC/Clang)
     target_compile_options(${target} PRIVATE
       -Wall
       -Wextra
       -Wpedantic
       -Wshadow
-      -Wconversion
-      -Wsign-conversion
-      -Wdouble-promotion
       -Wformat=2
       -Wundef
-      -Wold-style-cast
       -Woverloaded-virtual
       -Wnon-virtual-dtor
       -Wnull-dereference
-      -Wuseless-cast
       -Wimplicit-fallthrough
     )
+
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      target_compile_options(${target} PRIVATE
+        -Wconversion
+        -Wsign-conversion
+        -Wdouble-promotion
+        -Wold-style-cast
+        -Wuseless-cast
+      )
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      # GCC: menos ruido
+      target_compile_options(${target} PRIVATE
+        -Wno-conversion
+        -Wno-sign-conversion
+        -Wno-double-promotion
+        -Wno-old-style-cast
+        -Wno-useless-cast
+      )
+    endif()
   endif()
 
 endfunction()
