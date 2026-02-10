@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 
+#include "gePrerequisitesUtilities.h"
 #include "geSmartEnum.h"
 
 using namespace geEngineSDK;
