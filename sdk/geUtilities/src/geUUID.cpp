@@ -154,8 +154,13 @@ namespace geEngineSDK {
     //Hash the file path
     hash<String> hashFn;
     String filePathStr = filePath.toString();
+#if USING(GE_ARCHITECTURE_x86_64) || USING(GE_ARCHITECTURE_ARM_64)
+    uint64 hashValue1 = hashFn(filePathStr);
+    uint64 hashValue2 = hashFn(filePathStr + saltStream.str());
+#else
     uint64 hashValue1 = static_cast<uint64>(hashFn(filePathStr));
     uint64 hashValue2 = static_cast<uint64>(hashFn(filePathStr + saltStream.str()));
+#endif
 
     //Convert hash value to hex string (UUID-like format)
     StringStream ss;
@@ -172,53 +177,34 @@ namespace geEngineSDK {
 
   String
   UUID::toString() const {
-    uint8 output[36];
+    ANSICHAR output[36];
     uint32 idx = 0;
 
-    //First group: 8 digits
-    for (int32 i = 7; i >= 0; --i) {
-      uint32 hexVal = (m_data[0] >> (i * 4)) & 0xF;
-      output[idx++] = HEX_TO_LITERAL[hexVal];
-    }
+    auto emit32 = [&](uint32 v, int32 from, int32 to)
+    {
+      for (int32 i = from; i >= to; --i) {
+        const uint32 hexVal = (v >> (i * 4)) & 0xFu;
+        output[idx++] = HEX_TO_LITERAL[hexVal];
+      }
+    };
 
+    emit32(static_cast<uint32>(m_data[0]), 7, 0);
     output[idx++] = '-';
 
-    //Second group: 4 digits
-    for (int32 i = 7; i >= 4; --i) {
-      uint32 hexVal = (m_data[1] >> (i * 4)) & 0xF;
-      output[idx++] = HEX_TO_LITERAL[hexVal];
-    }
-
+    emit32(static_cast<uint32>(m_data[1]), 7, 4);
     output[idx++] = '-';
 
-    //Third group: 4 digits
-    for (int32 i = 3; i >= 0; --i) {
-      uint32 hexVal = (m_data[1] >> (i * 4)) & 0xF;
-      output[idx++] = HEX_TO_LITERAL[hexVal];
-    }
-
+    emit32(static_cast<uint32>(m_data[1]), 3, 0);
     output[idx++] = '-';
 
-    //Fourth group: 4 digits
-    for (int32 i = 7; i >= 4; --i) {
-      uint32 hexVal = (m_data[2] >> (i * 4)) & 0xF;
-      output[idx++] = HEX_TO_LITERAL[hexVal];
-    }
-
+    emit32(static_cast<uint32>(m_data[2]), 7, 4);
     output[idx++] = '-';
 
-    //Fifth group: 12 digits
-    for (int32 i = 3; i >= 0; --i) {
-      uint32 hexVal = (m_data[2] >> (i * 4)) & 0xF;
-      output[idx++] = HEX_TO_LITERAL[hexVal];
-    }
+    emit32(static_cast<uint32>(m_data[2]), 3, 0);
+    emit32(static_cast<uint32>(m_data[3]), 7, 0);
 
-    for (int32 i = 7; i >= 0; --i) {
-      uint32 hexVal = (m_data[3] >> (i * 4)) & 0xF;
-      output[idx++] = HEX_TO_LITERAL[hexVal];
-    }
-
-    return String(reinterpret_cast<const ANSICHAR*>(output), 36);
+    GE_ASSERT(idx == 36);
+    return String(output, 36);
   }
 
   UUID

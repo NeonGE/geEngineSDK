@@ -172,10 +172,9 @@ namespace geEngineSDK {
                           int32 NumPoints,
                           Vector<Vector3>& OutPoints) {
     GE_ASSERT(ControlPoints);
-    GE_ASSERT(NumPoints > 1);
+    GE_ASSERT(NumPoints >= 4);
 
-    //var q is the change in t between successive evaluations.
-    const float q = 1.f / (NumPoints - 1); //q is dependent on the number of GAPS = POINTS-1
+    const float q = 1.0f / static_cast<float>(NumPoints - 1);
 
     //recreate the names used in the derivation
     const Vector3& P0 = ControlPoints[0];
@@ -185,15 +184,15 @@ namespace geEngineSDK {
 
     //coefficients of the cubic polynomial that we're FDing -
     const Vector3 a = P0;
-    const Vector3 b = 3 * (P1 - P0);
-    const Vector3 c = 3 * (P2 - 2 * P1 + P0);
-    const Vector3 d = P3 - 3 * P2 + 3 * P1 - P0;
+    const Vector3 b = 3.0f * (P1 - P0);
+    const Vector3 c = 3.0f * (P2 - 2.0f * P1 + P0);
+    const Vector3 d = P3 - 3.0f * P2 + 3.0f * P1 - P0;
 
     //initial values of the poly and the 3 diffs -
-    Vector3 S = a;                        //the poly value
-    Vector3 U = b * q + c*q*q + d*q*q*q;	//1st order diff (quadratic)
-    Vector3 V = 2 * c*q*q + 6 * d*q*q*q;  //2nd order diff (linear)
-    Vector3 W = 6 * d*q*q*q;              // 3rd order diff (constant)
+    Vector3 S = a;                              //the poly value
+    Vector3 U = b * q + c*q*q + d*q*q*q;	      //1st order diff (quadratic)
+    Vector3 V = 2.0f * c*q*q + 6.0f * d*q*q*q;  //2nd order diff (linear)
+    Vector3 W = 6.0f * d*q*q*q;                 // 3rd order diff (constant)
 
     //Path length.
     float Length = 0.f;
@@ -229,12 +228,13 @@ namespace geEngineSDK {
     int32 clusterSize;
   };
 
-  void Vector3::generateClusterCenters(Vector<Vector3>& Clusters,
-                                       const Vector<Vector3>& Points,
-                                       int32 NumIterations,
-                                       int32 NumConnectionsToBeValid) {
+  void
+  Vector3::generateClusterCenters(Vector<Vector3>& Clusters,
+                                  const Vector<Vector3>& Points,
+                                  int32 NumIterations,
+                                  int32 NumConnectionsToBeValid) {
     //Check we have > 0 points and clusters
-    if (Points.empty() || Clusters.empty()) {
+    if (Points.empty() || Clusters.empty() || NumIterations <= 0) {
       return;
     }
 
@@ -244,23 +244,30 @@ namespace geEngineSDK {
 
     //Then iterate
     for (int32 ItCount = 0; ItCount < NumIterations; ++ItCount) {
+      //Reset accumulators each iteration
+      for (auto& c : ClusterData) {
+        c.clusterPosAccum = Vector3::ZERO;
+        c.clusterSize = 0;
+      }
+
       //Classify each point - find closest cluster center
       for (const Vector3& Pos : Points) {
         //Iterate over all clusters to find closes one
-        int32 NearestClusterIndex = -1;
-        float NearestClusterDistSqr = Math::BIG_NUMBER;
+        SIZE_T nearest = static_cast<SIZE_T>(-1);
+        float nearestDistSqr = Math::BIG_NUMBER;
+
         for (SIZE_T j = 0; j < Clusters.size(); ++j) {
-          const float DistSqr = (Pos - Clusters[j]).sizeSquared();
-          if (DistSqr < NearestClusterDistSqr) {
-            NearestClusterDistSqr = DistSqr;
-            NearestClusterIndex = static_cast<int32>(j);
+          const float distSqr = (Pos - Clusters[j]).sizeSquared();
+          if (distSqr < nearestDistSqr) {
+            nearestDistSqr = distSqr;
+            nearest = j;
           }
         }
         
         //Update its info with this point
-        if (-1 != NearestClusterIndex ) {
-          ClusterData[NearestClusterIndex].clusterPosAccum += Pos;
-          ClusterData[NearestClusterIndex].clusterSize++;
+        if (static_cast<SIZE_T>(-1) != nearest) {
+          ClusterData[nearest].clusterPosAccum += Pos;
+          ClusterData[nearest].clusterSize++;
         }
       }
 
@@ -275,10 +282,10 @@ namespace geEngineSDK {
 
     //So now after we have possible cluster centers we want to remove the ones
     //that are outliers and not part of the main cluster
-    for (int32 i = static_cast<int32>(ClusterData.size()-1); i >= 0; --i) {
-      if (ClusterData[i].clusterSize < NumConnectionsToBeValid) {
-        Vector<Vector3>::iterator nth = Clusters.begin() + i;
-        Clusters.erase(nth);
+    using Diff = Vector<Vector3>::difference_type;
+    for (Diff i = static_cast<Diff>(Clusters.size()); i-- > 0; ) {
+      if (ClusterData[static_cast<SIZE_T>(i)].clusterSize < NumConnectionsToBeValid) {
+        Clusters.erase(Clusters.begin() + i);
       }
     }
   }

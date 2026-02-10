@@ -269,7 +269,10 @@ namespace geEngineSDK {
             const char* colon = std::strchr(line, ':');
             if (colon) {
               double mhz = std::atof(colon + 1);
-              if (mhz > 0.0) { output.cpuClockSpeedMhz = (uint32)mhz; break; }
+              if (mhz > 0.0) {
+                output.cpuClockSpeedMhz = static_cast<uint32>(mhz);
+                break;
+              }
             }
           }
         }
@@ -285,15 +288,15 @@ namespace geEngineSDK {
       uint64_t memBytes = 0;
       size_t memSize = sizeof(memBytes);
       if (0 == sysctlbyname("hw.memsize", &memBytes, &memSize, nullptr, 0) && memBytes > 0) {
-        output.memoryAmountMb = (uint32)(memBytes / (1024ULL * 1024ULL));
+        output.memoryAmountMb = static_cast<uint32>(memBytes / (1024ULL * 1024ULL));
       }
     }
 #elif USING(GE_PLATFORM_LINUX)
     {
       struct sysinfo info {};
       if (0 == sysinfo(&info)) {
-        uint64_t totalBytes = (uint64_t)info.totalram * (uint64_t)info.mem_unit;
-        output.memoryAmountMb = (uint32)(totalBytes / (1024ULL * 1024ULL));
+        uint64_t totalBytes = uint64_t(info.totalram) * uint64_t(info.mem_unit);
+        output.memoryAmountMb = static_cast<uint32>(totalBytes / (1024ULL * 1024ULL));
       }
     }
 #endif
@@ -483,7 +486,7 @@ namespace geEngineSDK {
       }
 #else
       if (it->ifa_addr->sa_family == AF_PACKET) {
-        const struct sockaddr_ll* s = (const struct sockaddr_ll*)it->ifa_addr;
+        const auto* s = reinterpret_cast<const struct sockaddr_ll*>(it->ifa_addr);
         if (s->sll_halen == sizeof(MACAddress)) {
           std::memcpy(&address, s->sll_addr, sizeof(MACAddress));
           found = true;
@@ -538,10 +541,10 @@ namespace geEngineSDK {
     return UUID(data1, data2, data3, data4);
 #else
     //fallback: no libuuid
-    uint32 data1 = (uint32)std::rand();
-    uint32 data2 = (uint32)std::rand();
-    uint32 data3 = (uint32)std::rand();
-    uint32 data4 = (uint32)std::rand();
+    uint32 data1 = static_cast<uint32>(std::rand());
+    uint32 data2 = static_cast<uint32>(std::rand());
+    uint32 data3 = static_cast<uint32>(std::rand());
+    uint32 data4 = static_cast<uint32>(std::rand());
     return UUID(data1, data2, data3, data4);
 #endif
 
@@ -635,7 +638,7 @@ namespace geEngineSDK {
     const String s = path.toString();
     pid_t pid = fork();
     if (pid == 0) {
-      execlp("open", "open", s.c_str(), (char*)nullptr);
+      execlp("open", "open", s.c_str(), nullptr);
       _exit(127);
     }
 
@@ -643,7 +646,7 @@ namespace geEngineSDK {
     const String s = path.toString();
     pid_t pid = fork();
     if (pid == 0) {
-      execlp("xdg-open", "xdg-open", s.c_str(), (char*)nullptr);
+      execlp("xdg-open", "xdg-open", s.c_str(), nullptr);
       _exit(127);
     }
 #else

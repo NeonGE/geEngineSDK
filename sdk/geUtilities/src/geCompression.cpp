@@ -60,15 +60,16 @@ namespace geEngineSDK {
 
     //Create the return buffer set to the real size of the compression
     //We will save the first the size of the real data, and then the data
-    SPtr<MemoryDataStream> realComp_data = ge_shared_ptr_new<MemoryDataStream>(
-                                                    compSize + sizeof(uint64));
+    const SIZE_T compSizeBytes = static_cast<SIZE_T>(compSize);
+    const SIZE_T totalSize = compSizeBytes + sizeof(uint64);
+    SPtr<MemoryDataStream> realComp_data = ge_shared_ptr_new<MemoryDataStream>(totalSize);
 
     //This value indicates the real size of the data,
     //we need to save this for decompression purposes
-    auto headerSizeData = static_cast<uint64>(input->size());
+    uint64 headerSizeData = input->size();
 
     realComp_data->write(&headerSizeData, sizeof(uint64));
-    realComp_data->write(compData.getPtr(), compSize);
+    realComp_data->write(compData.getPtr(), compSizeBytes);
 
     //Set the buffer to the starting point
     realComp_data->seek(0);
@@ -93,8 +94,8 @@ namespace geEngineSDK {
       if (reportProgress) {
         reportProgress(1.0f);
       }
-      auto out = ge_shared_ptr_new<MemoryDataStream>(0);
-      out->seek(0);
+      auto out = ge_shared_ptr_new<MemoryDataStream>(0u);
+      out->seek(0u);
       return out;
     }
 

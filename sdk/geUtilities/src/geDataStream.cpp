@@ -346,9 +346,11 @@ namespace geEngineSDK {
     const SIZE_T pos = static_cast<SIZE_T>(m_pos - m_data);
     const SIZE_T end = static_cast<SIZE_T>(m_end - m_data);
     GE_ASSERT(pos <= end);
-
-    const SIZE_T avail = end - pos;
-    GE_ASSERT(count <= avail);
+    
+    const SIZE_T maxSkip = end - pos;
+    if (count > maxSkip) {
+      count = maxSkip;
+    }
 
     m_pos += count;
   }

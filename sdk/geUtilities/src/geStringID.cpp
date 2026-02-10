@@ -89,9 +89,10 @@ namespace geEngineSDK {
 
     uint32 hash = 0;
     for (uint32 i = 0; i < size; ++i) {
-      hash = hash * 101 + input[i];
+      using Elem = std::remove_cv_t<std::remove_reference_t<decltype(input[i])>>;
+      const uint32 v = static_cast<uint32>(static_cast<std::make_unsigned_t<Elem>>(input[i]));
+      hash = hash * 101u + v;
     }
-
     return hash;
   }
 
@@ -125,7 +126,7 @@ namespace geEngineSDK {
    public:
     static uint32
     size(const ANSICHAR* const& input) {
-      return (uint32)strlen(input);
+      return static_cast<uint32>(strlen(input));
     }
 
     static void
@@ -146,7 +147,7 @@ namespace geEngineSDK {
    public:
     static uint32
     size(String const& input) {
-        return(uint32)input.length();
+      return static_cast<uint32>(input.length());
     }
 
     static void

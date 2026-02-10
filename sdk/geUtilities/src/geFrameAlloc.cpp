@@ -170,8 +170,9 @@ namespace geEngineSDK {
 
       uint32 startBlockIdx = m_nextBlockIdx - 1;
       uint32 numFreedBlocks = 0;
-      for (int32 i = startBlockIdx; i >= 0; --i) {
-        MemBlock* curBlock = m_blocks[i];
+      for (int32 i = int32(startBlockIdx); i >= 0; --i) {
+        uint32 index = static_cast<uint32>(i);
+        MemBlock* curBlock = m_blocks[index];
         byte* blockEnd = curBlock->m_data + curBlock->m_size;
         if (framePtr >= curBlock->m_data && framePtr < blockEnd) {
           byte* dataEnd = curBlock->m_data + curBlock->m_freePtr;

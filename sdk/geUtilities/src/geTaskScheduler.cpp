@@ -223,7 +223,7 @@ namespace geEngineSDK {
     while (true) {
       Lock lock(m_readyMutex);
 
-      while ((!m_checkTasks || (uint32)m_activeTasks.size() >= m_maxActiveTasks)
+      while ((!m_checkTasks || static_cast<uint32>(m_activeTasks.size()) >= m_maxActiveTasks)
              && !m_shutdown) {
         m_taskReadyCond.wait(lock);
       }
@@ -235,7 +235,7 @@ namespace geEngineSDK {
       }
 
       for (auto iter = m_taskQueue.begin(); iter != m_taskQueue.end();) {
-        if ((uint32)m_activeTasks.size() >= m_maxActiveTasks) {
+        if (static_cast<uint32>(m_activeTasks.size()) >= m_maxActiveTasks) {
           break;
         }
 

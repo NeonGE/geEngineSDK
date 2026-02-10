@@ -60,7 +60,7 @@ namespace geEngineSDK {
     uint64 currentFrameTime = m_timer->getMicroseconds();
 
     if (!m_firstFrame) {
-      m_frameDelta = static_cast<float>((currentFrameTime - m_lastFrameTime) *
+      m_frameDelta = static_cast<float>(double(currentFrameTime - m_lastFrameTime) *
                                         MICROSEC_TO_SEC);
     }
     else {
@@ -68,8 +68,8 @@ namespace geEngineSDK {
       m_firstFrame = false;
     }
 
-    m_timeSinceStartMs = static_cast<uint64>(currentFrameTime / 1000);
-    m_timeSinceStart = m_timeSinceStartMs / 1000.0f;
+    m_timeSinceStartMs = currentFrameTime / 1000u;
+    m_timeSinceStart = float(m_timeSinceStartMs) / 1000.0f;
     m_lastFrameTime = currentFrameTime;
     m_currentFrame.fetch_add(1, memory_order_relaxed);
   }
@@ -110,7 +110,7 @@ namespace geEngineSDK {
                                              m_numRemainingFixedUpdates +
                                              NEW_FIXED_UPDATES_PER_FRAME);
 
-      step = stepus;
+      step = static_cast<uint64>(stepus);
       return numIterations;
     }
 

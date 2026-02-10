@@ -148,7 +148,7 @@ namespace geEngineSDK {
       return output;
     }
 
-    //UTF-32 válido: <= 0x10FFFF y NO surrogate range
+    //Valid UTF-32: <= 0x10FFFF and NO surrogate range
     if (input > 0x0010FFFF || (input >= 0xD800 && input <= 0xDFFF)) {
       *output++ = invalidChar;
       return output;
@@ -212,42 +212,45 @@ namespace geEngineSDK {
   /**
    * @brief Converts an UTF-16 encoded character into an UTF-32 character.
    */
-  template<typename T>
-  T
-  UTF16To32(T begin, T end, char32_t& output, char32_t invalidChar = 0) {
-    //Nothing to parse
-    if (begin >= end) {
-      return begin;
+  template<typename It>
+  It
+  UTF16To32(It it, It end, char32_t& output, char32_t invalidChar = 0) {
+    if (it == end) {
+      return it;
     }
 
-    char16_t firstElem = static_cast<char16_t>(*begin);
-    ++begin;
+    const char16_t first = static_cast<char16_t>(*it++);
+    const uint32_t u0 = static_cast<uint32_t>(first);
 
-    //Check if it's a surrogate pair
-    if ((0xD800 <= firstElem) && (0xDBFF >= firstElem)) {
-      //Invalid character
-      if (begin >= end) {
+    //High surrogate?
+    if (u0 >= 0xD800u && u0 <= 0xDBFFu) {
+      if (it == end) {
         output = invalidChar;
-        return end;
+        return it; //consumed only the high surrogate
       }
 
-      char32_t secondElem = static_cast<char32_t>(*begin);
-      ++begin;
+      const char16_t second = static_cast<char16_t>(*it);
+      const uint32_t u1 = static_cast<uint32_t>(second);
 
-      if ((0xDC00 <= secondElem) && (0xDFFF >= secondElem)) {
-        output = static_cast<char32_t>(((firstElem - 0xD800) << 10) +
-                                        (secondElem - 0xDC00) + 0x0010000);
+      if (u1 >= 0xDC00u && u1 <= 0xDFFFu) {
+        ++it; //consume low surrogate
+        output = static_cast<char32_t>(((u0 - 0xD800u) << 10) + (u1 - 0xDC00u) + 0x10000u);
+        return it;
       }
-      else {// Invalid character
-        output = invalidChar;
-      }
-    }
-    else {
-      output = static_cast<char32_t>(firstElem);
-      return begin;
+
+      //Invalid surrogate pair: consume only the high surrogate
+      output = invalidChar;
+      return it;
     }
 
-    return begin;
+    //Lone low surrogate (optional handling)
+    if (u0 >= 0xDC00u && u0 <= 0xDFFFu) {
+      output = invalidChar;
+      return it;
+    }
+
+    output = static_cast<char32_t>(u0);
+    return it;
   }
 
   /**
@@ -306,7 +309,7 @@ namespace geEngineSDK {
     //Assuming UTF-32 (i.e. Unix)
     SIZE_T sizeofWChar = sizeof(wchar_t);
     if (4 == sizeofWChar) {
-      output = (char32_t)*begin;
+      output = static_cast<char32_t>(*begin);
       ++begin;
 
       return begin;
@@ -332,19 +335,27 @@ namespace geEngineSDK {
     return output;
   }
 
-  template<typename T>
-  T
-  UTF32ToWide(char32_t input, T output, uint32 maxElems, wchar_t invalidChar = 0) {
-    //Assuming UTF-32 (i.e. Unix)
-    SIZE_T sizeofWChar = sizeof(wchar_t);
-    if (4 == sizeofWChar) {
-      *output = (wchar_t)input;
-      ++output;
-      return output;
+  template<typename OutIt>
+  OutIt UTF32ToWide(char32_t input, OutIt out, uint32 maxElems, wchar_t invalidChar = 0) {
+    if (maxElems == 0) {
+      return out;
     }
-    
-    //Assuming UTF-16 (i.e. Windows)
-    return UTF32To16(input, output, maxElems, invalidChar);
+
+    const uint32_t cp = static_cast<uint32_t>(input);
+
+    //Validate Unicode scalar value: <= 0x10FFFF and not surrogate range
+    const bool valid = (cp <= 0x10FFFFu) && !(cp >= 0xD800u && cp <= 0xDFFFu);
+
+    IF_CONSTEXPR(sizeof(wchar_t) == 4) {
+      *out = valid ? static_cast<wchar_t>(cp) : invalidChar;
+      ++out;
+      return out;
+    }
+    else {
+      //wchar_t is 2 bytes -> write UTF-16
+      const char32_t toWrite = valid ? input : static_cast<char32_t>(invalidChar);
+      return UTF32To16(toWrite, out, maxElems, invalidChar);
+    }
   }
 
   char
@@ -354,7 +365,7 @@ namespace geEngineSDK {
     const std::ctype<wchar_t>& facet = std::use_facet<std::ctype<wchar_t>>(locale);
 
     //Note: Same as above, not exactly correct as narrow() doesn't accept a surrogate pair
-    return facet.narrow((wchar_t)input, invalidChar);
+    return facet.narrow(static_cast<wchar_t>(input), invalidChar);
   }
 
   String
@@ -377,16 +388,31 @@ namespace geEngineSDK {
   String
   UTF8::toANSI(const String& input, const std::locale& locale, char invalidChar) {
     String output;
+    output.reserve(input.size());
+
+    const char32_t inv32 = static_cast<char32_t>(static_cast<unsigned char>(invalidChar));
 
     auto iter = input.begin();
     while (iter != input.end()) {
       char32_t u32char = 0;
-      iter = UTF8To32(iter, input.end(), u32char, invalidChar);
+
+      const auto prev = iter;
+      iter = UTF8To32(iter, input.end(), u32char, inv32);
+
+#if USING(GE_DEBUG_MODE)
+      GE_ASSERT(iter != prev); // decoder must always make progress
+#endif
+      if (iter == prev) { // release fallback, just in case
+        ++iter;
+        u32char = inv32;
+      }
+
       output.push_back(UTF32ToANSI(u32char, invalidChar, locale));
     }
 
     return output;
   }
+
 
   String
   UTF8::fromWide(const WString& input) {

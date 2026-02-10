@@ -208,12 +208,13 @@ namespace geEngineSDK {
 
   Path&
   Path::makeRelative(const Path& base) {
-    if (!base.includes(*this)) {
+    const SIZE_T n = base.m_directories.size();
+    if (n > m_directories.size()) {
       return *this;
     }
 
-    m_directories.erase(m_directories.begin(), 
-                        m_directories.begin() + base.m_directories.size());
+    using Diff = decltype(m_directories)::difference_type;
+    m_directories.erase(m_directories.begin(), m_directories.begin() + static_cast<Diff>(n));
 
     /**
      * Sometimes a directory name can be interpreted as a file and we're okay with that.

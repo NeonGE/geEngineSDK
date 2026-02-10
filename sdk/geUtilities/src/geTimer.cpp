@@ -32,21 +32,27 @@ namespace geEngineSDK {
 
   uint64
   Timer::getMilliseconds() const {
-    auto newTime = m_highResClock.now();
-    duration<double> dur = newTime - m_startTime;
-    return duration_cast<milliseconds>(dur).count();
+    const auto newTime = m_highResClock.now();
+    const auto dur = newTime - m_startTime;
+    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+    GE_ASSERT(ms >= 0);
+    return static_cast<uint64>(ms);
   }
 
   uint64
   Timer::getMicroseconds() const {
-    auto newTime = m_highResClock.now();
-    duration<double> dur = newTime - m_startTime;
-    return duration_cast<microseconds>(dur).count();
+    const auto newTime = m_highResClock.now();
+    const auto dur = newTime - m_startTime;
+    const auto us = std::chrono::duration_cast<std::chrono::microseconds>(dur).count();
+    GE_ASSERT(us >= 0);
+    return static_cast<uint64>(us);
   }
 
   uint64
   Timer::getStartMs() const {
-    nanoseconds startTimeNs = m_startTime.time_since_epoch();
-    return duration_cast<milliseconds>(startTimeNs).count();
+    const auto startNs = m_startTime.time_since_epoch();
+    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(startNs).count();
+    GE_ASSERT(ms >= 0);
+    return static_cast<uint64>(ms);
   }
 }
