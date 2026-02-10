@@ -59,3 +59,23 @@ function(ge_copy_rttr_runtime target_name)
     )
   endif()
 endfunction()
+
+function(ge_rttr_silence_gcc_warnings_for_thirdparty)
+  # Solo GCC (tu problema)
+  if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    return()
+  endif()
+  if(NOT (DEFINED ENV{CI} OR DEFINED ENV{GITHUB_ACTIONS} OR DEFINED ENV{CODESPACES}))
+    return()
+  endif()
+
+  ge_rttr_resolve_target(_rttr_target)
+
+  # Parche principal: RTTR genera muchos -Wunused-parameter por templates
+  target_compile_options(${_rttr_target} PRIVATE -Wno-unused-parameter)
+
+  # Opcionales típicos en libs externas (actívalos solo si te aparecen):
+  # target_compile_options(${_rttr_target} PRIVATE -Wno-unused-variable)
+  # target_compile_options(${_rttr_target} PRIVATE -Wno-class-memaccess)
+  # target_compile_options(${_rttr_target} PRIVATE -Wno-format-nonliteral)
+endfunction()

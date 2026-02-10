@@ -26,6 +26,7 @@ endfunction()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+include(${CMAKE_SOURCE_DIR}/cmake/Externals.cmake)
 include(Externals_RTTR)
 
 # -----------------------------
@@ -45,7 +46,6 @@ endif()
 # -----------------------------
 # Subprojects
 # -----------------------------
-include(${CMAKE_SOURCE_DIR}/cmake/Externals.cmake)
 include(CTest)     # define BUILD_TESTING option + basic setup
 include(Catch)
 

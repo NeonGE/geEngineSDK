@@ -95,4 +95,5 @@ if(NOT rttr_POPULATED)
   # Add RTTR
   # =========================
   add_subdirectory("${rttr_SOURCE_DIR}" "${rttr_BINARY_DIR}")
+  ge_rttr_silence_gcc_warnings_for_thirdparty()
 endif()
