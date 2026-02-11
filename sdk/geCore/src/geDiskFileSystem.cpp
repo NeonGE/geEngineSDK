@@ -31,7 +31,7 @@ namespace geEngineSDK {
   bool
   DiskFileSystem::exists(const Path& path) const {
     auto fullPath = path.getAbsolute(m_root);
-    return FileSystem::exists(path);
+    return FileSystem::exists(fullPath);
   }
 
   SPtr<DataStream>
@@ -56,7 +56,7 @@ namespace geEngineSDK {
                                         const Path& relativePath,
                                         Vector<Path>& outFiles) const {
     if (!currentPath.isDirectory()) {
-      outFiles.push_back(currentPath);
+      outFiles.push_back(currentPath.getRelative(relativePath));
       return; // If it's not a directory, just add the file and return
     }
     

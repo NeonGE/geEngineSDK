@@ -291,7 +291,7 @@ namespace geEngineSDK {
       }
     }
 
-#if USING(FILE_TRACKER)
+#if USING(GE_FILE_TRACKER)
     auto& fileTracker = FileTracker::instance();
     fileTracker.addFiles(m_systemID, { filePath });
 #endif

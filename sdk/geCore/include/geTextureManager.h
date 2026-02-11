@@ -88,7 +88,7 @@ namespace geEngineSDK {
     static SPtr<Texture> DEFAULT_CHESS;
 
    private:
-#if USING(FILE_TRACKER)
+#if USING(GE_FILE_TRACKER)
     uint32 m_systemID;
     ChangeCallback m_fileChangeCB;
 #endif

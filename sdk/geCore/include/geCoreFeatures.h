@@ -19,11 +19,11 @@
 /*****************************************************************************/
 #include <gePrerequisitesUtilities.h>
 
-#define VIRTUAL_FILE_SYSTEM IN_USE
+#define GE_VIRTUAL_FILE_SYSTEM IN_USE
 
 /**
- * FILE_TRACKER Controls the file tracking system. If the system is enabled,
+ * GE_FILE_TRACKER Controls the file tracking system. If the system is enabled,
  * the engine will track changes to files and reload them if necessary.
  * This is useful for development purposes, but can be disabled in production
  */
-#define FILE_TRACKER  IN_USE
+#define GE_FILE_TRACKER  IN_USE

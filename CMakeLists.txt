@@ -26,6 +26,7 @@ endfunction()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+set(BUILD_TESTING off CACHE BOOL "" FORCE)
 include(${CMAKE_SOURCE_DIR}/cmake/Externals.cmake)
 include(Externals_RTTR)
 
@@ -55,5 +56,6 @@ add_subdirectory(sdk/geCore)
 #add_subdirectory(games/geGame)
 
 set(BUILD_TESTING on CACHE BOOL "" FORCE)
+
 enable_testing()
 add_subdirectory(tests)

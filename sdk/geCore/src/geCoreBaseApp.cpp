@@ -36,7 +36,7 @@
 #include <geCodecManager.h>
 #include <geTextureManager.h>
 
-#if USING(FILE_TRACKER)
+#if USING(GE_FILE_TRACKER)
 #include <geFileTracker.h>
 #endif
 
@@ -256,7 +256,7 @@ namespace geEngineSDK {
     CodecManager::startUp();
 
     //Create the optional systems
-#if USING(FILE_TRACKER)
+#if USING(GE_FILE_TRACKER)
     FileTracker::startUp();
 #endif
   }
