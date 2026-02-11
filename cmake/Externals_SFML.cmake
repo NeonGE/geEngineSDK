@@ -38,6 +38,7 @@ function(ge_setup_sfml)
 
   set(GE_SFML_GIT_REPO "https://github.com/SFML/SFML.git")
   set(GE_SFML_GIT_TAG  "3.0.2")
+  set(BUILD_SHARED_LIBS  ON CACHE BOOL "" FORCE)
 
   FetchContent_Declare(
     sfml_upstream
