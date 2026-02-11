@@ -41,9 +41,6 @@ namespace geEngineSDK {
       if (nullptr == _instance()) {
         _instance() = ge_new<CrashHandler>();
       }
-#if !USING(GE_PLATFORM_WINDOWS)
-      installPosixSignalHandlers();
-#endif
     }
 
     /**

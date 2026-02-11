@@ -82,6 +82,8 @@ namespace geEngineSDK {
     }
 
 #else
+    g_crashHandler().installPosixSignalHandlers();
+
     try {
       initSystems();
       registerInputEvents();
