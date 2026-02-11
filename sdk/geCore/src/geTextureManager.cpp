@@ -128,7 +128,7 @@ namespace geEngineSDK {
     }
 
     m_fileChangeCB.connect(
-      [this](const WString& filePath) {
+      [this](const PlatformString& filePath) {
         Path path(toString(filePath));
         reload(path);
       });

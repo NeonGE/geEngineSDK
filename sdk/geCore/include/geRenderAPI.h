@@ -48,7 +48,7 @@ namespace geEngineSDK {
      *         otherwise, returns false.
      */
     virtual bool
-    initRenderAPI(void* scrHandle, bool bFullScreen) = 0;
+    initRenderAPI(WindowHandle scrHandle, bool bFullScreen) = 0;
 
     virtual bool
     resizeSwapChain(uint32 newWidth, uint32 newHeight) = 0;

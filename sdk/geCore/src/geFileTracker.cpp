@@ -102,7 +102,7 @@ namespace geEngineSDK {
   }
 
   FileTracker&
-  geEngineSDK::g_fileWatcher() {    
+  g_fileWatcher() {    
     return FileTracker::instance();
   }
 

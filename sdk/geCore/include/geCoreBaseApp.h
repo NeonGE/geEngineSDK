@@ -26,7 +26,6 @@
 #define GE_COREBASE_CLASS geCoreBaseApp
 
 namespace geEngineSDK {
-  using sf::WindowHandle;
   using sf::WindowBase;
   using geEngineSDK::Event;
 
@@ -214,7 +213,15 @@ namespace geEngineSDK {
 
     WindowHandle
     getNativeHandle() {
-      if(!m_window) return nullptr;
+      if (!m_window) {
+#if USING(GE_PLATFORM_LINUX)
+        //Linux uses a unsigned long for the native handle
+        return 0;
+#else
+        //Every other platform uses a pointer for the native handle
+        return nullptr;
+#endif
+      }
       return m_window->getNativeHandle();
     }
 

@@ -29,7 +29,7 @@
 
 namespace geEngineSDK {
 
-  using FILE_CHANGED_EVENT_CALLBACK = void(const WString&);
+  using FILE_CHANGED_EVENT_CALLBACK = void(const PlatformString&);
   using ChangeCallback = Event<FILE_CHANGED_EVENT_CALLBACK>;
 
   struct TrackedFile
@@ -59,7 +59,8 @@ namespace geEngineSDK {
   {
     std::size_t
     operator()(const TrackedFile& file) const _NOEXCEPT {
-      return std::hash<uint32>()(file.m_systemID) ^ std::hash<WString>()(file.m_filePath);
+      return std::hash<uint32>()(file.m_systemID) ^
+             std::hash<PlatformString>()(file.m_filePath);
     }
   };
 

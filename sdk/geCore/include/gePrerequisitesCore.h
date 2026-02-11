@@ -53,20 +53,41 @@
 # define GE_CORE_HIDDEN __attribute__ ((visibility ("hidden")))
 #endif
 
-namespace geEngineSDK {
-	/**
-	 * Default thread policy for the framework.
-	 * Performs special startup/shutdown on threads managed by thread pool.
-	 */
-	class GE_CORE_EXPORT ThreadDefaultPolicy
-	{
-	 public:
-		static void onThreadStarted(const String& /*name*/) {
-			MemStack::beginThread();
-		}
+//Windows' HWND is a type alias for struct HWND__*
+#if USING(GE_PLATFORM_WINDOWS)
+struct HWND__; // NOLINT(bugprone-reserved-identifier)
+#endif
 
-		static void onThreadEnded(const String& /*name*/) {
-			MemStack::endThread();
-		}
-	};
+namespace geEngineSDK {
+  /**
+   * Default thread policy for the framework.
+   * Performs special startup/shutdown on threads managed by thread pool.
+   */
+  class GE_CORE_EXPORT ThreadDefaultPolicy
+  {
+   public:
+    static void onThreadStarted(const String& /*name*/) {
+      MemStack::beginThread();
+    }
+
+    static void onThreadEnded(const String& /*name*/) {
+      MemStack::endThread();
+    }
+  };
+
+#if USING(GE_PLATFORM_WINDOWS)
+  // Window handle is HWND (HWND__*) on Windows
+  using WindowHandle = HWND__*;
+#elif USING(GE_PLATFORM_LINUX)
+  // Window handle is Window (unsigned long) on Unix - X11
+  using WindowHandle = unsigned long;
+#elif USING(GE_PLATFORM_OSX) || USING(GE_PLATFORM_IOS) || USING(GE_PLATFORM_ANDROID)
+  // Window handle is NSWindow or NSView (void*) on macOS - Cocoa
+  // Window handle is UIWindow (void*) on iOS - UIKit
+  // Window handle is ANativeWindow* (void*) on Android
+  using WindowHandle = void*;
+#else
+  //Console or unknown platform, use void* as a generic handle type
+  using WindowHandle = void*;
+#endif
 }
