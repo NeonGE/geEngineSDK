@@ -50,7 +50,10 @@ include(CTest)     # define BUILD_TESTING option + basic setup
 include(Catch)
 
 add_subdirectory(sdk/geUtilities)
+add_subdirectory(sdk/geCore)
+
 #add_subdirectory(games/geGame)
 
+set(BUILD_TESTING on CACHE BOOL "" FORCE)
 enable_testing()
 add_subdirectory(tests)

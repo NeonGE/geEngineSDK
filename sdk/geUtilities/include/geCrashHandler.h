@@ -19,6 +19,10 @@
 #define GE_MAX_STACKTRACE_DEPTH 200
 #define GE_MAX_STACKTRACE_NAME_BYTES 1024
 
+#if !USING(GE_PLATFORM_WINDOWS)
+struct siginfo_t;
+#endif
+
 namespace geEngineSDK {
   /**
    * @brief Saves crash data and notifies the user when a crash occurs.
@@ -37,6 +41,9 @@ namespace geEngineSDK {
       if (nullptr == _instance()) {
         _instance() = ge_new<CrashHandler>();
       }
+#if !USING(GE_PLATFORM_WINDOWS)
+      installPosixSignalHandlers();
+#endif
     }
 
     /**
@@ -83,6 +90,15 @@ namespace geEngineSDK {
      */
     int
     reportCrash(void* exceptionDataPtr) const;
+#else
+    void
+    installPosixSignalHandlers();
+
+    void
+    reportPosixSignal(int32 sig, siginfo_t* info, void* uctx) _NOEXCEPT;
+
+    static void
+    posixSignalTrampoline(int32 sig, siginfo_t* info, void* uctx) _NOEXCEPT;
 #endif
 
     /**
