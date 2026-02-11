@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libx11-dev \
     libxrandr-dev \
     libxi-dev \
+    libxcursor-dev \
     libudev-dev \
     libgl1-mesa-dev \
     libfreetype6-dev \

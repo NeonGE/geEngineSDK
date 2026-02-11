@@ -17,7 +17,11 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends \
               cmake ninja-build build-essential git \
-              libicu-dev
+              libicu-dev \
+              libsfml-dev \
+              libx11-dev libxrandr-dev libxi-dev libxcursor-dev libudev-dev \
+              libgl1-mesa-dev libfreetype6-dev \
+              libopenal-dev libvorbis-dev libflac-dev
 
       - run:
           name: Configure
@@ -59,7 +63,12 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends \
               cmake ninja-build build-essential git \
-              libicu-dev lcov
+              libicu-dev \
+              libsfml-dev \
+              libx11-dev libxrandr-dev libxi-dev libxcursor-dev libudev-dev \
+              libgl1-mesa-dev libfreetype6-dev \
+              libopenal-dev libvorbis-dev libflac-dev \
+              lcov
 
       - run:
           name: Configure (coverage)
