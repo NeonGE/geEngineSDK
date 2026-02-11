@@ -110,6 +110,15 @@ namespace geEngineSDK {
   template <int Count>
   using SmallString = basic_string<char, char_traits<char>, StdAlloc<char>>;
 
+  /*
+   * @brief 
+   */
+#if USING(GE_PLATFORM_WINDOWS) || USING(GE_PLATFORM_XBOX)
+  using PlatformString = WString;
+#else
+  using PlatformString = String;
+#endif
+
   /***************************************************************************/
   /**
    * String conversion functions

@@ -50,9 +50,9 @@ namespace geEngineSDK {
       return m_filePath < other.m_filePath;
     }
 
-    uint32 m_systemID = 0; //ID of the system that is watching the file
-    WString m_filePath;    //Absolute path of the file being watched
-    time_t m_lastModifiedTime = 0; //Last modified time of the file
+    uint32 m_systemID = 0;          //ID of the system that is watching the file
+    PlatformString m_filePath;      //Absolute path of the file being watched
+    time_t m_lastModifiedTime = 0;  //Last modified time of the file
   };
 
   struct TrackedFileHash
