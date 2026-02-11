@@ -19,8 +19,8 @@
 #define GE_MAX_STACKTRACE_DEPTH 200
 #define GE_MAX_STACKTRACE_NAME_BYTES 1024
 
-#if !USING(GE_PLATFORM_WINDOWS)
-struct siginfo_t;
+#if USING(GE_PLATFORM_LINUX) || USING(GE_PLATFORM_OSX)
+# include <signal.h>
 #endif
 
 namespace geEngineSDK {
