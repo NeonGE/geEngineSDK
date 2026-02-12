@@ -20,6 +20,7 @@ target_link_libraries(geCore_Tests
 target_link_libraries(geCore_Tests PRIVATE Catch2::Catch2WithMain)
 
 ge_link_rttr(geCore_Tests)
+ge_copy_runtime_dlls(geCore_Tests)
 #ge_copy_rttr_runtime(geCore_Tests)
 
 # (Opcional) Para que salga en ctest

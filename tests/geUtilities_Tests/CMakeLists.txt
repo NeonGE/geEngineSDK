@@ -48,7 +48,8 @@ target_link_libraries(geUtilities_Tests
 target_link_libraries(geUtilities_Tests PRIVATE Catch2::Catch2WithMain)
 
 ge_link_rttr(geUtilities_Tests)
-ge_copy_rttr_runtime(geUtilities_Tests)
+#ge_copy_rttr_runtime(geUtilities_Tests)
+ge_copy_runtime_dlls(geUtilities_Tests)
 
 # (Opcional) Para que salga en ctest
 #add_test(NAME geUtilities_Tests COMMAND geUtilities_Tests)
