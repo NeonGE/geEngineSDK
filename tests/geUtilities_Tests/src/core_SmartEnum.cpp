@@ -20,7 +20,7 @@ GE_SMART_ENUM_CLASS(TestEnumClass,
   Eleven
 )
 
-TEST_CASE("SmartEnum: makeEnumNameMap handles explicit values + auto increment + trims spaces", "[SmartEnum]") {
+TEST_CASE("SmartEnum: makeEnumNameMap handles explicit values (check Keys) + auto increment + trims spaces", "[SmartEnum]") {
   auto map = makeEnumNameMap("A = 5, B, C=10,   D");
 
   REQUIRE(map.at(5) == "A");
@@ -31,7 +31,7 @@ TEST_CASE("SmartEnum: makeEnumNameMap handles explicit values + auto increment +
   REQUIRE(map.size() == 4);
 }
 
-TEST_CASE("SmartEnum: makeEnumValuesMap handles explicit values + auto increment + trims spaces", "[SmartEnum]") {
+TEST_CASE("SmartEnum: makeEnumValuesMap handles explicit values (check Values) + auto increment + trims spaces", "[SmartEnum]") {
   auto map = makeEnumValuesMap("A = 5, B, C=10,   D");
 
   REQUIRE(map.at("A") == 5);

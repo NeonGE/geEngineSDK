@@ -49,7 +49,7 @@ static void writeFile(const fs::path& p, const std::string& bytes) {
 }
 
 static fs::path makeTempDir(const char* name) {
-  auto base = fs::temp_directory_path() / "geEngineSDK_tests" / name;
+  auto base = fs::temp_directory_path() / "geEngineSDK_tests" / name / "";
   // limpia best-effort
   std::error_code ec;
   fs::remove_all(base, ec);
@@ -76,7 +76,7 @@ static void createZipFile(
     fileInfo.filename = name.c_str();
     fileInfo.filename_size = static_cast<uint16_t>(std::strlen(fileInfo.filename));
 
-    fileInfo.compression_method = MZ_COMPRESS_METHOD_DEFLATE;
+    fileInfo.compression_method = MZ_COMPRESS_METHOD_STORE;
     fileInfo.modified_date = std::time(nullptr);
 
     fileInfo.uncompressed_size = static_cast<int64_t>(data.size());
@@ -256,35 +256,69 @@ TEST_CASE("MountManager: mount ZipFS and open/exists works", "[Mount][Manager]")
   REQUIRE(readAll(mm.open(Path("sub/b.txt"))) == "B");
 }
 
-TEST_CASE("MountManager: last mounted backend wins on conflicts (overwrite in index)", "[Mount][Manager]") {
-  auto root = makeTempDir("mount_conflict");
+TEST_CASE("MountManager: zip priority on conflicts; newest zip wins over older zip and disk", "[Mount][Manager]") {
+  auto root = makeTempDir("mount_conflict_zip_priority");
   auto diskRoot = root / "disk";
   fs::create_directories(diskRoot);
 
   writeFile(diskRoot / "same.txt", "DISK");
 
+  auto zipPath1 = root / "pak1.zip";
+  auto zipPath2 = root / "pak2.zip";
+
+  createZipFile(zipPath1, { {"same.txt", "ZIP1"} });
+  createZipFile(zipPath2, { {"same.txt", "ZIP2"} });
+
+  auto disk = ge_shared_ptr_new<DiskFileSystem>(Path(String(diskRoot.string())));
+  auto zip1 = ge_shared_ptr_new<ZipFileSystem>(Path(String(zipPath1.string())));
+  auto zip2 = ge_shared_ptr_new<ZipFileSystem>(Path(String(zipPath2.string())));
+
+  MountManager mm;
+
+  SECTION("Zip overrides disk regardless of mount order") {
+    mm.mount(disk);
+    mm.mount(zip1);
+    REQUIRE(readAll(mm.open(Path("same.txt"))) == "ZIP1");
+
+    mm.clear();
+    mm.mount(zip1);
+    mm.mount(disk);
+    // Zip must still win
+    REQUIRE(readAll(mm.open(Path("same.txt"))) == "ZIP1");
+  }
+
+  SECTION("Newest zip overrides older zip") {
+    mm.mount(zip1);
+    REQUIRE(readAll(mm.open(Path("same.txt"))) == "ZIP1");
+
+    mm.mount(zip2);
+    REQUIRE(readAll(mm.open(Path("same.txt"))) == "ZIP2");
+
+    // Even if disk mounts after, zip2 still wins
+    mm.mount(disk);
+    REQUIRE(readAll(mm.open(Path("same.txt"))) == "ZIP2");
+  }
+}
+
+TEST_CASE("MountManager: disk is fallback when no zip provides the file", "[Mount][Manager]") {
+  auto root = makeTempDir("mount_disk_fallback");
+  auto diskRoot = root / "disk" / "";
+  fs::create_directories(diskRoot);
+
+  writeFile(diskRoot / "only_on_disk.txt", "DISK_ONLY");
+
   auto zipPath = root / "pak.zip";
-  createZipFile(zipPath, {
-    {"same.txt", "ZIP"}
-    });
+  createZipFile(zipPath, { {"only_in_zip.txt", "ZIP_ONLY"} });
 
   auto disk = ge_shared_ptr_new<DiskFileSystem>(Path(String(diskRoot.string())));
   auto zip = ge_shared_ptr_new<ZipFileSystem>(Path(String(zipPath.string())));
 
   MountManager mm;
-
-  // 1) Disk then Zip -> Zip should override
-  mm.mount(disk);
-  mm.mount(zip);
-
-  REQUIRE(readAll(mm.open(Path("same.txt"))) == "ZIP");
-
-  // 2) Clear and mount Zip then Disk -> Disk should override
-  mm.clear();
   mm.mount(zip);
   mm.mount(disk);
 
-  REQUIRE(readAll(mm.open(Path("same.txt"))) == "DISK");
+  REQUIRE(readAll(mm.open(Path("only_in_zip.txt"))) == "ZIP_ONLY");
+  REQUIRE(readAll(mm.open(Path("only_on_disk.txt"))) == "DISK_ONLY");
 }
 
 TEST_CASE("MountManager: open returns nullptr for missing files", "[Mount][Manager]") {
