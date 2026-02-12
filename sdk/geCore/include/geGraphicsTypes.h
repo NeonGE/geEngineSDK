@@ -264,9 +264,9 @@ namespace geEngineSDK {
 
   struct RenderTarget
   {
-    RenderTarget(WeakSPtr<Texture> pRT, int32 mipLevel = 0)
+    RenderTarget(WeakSPtr<Texture> pRT, int32 iMipLevel = 0)
       : pRenderTarget(pRT),
-        mipLevel(mipLevel)
+        mipLevel(iMipLevel)
     {}
 
     WeakSPtr<Texture> pRenderTarget;
@@ -275,9 +275,9 @@ namespace geEngineSDK {
 
   struct UAVTarget
   {
-    UAVTarget(WeakSPtr<Texture> pUAV, int32 mipLevel = 0)
+    UAVTarget(WeakSPtr<Texture> pUAV, int32 iMipLevel = 0)
       : pUAVTarget(pUAV),
-        mipLevel(mipLevel)
+        mipLevel(iMipLevel)
     {}
 
     WeakSPtr<Texture> pUAVTarget;
