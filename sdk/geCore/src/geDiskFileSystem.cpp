@@ -55,13 +55,16 @@ namespace geEngineSDK {
   DiskFileSystem::_recursiveCollectFiles(const Path& currentPath,
                                         const Path& relativePath,
                                         Vector<Path>& outFiles) const {
-    if (!currentPath.isDirectory()) {
-      outFiles.push_back(currentPath.getRelative(relativePath));
-      return; // If it's not a directory, just add the file and return
+    Path dirPath = currentPath;
+    
+    auto strPath = dirPath.toString();
+    auto lastChar = strPath[strPath.size()];
+    if(lastChar != '\\' && lastChar != '/'){
+      dirPath = strPath + '/';
     }
     
     Vector<Path> files, directories;
-    FileSystem::getChildren(currentPath, files, directories);
+    FileSystem::getChildren(dirPath, files, directories);
     for (const auto& file : files) {
       outFiles.push_back(file.getRelative(relativePath));
     }

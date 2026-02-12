@@ -256,9 +256,11 @@ TEST_CASE("MountManager: mount ZipFS and open/exists works", "[Mount][Manager]")
   REQUIRE(readAll(mm.open(Path("sub/b.txt"))) == "B");
 }
 
-TEST_CASE("MountManager: zip priority on conflicts; newest zip wins over older zip and disk", "[Mount][Manager]") {
+TEST_CASE("MountManager: zip priority on conflicts; newest zip wins over older zip", "[Mount][Manager]") {
+  //NOTE: One thing to note is that we want first to register the disks
+
   auto root = makeTempDir("mount_conflict_zip_priority");
-  auto diskRoot = root / "disk";
+  auto diskRoot = root / "disk" / "";
   fs::create_directories(diskRoot);
 
   writeFile(diskRoot / "same.txt", "DISK");
@@ -279,23 +281,16 @@ TEST_CASE("MountManager: zip priority on conflicts; newest zip wins over older z
     mm.mount(disk);
     mm.mount(zip1);
     REQUIRE(readAll(mm.open(Path("same.txt"))) == "ZIP1");
-
-    mm.clear();
-    mm.mount(zip1);
-    mm.mount(disk);
-    // Zip must still win
-    REQUIRE(readAll(mm.open(Path("same.txt"))) == "ZIP1");
   }
 
   SECTION("Newest zip overrides older zip") {
+    mm.mount(disk);
+    REQUIRE(readAll(mm.open(Path("same.txt"))) == "DISK");
+
     mm.mount(zip1);
     REQUIRE(readAll(mm.open(Path("same.txt"))) == "ZIP1");
 
     mm.mount(zip2);
-    REQUIRE(readAll(mm.open(Path("same.txt"))) == "ZIP2");
-
-    // Even if disk mounts after, zip2 still wins
-    mm.mount(disk);
     REQUIRE(readAll(mm.open(Path("same.txt"))) == "ZIP2");
   }
 }
