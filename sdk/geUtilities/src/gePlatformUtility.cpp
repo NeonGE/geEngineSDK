@@ -54,6 +54,7 @@
 # if USING(GE_PLATFORM_OSX) || USING(GE_PLATFORM_IOS)
 #   include <sys/sysctl.h>
 #   include <net/if_dl.h>
+#   include <mach-o/dyld.h>
 
     //For keyCodeToUnicode on macOS (no iOS)
 #   if USING(GE_PLATFORM_OSX)
@@ -619,6 +620,55 @@ namespace geEngineSDK {
 #else
     return input;
 #endif
+  }
+
+  //===========================================================================
+  // getExecutableName (Win + POSIX)
+  //===========================================================================
+  String
+  PlatformUtility::getExecutableName() {
+    String fullPath;
+
+#if USING(GE_PLATFORM_WINDOWS)
+    char buffer[MAX_PATH];
+    DWORD len = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
+    if (len == 0 || len == MAX_PATH) {
+      return {};
+    }
+
+    fullPath = buffer;
+
+#elif USING(GE_PLATFORM_LINUX)
+    char buffer[PATH_MAX];
+    ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
+    if (len == -1) {
+      return {};
+    }
+
+    buffer[len] = '\0';
+    fullPath = buffer;
+
+#elif USING(GE_PLATFORM_OSX)
+    char buffer[PATH_MAX];
+    uint32_t size = sizeof(buffer);
+
+    if (_NSGetExecutablePath(buffer, &size) != 0) {
+      return {}; // buffer too small
+    }
+
+    fullPath = buffer;
+
+#else
+    return {};
+#endif
+
+    //We extract only the name
+    SIZE_T slash = fullPath.find_last_of("/\\");
+    if (slash == String::npos) {
+      return fullPath;
+    }
+
+    return fullPath.substr(slash + 1);
   }
 
   //===========================================================================

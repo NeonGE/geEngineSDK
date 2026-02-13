@@ -134,6 +134,9 @@ namespace geEngineSDK {
       s_gpuInfo = gpuInfo;
     }
 
+    static String
+    getExecutableName();
+
    private:
     static GPUInfo s_gpuInfo;
   };
