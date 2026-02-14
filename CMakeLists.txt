@@ -26,6 +26,23 @@ endfunction()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+function(ge_set_folder targetName folderName)
+  if(TARGET ${targetName})
+    set_target_properties(${targetName} PROPERTIES FOLDER "${folderName}")
+  endif()
+endfunction()
+
+function(ge_folder_all_targets_under prefix folderName)
+  get_property(_allTargets GLOBAL PROPERTY TARGETS)
+  foreach(t IN LISTS _allTargets)
+    if(t MATCHES "^${prefix}")
+      set_target_properties(${t} PROPERTIES FOLDER "${folderName}")
+    endif()
+  endforeach()
+endfunction()
+
 set(BUILD_TESTING off CACHE BOOL "" FORCE)
 include(${CMAKE_SOURCE_DIR}/cmake/Externals.cmake)
 include(Externals_RTTR)
@@ -44,18 +61,34 @@ else()
   target_compile_options(ge_build_settings INTERFACE -fno-rtti)
 endif()
 
+# Set Projects to a folder
+
 # -----------------------------
 # Subprojects
 # -----------------------------
 include(CTest)     # define BUILD_TESTING option + basic setup
 include(Catch)
 
-add_subdirectory(sdk/geUtilities)
-add_subdirectory(sdk/geCore)
+add_subdirectory(sdk)
 
-#add_subdirectory(games/geGame)
+ge_set_folder(Catch2          "Dependencies/Catch2")
+ge_set_folder(Catch2WithMain  "Dependencies/Catch2")
+ge_set_folder(minizip-ng      "Dependencies/MiniZip")
+ge_set_folder(zlib-ng         "Dependencies/MiniZip")
+ge_set_folder(ge_lz4          "Dependencies/LZ4")
+ge_set_folder(ge_lua          "Dependencies/LUA")
+ge_set_folder(rttr_core       "Dependencies/RTTR")
+ge_set_folder(sfml-audio      "Dependencies/SFML")
+ge_set_folder(sfml-graphics   "Dependencies/SFML")
+ge_set_folder(sfml-main       "Dependencies/SFML")
+ge_set_folder(sfml-network    "Dependencies/SFML")
+ge_set_folder(sfml-system     "Dependencies/SFML")
+ge_set_folder(sfml-window     "Dependencies/SFML")
 
 set(BUILD_TESTING on CACHE BOOL "" FORCE)
 
 enable_testing()
 add_subdirectory(tests)
+
+# Add games at the end
+add_subdirectory(games)

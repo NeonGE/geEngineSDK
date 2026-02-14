@@ -106,3 +106,5 @@ target_compile_definitions(geCore
     #PUBLIC
     #   GE_HAS_UTILITIES=1
 )
+
+ge_set_folder(geCore      "geEngine")

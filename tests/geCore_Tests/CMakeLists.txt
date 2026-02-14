@@ -25,3 +25,5 @@ ge_copy_runtime_dlls(geCore_Tests)
 
 # (Opcional) Para que salga en ctest
 catch_discover_tests(geCore_Tests)
+
+ge_set_folder(geCore_Tests "geEngine/Tests")

@@ -198,3 +198,5 @@ target_compile_definitions(geUtilities
     #PUBLIC
     #   GE_HAS_UTILITIES=1
 )
+
+ge_set_folder(geUtilities "geEngine")

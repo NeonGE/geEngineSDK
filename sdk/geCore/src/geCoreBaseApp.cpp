@@ -104,8 +104,7 @@ namespace geEngineSDK {
   }
 
   void
-  geCoreBaseApp::startMountManager()
-  {
+  geCoreBaseApp::startMountManager() {
     //Check that the GameConfig is initialized
     GE_ASSERT(GameConfig::isStarted() &&
               "GameConfig is not started. Cannot start MountManager.");
@@ -272,9 +271,6 @@ namespace geEngineSDK {
 
     String renderApiDllName = "geRenderAPI";
     renderApiDllName += gameConfig.get<String>("RENDERAPI", "DRIVER", "DX11");
-#if USING(GE_DEBUG_MODE)
-    renderApiDllName += "d"; //Use the debug version of the RenderAPI DLL
-#endif
 
     auto renderAPIDll = g_dynLibManager().load(renderApiDllName);
     if (!renderAPIDll) {

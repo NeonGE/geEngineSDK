@@ -54,3 +54,5 @@ ge_copy_runtime_dlls(geUtilities_Tests)
 # (Opcional) Para que salga en ctest
 #add_test(NAME geUtilities_Tests COMMAND geUtilities_Tests)
 catch_discover_tests(geUtilities_Tests)
+
+ge_set_folder(geUtilities_Tests "geEngine/Tests")
