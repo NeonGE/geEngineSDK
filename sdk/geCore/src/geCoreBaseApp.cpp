@@ -121,6 +121,11 @@ namespace geEngineSDK {
 
     //Mount the Disk file system for the user data directory
     auto confDir = FileSystem::getUserDataDirectoryPath().append("geEngine/");
+    String realExeName = Path(PlatformUtility::getExecutableName()).getFilename(false);
+    confDir += realExeName + "/";
+    if (!FileSystem::exists(confDir)) {
+      FileSystem::createDir(confDir);
+    }
     mountManager.mount(ge_shared_ptr_new<DiskFileSystem>(confDir));
 
     auto& gameConfig = GameConfig::instance();
@@ -139,7 +144,7 @@ namespace geEngineSDK {
     mountManager.mount(ge_shared_ptr_new<DiskFileSystem>(FileSystem::getAppPath()));
     mountManager.mount(ge_shared_ptr_new<DiskFileSystem>(confDir));
 
-    auto baseEnginePack = FileSystem::getEnginePath().append("BaseEngine.zip");
+    auto baseEnginePack = mountManager.getRealPath("BaseEngine.zip");
     if (baseEnginePack.isEmpty()) {
       GE_EXCEPT(geEngineSDK::InternalErrorException,
         "BaseEngine.zip not found in the mounted file systems.");

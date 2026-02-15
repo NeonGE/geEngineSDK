@@ -32,6 +32,34 @@ namespace geEngineSDK {
     bool
     load(const Path& filePath);
 
+   private:
+    template<typename T>
+    typename std::enable_if<!std::is_same<T, String>::value &&
+                            !std::is_same<T, bool>::value,
+                            T>::type
+    readFromStream(StringStream& str, const String&, const T& defaultVal) {
+      T ret = defaultVal;
+      str >> ret;
+      return ret;
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, bool>::value,
+                            T>::type
+    readFromStream(StringStream& str, const String&, const T& defaultVal) {
+      T ret = defaultVal;
+      str >> std::boolalpha >> ret;
+      return ret;
+    }
+
+    template<typename T>
+    typename std::enable_if<std::is_same<T, String>::value,
+                            T>::type
+    readFromStream(StringStream&, const String& rawValue, const T&) {
+      return rawValue;
+    }
+
+   public:
     template <typename T>
     T
     get(const String& section, const String& key, const T& defaultVal) {
@@ -45,49 +73,12 @@ namespace geEngineSDK {
         auto keyIt = sectionIt->second.find(uppKey);
         if (keyIt != sectionIt->second.end()) {
           StringStream str(keyIt->second);
-          T ret = defaultVal;
-
-#if USING(GE_CPP17_OR_LATER)
-          if CONSTEXPR (std::is_same_v<T, bool>) {
-            str >> std::boolalpha >> ret;
-          }
-          else {
-#endif
-            str >> ret;
-#if USING(GE_CPP17_OR_LATER)
-          }
-#endif
-          return ret;
+          return readFromStream<T>(str, keyIt->second, defaultVal);
         }
       }
 
       return defaultVal;
     }
-
-#if !USING(GE_CPP17_OR_LATER)
-    //Specialization for bool type
-    template <>
-    bool
-    get<bool>(const String& section, const String& key, const bool& defaultVal) {
-      String uppSection = section;
-      String uppKey = key;
-      StringUtil::toUpperCase(uppSection);
-      StringUtil::toUpperCase(uppKey);
-
-      auto sectionIt = m_configData.find(uppSection);
-      if (sectionIt != m_configData.end()) {
-        auto keyIt = sectionIt->second.find(uppKey);
-        if (keyIt != sectionIt->second.end()) {
-          StringStream str(keyIt->second);
-          bool ret = defaultVal;
-          str >> std::boolalpha >> ret;
-          return ret;
-        }
-      }
-
-      return defaultVal;
-    }
-#endif
     
     template <typename T>
     void
