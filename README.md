@@ -1,3 +1,4 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build status](https://ci.appveyor.com/api/projects/status/05j1vydhneortpuk/branch/main?svg=true)](https://ci.appveyor.com/project/NeonGE/geenginesdk/branch/main)
 [![Coverage Status](https://coveralls.io/repos/github/NeonGE/geEngineSDK/badge.svg)](https://coveralls.io/github/NeonGE/geEngineSDK)
 
@@ -189,4 +190,4 @@ This engine is intended for:
 
 ## License
 
-Private / Proprietary (for now)
+MIT License
