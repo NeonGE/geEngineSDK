@@ -356,34 +356,18 @@ namespace geEngineSDK {
 
   void
   GE_COREBASE_CLASS::handleWindowEvent(const sf::Event& wndEvent) {
-    //WindowHandle handle = window->getNativeHandle();
-
-    /*
-    if (nullptr == ImGui::GetCurrentContext()) {
-      //TODO: This possibly should be handled different
-      return;
-    }
-    */
-
     if (m_windowHasFocus) {
-      //ImGuiIO& io = ImGui::GetIO();
-
       if (const auto* Resized = wndEvent.getIf<sf::Event::Resized>()) {
         m_pInputEvents->onResize(Resized->size.x, Resized->size.y);
         return;
       }
 
       if (const auto* TextEntered = wndEvent.getIf<sf::Event::TextEntered>()) {
-        //io.AddInputCharacterUTF16(static_cast<uint16>(TextEntered->unicode));
         m_pInputEvents->onTextEntered(static_cast<UNICHAR>(TextEntered->unicode));
         return;
       }
 
       if (const auto* KeyPressed = wndEvent.getIf<sf::Event::KeyPressed>()) {
-        if (KeyPressed->code != sf::Keyboard::Key::Unknown) {
-          //io.KeysDown[static_cast<int32>(KeyPressed->code)] = true;
-        }
-
         m_pInputEvents->onKeyPressed(static_cast<int32>(KeyPressed->code),
                                      KeyPressed->alt,
                                      KeyPressed->control,
@@ -393,10 +377,6 @@ namespace geEngineSDK {
       }
 
       if (const auto* KeyReleased = wndEvent.getIf<sf::Event::KeyReleased>()) {
-        if (KeyReleased->code != sf::Keyboard::Key::Unknown) {
-          //io.KeysDown[static_cast<int32>(KeyReleased->code)] = false;
-        }
-
         m_pInputEvents->onKeyReleased(static_cast<int32>(KeyReleased->code),
                                       KeyReleased->alt,
                                       KeyReleased->control,
@@ -406,8 +386,6 @@ namespace geEngineSDK {
       }
 
       if (const auto* MouseWheelScrolled = wndEvent.getIf<sf::Event::MouseWheelScrolled>()) {
-        //io.MouseWheel += MouseWheelScrolled->delta;
-
         m_pInputEvents->onMouseWheelScrolled(static_cast<int32>(MouseWheelScrolled->wheel),
                                              MouseWheelScrolled->delta,
                                              MouseWheelScrolled->position.x,
@@ -416,13 +394,6 @@ namespace geEngineSDK {
       }
 
       if (const auto* MouseButtonPressed = wndEvent.getIf<sf::Event::MouseButtonPressed>()) {
-        /*
-        if (!ImGui::IsAnyMouseDown() && ::GetCapture() == nullptr) {
-          ::SetCapture(handle);
-        }
-        io.MouseDown[static_cast<int32>(MouseButtonPressed->button)] = true;
-        */
-
         m_pInputEvents->onMouseButtonPressed(static_cast<int32>(MouseButtonPressed->button),
                                              MouseButtonPressed->position.x,
                                              MouseButtonPressed->position.y);
@@ -430,13 +401,6 @@ namespace geEngineSDK {
       }
 
       if (const auto* MouseButtonReleased = wndEvent.getIf<sf::Event::MouseButtonReleased>()) {
-        /*
-        io.MouseDown[static_cast<int32>(MouseButtonReleased->button)] = false;
-        if (!ImGui::IsAnyMouseDown() && ::GetCapture() == handle) {
-          ::ReleaseCapture();
-        }
-        */
-
         m_pInputEvents->onMouseButtonReleased(static_cast<int32>(MouseButtonReleased->button),
                                               MouseButtonReleased->position.x,
                                               MouseButtonReleased->position.y);
