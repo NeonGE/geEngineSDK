@@ -2083,6 +2083,17 @@ namespace geEngineSDK {
                                threadGroupCountZ);
   }
 
+  GraphicsInfo
+  DX11RenderAPI::getDevice() const {
+    GraphicsInfo info;
+
+    //On DirectX11, we send the device and device context pointers
+    info.pDevicePtr = cast::re<void*>(m_pDevice);
+    info.pCommandPtr = cast::re<void*>(m_pActiveContext);
+
+    return info;
+  }
+
   void
   DX11RenderAPI::_updateBackBufferTexture() {
     GE_ASSERT(m_pDevice && m_pSwapChain);

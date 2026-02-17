@@ -8,6 +8,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/Externals_Lua.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Externals_SFML.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Externals_ZlibNG.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Externals_MiniZip.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/Externals_ImGui.cmake)
 
 function(ge_setup_test_dependencies)
   ge_setup_nlohmann_json()

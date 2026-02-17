@@ -439,6 +439,12 @@ namespace geEngineSDK {
     dispatch(uint32 threadGroupCountX,
              uint32 threadGroupCountY = 1,
              uint32 threadGroupCountZ = 1) = 0;
+
+    /*************************************************************************/
+    // Getter Functions
+    /*************************************************************************/
+    virtual GraphicsInfo
+    getDevice() const = 0;
   };
 
   GE_LOG_CATEGORY(RenderAPI, 100);

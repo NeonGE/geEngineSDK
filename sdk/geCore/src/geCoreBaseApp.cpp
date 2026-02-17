@@ -210,30 +210,28 @@ namespace geEngineSDK {
   }
 
   void
-  GE_COREBASE_CLASS::createWindow() {
+    GE_COREBASE_CLASS::createWindow() {
     auto& gameConfig = GameConfig::instance();
     if (!gameConfig.get<bool>("WINDOW", "CREATEWINDOW", true)) {
       return;
     }
 
-    if(!m_window) {
-      m_window = ge_new<WindowBase>();
-      sf::Vector2u wndSize(gameConfig.get<uint32>("WINDOW", "WIDTH", 1280),
-                           gameConfig.get<uint32>("WINDOW", "HEIGHT", 720));
-      m_clientSize.x = wndSize.x;
-      m_clientSize.y = wndSize.y;
-
-      m_window->create(VideoMode(wndSize),
-        gameConfig.get<String>("WINDOW", "TITLE", "geEngine App").c_str(),
-                              sf::Style::Default,
-                              gameConfig.get<bool>("WINDOW", "FULLSCREEN", false) ?
-                              sf::State::Fullscreen :
-                              sf::State::Windowed);
-    }
-
-    if (m_window->isOpen()) {
+    if (m_window && m_window->isOpen()) {
       return;
     }
+
+    m_window = ge_new<WindowBase>();
+    sf::Vector2u wndSize(gameConfig.get<uint32>("WINDOW", "WIDTH", 1280),
+                         gameConfig.get<uint32>("WINDOW", "HEIGHT", 720));
+    m_clientSize.x = wndSize.x;
+    m_clientSize.y = wndSize.y;
+
+    m_window->create(VideoMode(wndSize),
+                     gameConfig.get<String>("WINDOW", "TITLE", "geEngine App").c_str(),
+                     sf::Style::Default,
+                     gameConfig.get<bool>("WINDOW", "FULLSCREEN", false) ?
+                     sf::State::Fullscreen :
+                     sf::State::Windowed);
 
     sf::Vector2i wndPosition(gameConfig.get<int32>("WINDOW", "POSITIONX", -1),
                              gameConfig.get<int32>("WINDOW", "POSITIONY", -1));
@@ -242,7 +240,7 @@ namespace geEngineSDK {
       m_window->setPosition(wndPosition);
     }
 
-    m_windowHasFocus = m_window->hasFocus();
+    setFocus();
   }
 
   void

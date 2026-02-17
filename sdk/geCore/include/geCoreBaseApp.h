@@ -225,6 +225,11 @@ namespace geEngineSDK {
       return m_window->getNativeHandle();
     }
 
+    void
+    setFocus(bool bStatus = true) {
+      m_windowHasFocus = bStatus;
+    }
+
     bool
     hasFocus() const {
       return m_windowHasFocus;

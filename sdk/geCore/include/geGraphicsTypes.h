@@ -24,6 +24,15 @@ namespace geEngineSDK {
   //Forward declarations
   class Texture;
 
+  //Structure used to encapsulate the Device and API specifics objects for
+  //external use
+  struct GraphicsInfo
+  {
+    uint32 iDeviceData = 0;  //If the API have some data (ej. OpenGL)
+    void* pDevicePtr = nullptr; //If there's a device (ej. DXDevice)
+    void* pCommandPtr = nullptr;  //DeviceContext or Command buffer
+  };
+
   //Structure for the description of the graphics device
   struct ADAPTER_DESC
   {

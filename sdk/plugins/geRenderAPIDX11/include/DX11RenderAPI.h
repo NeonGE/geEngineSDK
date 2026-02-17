@@ -495,6 +495,12 @@ namespace geEngineSDK {
              uint32 threadGroupCountY = 1,
              uint32 threadGroupCountZ = 1) override;
 
+    /*************************************************************************/
+    // Getter Functions
+    /*************************************************************************/
+    GraphicsInfo
+    getDevice() const override;
+
    private:
     void
     _updateBackBufferTexture();
