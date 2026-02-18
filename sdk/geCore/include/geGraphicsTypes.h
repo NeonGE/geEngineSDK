@@ -253,6 +253,16 @@ namespace geEngineSDK {
     float zFar;
   };
 
+  struct BUFFER_DESC
+  {
+    uint32 byteWidth;
+    uint32 usage = RESOURCE_USAGE::DEFAULT;
+    uint32 bindFlags;
+    uint32 cpuAccessFlags = 0;
+    uint32 miscFlags = 0;
+    uint32 structureByteStride = 0;
+  };
+
   struct TEXTURE2D_DESC
   {
     uint32 width = 0;

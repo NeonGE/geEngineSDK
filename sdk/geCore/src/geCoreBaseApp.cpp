@@ -273,7 +273,7 @@ namespace geEngineSDK {
     auto& gameConfig = GameConfig::instance();
 
     String renderApiDllName = "geRenderAPI";
-    renderApiDllName += gameConfig.get<String>("RENDERAPI", "DRIVER", "DX11");
+    renderApiDllName += gameConfig.get<String>("RENDERAPI", "DLLMODULE", "DX11");
 
     auto renderAPIDll = g_dynLibManager().load(renderApiDllName);
     if (!renderAPIDll) {

@@ -351,7 +351,7 @@ namespace geEngineSDK {
     safeRelease(device);
     safeRelease(dxgiDevice);
 
-    return false;
+    return true;
   }
 
   DX11RenderAPI::~DX11RenderAPI() {

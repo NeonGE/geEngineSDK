@@ -24,7 +24,6 @@
 
 namespace geEngineSDK
 {
-
   class DXRasterizerState : public RasterizerState
   {
    public:
@@ -150,14 +149,14 @@ namespace geEngineSDK
   class DXPipelineState : public PipelineState
   {
    public:
-     DXPipelineState() {
-       memset(&m_scissorRects, 0, sizeof(m_scissorRects));
-       memset(&m_viewports, 0, sizeof(m_viewports));
-       memset(&m_blendFactor, 0, sizeof(m_blendFactor));
-       memset(&m_psInstances, 0, sizeof(m_psInstances));
-       memset(&m_vsInstances, 0, sizeof(m_vsInstances));
-       memset(&m_gsInstances, 0, sizeof(m_gsInstances));
-     }
+    DXPipelineState() {
+      memset(&m_scissorRects, 0, sizeof(m_scissorRects));
+      memset(&m_viewports, 0, sizeof(m_viewports));
+      memset(&m_blendFactor, 0, sizeof(m_blendFactor));
+      memset(&m_psInstances, 0, sizeof(m_psInstances));
+      memset(&m_vsInstances, 0, sizeof(m_vsInstances));
+      memset(&m_gsInstances, 0, sizeof(m_gsInstances));
+    }
 
     virtual ~DXPipelineState() {
       release();

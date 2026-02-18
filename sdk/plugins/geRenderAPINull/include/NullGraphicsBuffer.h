@@ -1,9 +1,9 @@
 /*****************************************************************************/
 /**
- * @file    DXGraphicsBuffer.h
+ * @file    NullGraphicsBuffer.h
  * @author  Samuel Prince (samuel.prince.quezada@gmail.com)
- * @date    2025/06/26
- * @brief   Graphics Buffer Interface .
+ * @date    2026/02/17
+ * @brief   Graphics Buffer Interface.
  *
  * Graphics Buffer Interface. This interface defines the methods and properties
  * To unify the management of graphics buffers across different graphics APIs.
@@ -18,8 +18,8 @@
  * Includes
  */
 /*****************************************************************************/
-#include "gePrerequisitesRenderAPIDX11.h"
-#include "DXGraphicsInterfaces.h"
+#include "gePrerequisitesRenderAPINull.h"
+#include "NullGraphicsInterfaces.h"
 
 namespace geEngineSDK {
 
@@ -27,11 +27,11 @@ namespace geEngineSDK {
    * @brief Represents a vertex buffer in DirectX 11.
    *        This class manages the vertex buffer used for rendering geometry.
    */
-  class DXVertexBuffer : public VertexBuffer
+  class NullVertexBuffer : public VertexBuffer
   {
    public:
-    DXVertexBuffer() = default;
-    virtual ~DXVertexBuffer() {
+    NullVertexBuffer() = default;
+    virtual ~NullVertexBuffer() {
       release();
     }
 
@@ -40,7 +40,7 @@ namespace geEngineSDK {
      */
     void
     release() override {
-      safeRelease(m_pBuffer);
+      m_pBuffer -= 1;
     }
 
     bool
@@ -55,7 +55,7 @@ namespace geEngineSDK {
 
     bool
     isLoaded() const override {
-      return m_pBuffer != nullptr;
+      return m_pBuffer != 0;
     }
 
     const String&
@@ -66,39 +66,39 @@ namespace geEngineSDK {
 
     SIZE_T
     getMemoryUsage() const override {
-      return m_Desc.ByteWidth; // Memory usage is the size of the buffer
+      return m_Desc.byteWidth; // Memory usage is the size of the buffer
     }
 
-    void*
-    _getGraphicsResource() const override {
-      return m_pBuffer;
-    }
-
-    void*
-    _getGraphicsBuffer() const override {
-      return m_pBuffer;
-    }
-
-    const D3D11_BUFFER_DESC&
+    const BUFFER_DESC&
     getDesc() const {
       return m_Desc;
     }
 
+    void*
+    _getGraphicsBuffer() const override {
+      return nullptr;
+    }
+
+    void*
+    _getGraphicsResource() const override {
+      return nullptr;
+    }
+
    protected:
-    friend class DX11RenderAPI;
-    ID3D11Buffer* m_pBuffer = nullptr;
-    D3D11_BUFFER_DESC m_Desc{};
+    friend class NullRenderAPI;
+    int32 m_pBuffer = 0;
+    BUFFER_DESC m_Desc{};
   };
 
   /**
    * @brief Represents a stream output buffer in DirectX 11.
    *        This class manages the buffer used for stream output operations.
    */
-  class DXStreamOutputBuffer : public StreamOutputBuffer
+  class NullStreamOutputBuffer : public StreamOutputBuffer
   {
    public:
-    DXStreamOutputBuffer() = default;
-    virtual ~DXStreamOutputBuffer() {
+    NullStreamOutputBuffer() = default;
+    virtual ~NullStreamOutputBuffer() {
       release();
     }
 
@@ -107,7 +107,7 @@ namespace geEngineSDK {
      */
     void
     release() override {
-      safeRelease(m_pBuffer);
+      m_pBuffer -= 1;
     }
 
     bool
@@ -122,7 +122,7 @@ namespace geEngineSDK {
 
     bool
     isLoaded() const override {
-      return m_pBuffer != nullptr;
+      return m_pBuffer != 0;
     }
 
     const String&
@@ -133,34 +133,34 @@ namespace geEngineSDK {
 
     SIZE_T
     getMemoryUsage() const override {
-      return m_Desc.ByteWidth; // Memory usage is the size of the buffer
-    }
-
-    void*
-    _getGraphicsResource() const override {
-      return m_pBuffer;
+      return m_Desc.byteWidth; // Memory usage is the size of the buffer
     }
 
     void*
     _getGraphicsBuffer() const override {
-      return m_pBuffer;
+      return nullptr;
+    }
+
+    void*
+    _getGraphicsResource() const override {
+      return nullptr;
     }
 
    protected:
-    friend class DX11RenderAPI;
-    ID3D11Buffer* m_pBuffer = nullptr;
-    D3D11_BUFFER_DESC m_Desc{};
+    friend class NullRenderAPI;
+    int32 m_pBuffer = 0;
+    BUFFER_DESC m_Desc{};
   };
 
   /**
    * @brief Represents an index buffer in DirectX 11.
    *        This class manages the index buffer used for rendering indexed geometry.
    */
-  class DXIndexBuffer : public IndexBuffer
+  class NullIndexBuffer : public IndexBuffer
   {
    public:
-    DXIndexBuffer() = default;
-    virtual ~DXIndexBuffer() {
+    NullIndexBuffer() = default;
+    virtual ~NullIndexBuffer() {
       release();
     }
 
@@ -169,7 +169,7 @@ namespace geEngineSDK {
      */
     void
     release() override {
-      safeRelease(m_pBuffer);
+      m_pBuffer -= 1;
     }
 
     bool
@@ -184,7 +184,7 @@ namespace geEngineSDK {
 
     bool
     isLoaded() const override {
-      return m_pBuffer != nullptr;
+      return m_pBuffer != 0;
     }
 
     const String&
@@ -195,39 +195,39 @@ namespace geEngineSDK {
 
     SIZE_T
     getMemoryUsage() const override {
-      return m_Desc.ByteWidth; // Memory usage is the size of the buffer
+      return m_Desc.byteWidth; // Memory usage is the size of the buffer
     }
 
-    void*
-    _getGraphicsResource() const override {
-      return m_pBuffer;
-    }
-
-    void*
-    _getGraphicsBuffer() const override {
-      return m_pBuffer;
-    }
-
-    const D3D11_BUFFER_DESC&
+    const BUFFER_DESC&
     getDesc() const {
       return m_Desc;
     }
 
-   protected:
-    friend class DX11RenderAPI;
-    ID3D11Buffer* m_pBuffer = nullptr;
-    D3D11_BUFFER_DESC m_Desc{};
+    void*
+    _getGraphicsBuffer() const override {
+      return nullptr;
+    }
+
+    void*
+    _getGraphicsResource() const override {
+      return nullptr;
+    }
+
+  protected:
+    friend class NullRenderAPI;
+    int32 m_pBuffer = 0;
+    BUFFER_DESC m_Desc{};
   };
 
   /**
    * @brief Represents a constant buffer in DirectX 11.
    *        This class manages the constant buffer used for passing data to shaders.
    */
-  class DXConstantBuffer : public ConstantBuffer
+  class NullConstantBuffer : public ConstantBuffer
   {
    public:
-    DXConstantBuffer() = default;
-    virtual ~DXConstantBuffer() {
+    NullConstantBuffer() = default;
+    virtual ~NullConstantBuffer() {
       release();
     }
 
@@ -236,7 +236,7 @@ namespace geEngineSDK {
      */
     void
     release() override {
-      safeRelease(m_pBuffer);
+      m_pBuffer -= 1;
     }
 
     bool
@@ -251,7 +251,7 @@ namespace geEngineSDK {
 
     bool
     isLoaded() const override {
-      return m_pBuffer != nullptr;
+      return m_pBuffer != 0;
     }
 
     const String&
@@ -262,28 +262,28 @@ namespace geEngineSDK {
 
     SIZE_T
     getMemoryUsage() const override {
-      return m_Desc.ByteWidth; // Memory usage is the size of the buffer
+      return m_Desc.byteWidth; // Memory usage is the size of the buffer
     }
 
     void*
     _getGraphicsResource() const override {
-      return m_pBuffer;
+      return nullptr;
     }
 
     void*
     _getGraphicsBuffer() const override {
-      return m_pBuffer;
+      return nullptr;
     }
 
-    const D3D11_BUFFER_DESC&
+    const BUFFER_DESC&
     getDesc() const {
       return m_Desc;
     }
 
    protected:
-    friend class DX11RenderAPI;
-    ID3D11Buffer* m_pBuffer = nullptr;
-    D3D11_BUFFER_DESC m_Desc{};
+    friend class NullRenderAPI;
+    int32 m_pBuffer = 0;
+    BUFFER_DESC m_Desc{};
   };
 
 } // namespace geEngineSDK

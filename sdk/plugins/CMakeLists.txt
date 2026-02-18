@@ -1,5 +1,7 @@
 # Add here common plugins
 # add_subdirectory(PluginCommon)
+add_subdirectory(geRenderAPINull)
+
 
 # Windows only
 if(WIN32)

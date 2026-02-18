@@ -96,7 +96,7 @@ namespace geEngineSDK {
 
   Vector3
   DXTexture::getDimensions() const {
-    return Vector3();
+    return Vector3(m_desc.width, m_desc.height, m_desc.mipLevels);
   }
 
   void
