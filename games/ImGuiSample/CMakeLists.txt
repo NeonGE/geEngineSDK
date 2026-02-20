@@ -1,7 +1,9 @@
 ge_setup_imgui()
-ge_setup_imgui_dx11_win32_backend()
+ge_setup_imgui_backend()
 
 add_executable(ImGuiSample
+	geImGuiPlatform.h
+	geImGuiPlatform.cpp
 	main.cpp
 )
 
@@ -24,7 +26,7 @@ target_link_libraries(ImGuiSample
 		ge_lua
 	PRIVATE
 		ge::imgui_core
-		ge::imgui_backend_dx11_win32
+		ge::imgui_backend
 )
 
 ge_link_rttr(ImGuiSample)

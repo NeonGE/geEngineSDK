@@ -1,5 +1,5 @@
 ge_setup_imgui()
-ge_setup_imgui_dx11_win32_backend()
+ge_setup_imgui_backend()
 
 add_executable(SampleGame
 	main.cpp
@@ -24,7 +24,7 @@ target_link_libraries(SampleGame
 		ge_lua
 	PRIVATE
 		ge::imgui_core
-		ge::imgui_backend_dx11_win32
+		ge::imgui_backend
 )
 
 ge_link_rttr(SampleGame)

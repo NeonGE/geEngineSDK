@@ -92,49 +92,55 @@ function(ge_setup_imgui)
   endif()
 endfunction()
 
-option(GE_IMGUI_ENABLE_BACKEND_DX11_WIN32 "Enable ImGui Win32+DX11 backends" OFF)
+option(GE_IMGUI_ENABLE_BACKEND "Enable ImGui backend" OFF)
 
-function(ge_setup_imgui_dx11_win32_backend)
-  if(TARGET ge_imgui_backend_dx11_win32)
+function(ge_setup_imgui_backend)
+  if(TARGET ge_imgui_backend)
     return()
   endif()
 
   # Ensure core exists (and the repo is populated)
   ge_setup_imgui()
 
-  if(NOT WIN32)
-    message(FATAL_ERROR "[ImGui] DX11+Win32 backend is Windows-only.")
-  endif()
-
   # Get ImGui include dir from core
   get_target_property(_inc ge_imgui_core INTERFACE_INCLUDE_DIRECTORIES)
   list(GET _inc 0 _IMGUI_DIR)
 
-  add_library(ge_imgui_backend_dx11_win32 STATIC
+  if(WIN32)
+  add_library(ge_imgui_backend STATIC
     "${_IMGUI_DIR}/backends/imgui_impl_dx11.cpp"
-    "${_IMGUI_DIR}/backends/imgui_impl_win32.cpp"
   )
+  elseif(UNIX AND NOT APPLE)
+  add_library(ge_imgui_backend STATIC
+    "${_IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
+  )
+  endif()
 
-  target_include_directories(ge_imgui_backend_dx11_win32 PUBLIC
+  target_include_directories(ge_imgui_backend PUBLIC
     "${_IMGUI_DIR}"
     "${_IMGUI_DIR}/backends"
   )
 
-  target_link_libraries(ge_imgui_backend_dx11_win32 PUBLIC
+  target_link_libraries(ge_imgui_backend PUBLIC
     ge::imgui_core
     ge_build_settings
   )
 
+  if(WIN32)
   # DX11 deps
-  target_link_libraries(ge_imgui_backend_dx11_win32 PRIVATE
+  target_link_libraries(ge_imgui_backend PRIVATE
     d3d11
     dxgi
     dxguid
   )
+  elseif(UNIX AND NOT APPLE)
+  find_package(OpenGL REQUIRED)
+  target_link_libraries(ge_imgui_backend PRIVATE OpenGL::GL)
+  endif()
 
-  add_library(ge::imgui_backend_dx11_win32 ALIAS ge_imgui_backend_dx11_win32)
+  add_library(ge::imgui_backend ALIAS ge_imgui_backend)
 
-  set_target_properties(ge_imgui_backend_dx11_win32 PROPERTIES
+  set_target_properties(ge_imgui_backend PROPERTIES
     FOLDER "Dependencies/ImGui"
   )
 endfunction()

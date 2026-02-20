@@ -20,10 +20,7 @@
 #include "NullRenderAPI.h"
 #include "NullGraphicsBuffer.h"
 
-#include <geGameConfig.h>
-#include <geMath.h>
 #include <geDebug.h>
-#include <d3dcompiler.h>
 
 namespace geEngineSDK {
   using std::pair;

@@ -7,29 +7,30 @@ ge_setup_zlib()
 ge_setup_minizip()
 
 add_library(geCore SHARED
-	include/geCodecManager.h                                                     
-	include/geCoreBaseApp.h                                                      
-	include/geCoreFeatures.h                                                     
-	include/geDiskFileSystem.h                                                   
-	include/geFileTracker.h                                                      
-	include/geGameConfig.h                                                       
-	include/geGraphicsInterfaces.h                                               
-	include/geGraphicsTypes.h                                                    
-	include/geICodec.h                                                           
-	include/geInputLayout.h                                                      
-	include/geMountManager.h                                                     
-	include/gePrerequisitesCore.h                                                
-	include/geRasterizationState.h                                               
-	include/geRenderAPI.h                                                        
-	include/geResource.h                                                         
-	include/geSamplerState.h                                                     
-	include/geShader.h                                                           
-	include/geTexture.h                                                          
-	include/geTextureManager.h                                                   
-	include/geVertexDeclaration.h                                                
-	include/geZipDataStream.h                                                    
-	include/geZipFileSystem.h  
-	
+	include/geAppInputEvents.h
+	include/geCodecManager.h
+	include/geCoreBaseApp.h
+	include/geCoreFeatures.h
+	include/geDiskFileSystem.h
+	include/geFileTracker.h
+	include/geGameConfig.h
+	include/geGraphicsInterfaces.h
+	include/geGraphicsTypes.h
+	include/geICodec.h
+	include/geInputLayout.h
+	include/geMountManager.h
+	include/gePrerequisitesCore.h
+	include/geRasterizationState.h
+	include/geRenderAPI.h
+	include/geResource.h
+	include/geSamplerState.h
+	include/geShader.h
+	include/geTexture.h
+	include/geTextureManager.h
+	include/geVertexDeclaration.h
+	include/geZipDataStream.h
+	include/geZipFileSystem.h
+
 	src/geCodecManager.cpp
 	src/geCoreBaseApp.cpp
 	src/geDiskFileSystem.cpp

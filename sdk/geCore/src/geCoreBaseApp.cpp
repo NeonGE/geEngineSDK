@@ -104,7 +104,7 @@ namespace geEngineSDK {
   }
 
   void
-  geCoreBaseApp::startMountManager() {
+  GE_COREBASE_CLASS::startMountManager() {
     //Check that the GameConfig is initialized
     GE_ASSERT(GameConfig::isStarted() &&
               "GameConfig is not started. Cannot start MountManager.");
@@ -506,6 +506,16 @@ namespace geEngineSDK {
     graphMan.setRenderTargets(defatultRT, WeakSPtr<Texture>());
     onRender();
     graphMan.present();
+  }
+
+  Vector2I
+  GE_COREBASE_CLASS::getWindowSize() const {
+    if (!m_window || !m_window->isOpen()) {
+      return Vector2I();
+    }
+
+    auto wndSize = m_window->getSize(); //This returns the client area size
+    return Vector2I(cast::st<int32>(wndSize.x), cast::st<int32>(wndSize.y));
   }
 
   void
