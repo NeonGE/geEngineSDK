@@ -174,6 +174,8 @@ endif()
 
 if(UNIX AND NOT APPLE)
 find_package(ICU REQUIRED COMPONENTS uc i18n data)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(UUID REQUIRED uuid)
 
 target_link_libraries(geUtilities
 	PRIVATE
@@ -181,6 +183,10 @@ target_link_libraries(geUtilities
 		ICU::i18n
 		ICU::data
 )
+
+target_include_directories(geUtilities PRIVATE ${UUID_INCLUDE_DIRS})
+target_link_libraries(geUtilities PRIVATE ${UUID_LIBRARIES})
+
 endif()
 
 target_link_libraries(geUtilities
