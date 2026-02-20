@@ -68,7 +68,19 @@ namespace geEngineSDK {
 
   SIZE_T
   NullTexture::getMemoryUsage() const {
-    return m_desc.width, m_desc.height, m_desc.mipLevels;
+    SIZE_T sizeInMemory = 0;
+    if (m_textureObj) {
+      const SIZE_T& width = m_desc.width;
+      const SIZE_T& height = m_desc.height;
+      const SIZE_T& mipLevels = m_desc.mipLevels;
+      const SIZE_T bpp = 32; //TODO: We might want to get this from the format
+
+      for (SIZE_T i = 0; i < mipLevels; ++i) {
+        sizeInMemory += (width >> i) * (height >> i) * (bpp >> 3);
+      }
+    }
+
+    return sizeInMemory;
   }
 
 }

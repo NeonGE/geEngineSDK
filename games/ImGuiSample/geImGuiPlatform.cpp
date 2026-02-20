@@ -188,13 +188,12 @@ namespace geEngineSDK {
                               cast::st<float>(Math::max(8, height)));
     });
 
-    const auto handleKeyChanged = [](const auto& keyCode,
-      const bool alt,
-      const bool ctrl,
-      const bool shift,
-      const bool systemKey,
-      bool down) {
-        ImGuiIO& io = ImGui::GetIO();
+    const auto handleKeyChanged = [&io](const auto& keyCode,
+                                        const bool alt,
+                                        const bool ctrl,
+                                        const bool shift,
+                                        const bool systemKey,
+                                        bool down) {
         auto sfKey = cast::st<sf::Keyboard::Key>(keyCode);
 
         const ImGuiKey mod = sfmlKeyToImGuiMod(sfKey);
@@ -207,6 +206,10 @@ namespace geEngineSDK {
           io.AddKeyEvent(ImGuiMod_Alt, alt);
           io.AddKeyEvent(ImGuiMod_Super, systemKey);
         }
+
+        const ImGuiKey key = sfmlKeyToImGui(cast::st<sf::Keyboard::Key>(keyCode));
+        io.AddKeyEvent(key, down);
+        io.SetKeyEventNativeData(key, cast::st<int>(keyCode), -1);
       };
 
     input->onKeyPressed.connect([this, &io, handleKeyChanged](int32 keyCode,
@@ -217,17 +220,15 @@ namespace geEngineSDK {
         }
       });
 
-    input->onKeyReleased.connect([this, handleKeyChanged](int32 keyCode,
+    input->onKeyReleased.connect([this, &io, handleKeyChanged](int32 keyCode,
       bool alt, bool ctrl, bool shift, bool systemKey) {
         handleKeyChanged(keyCode, alt, ctrl, shift, systemKey, false);
-        ImGuiIO& io = ImGui::GetIO();
         if (io.WantCaptureKeyboard) {
           return;
         }
       });
 
-    input->onTextEntered.connect([this](UNICHAR text) {
-      ImGuiIO& io = ImGui::GetIO();
+    input->onTextEntered.connect([this, &io](UNICHAR text) {
       io.AddInputCharacterUTF16(static_cast<uint16>(text));
     });
 

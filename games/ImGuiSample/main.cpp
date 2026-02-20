@@ -28,7 +28,6 @@ namespace geEngineSDK {
 
       onCreate.connect([this, inputEvents]() {
         auto& graphMan = RenderAPI::instance();
-        auto graphicsDevice = graphMan.getDevice();
 
         //Initialize ImGui
         IMGUI_CHECKVERSION();
@@ -36,6 +35,7 @@ namespace geEngineSDK {
         m_imgui.init();
         m_imgui.registerEvents(inputEvents);
 #if USING(GE_PLATFORM_WINDOWS)
+        auto graphicsDevice = graphMan.getDevice();
         ImGui_ImplDX11_Init(cast::re<ID3D11Device*>(graphicsDevice.pDevicePtr),
                             cast::re<ID3D11DeviceContext*>(graphicsDevice.pCommandPtr));
 #else

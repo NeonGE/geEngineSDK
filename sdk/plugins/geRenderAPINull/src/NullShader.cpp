@@ -31,6 +31,8 @@ namespace geEngineSDK {
   }
 
   void
-  NullShader::setDebugName(const String& name) {}
+  NullShader::setDebugName(const String& name) {
+    GE_UNREFERENCED_PARAMETER(name);
+  }
 
 }
