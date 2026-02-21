@@ -109,6 +109,7 @@ function(ge_setup_imgui_backend)
   if(WIN32)
   add_library(ge_imgui_backend STATIC
     "${_IMGUI_DIR}/backends/imgui_impl_dx11.cpp"
+    "${_IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
   )
   elseif(UNIX AND NOT APPLE)
   add_library(ge_imgui_backend STATIC
@@ -126,6 +127,7 @@ function(ge_setup_imgui_backend)
     ge_build_settings
   )
 
+  find_package(OpenGL REQUIRED)
   if(WIN32)
   # DX11 deps
   target_link_libraries(ge_imgui_backend PRIVATE
@@ -134,9 +136,9 @@ function(ge_setup_imgui_backend)
     dxguid
   )
   elseif(UNIX AND NOT APPLE)
-  find_package(OpenGL REQUIRED)
-  target_link_libraries(ge_imgui_backend PRIVATE OpenGL::GL)
+  
   endif()
+  target_link_libraries(ge_imgui_backend PRIVATE OpenGL::GL)
 
   add_library(ge::imgui_backend ALIAS ge_imgui_backend)
 

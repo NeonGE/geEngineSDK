@@ -349,7 +349,6 @@ namespace geEngineSDK {
     safeRelease(dxgiFactory);
     safeRelease(deviceContext);
     safeRelease(device);
-    safeRelease(dxgiDevice);
 
     return true;
   }

@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rsync \
     # --- Dependencies ---
     libicu-dev \
+    uuid-dev \
     # --- SFML + X11/OpenGL deps (for building) ---
     libsfml-dev \
     libx11-dev \

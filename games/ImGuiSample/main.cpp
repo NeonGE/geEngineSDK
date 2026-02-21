@@ -6,7 +6,7 @@
 
 #if USING(GE_PLATFORM_WINDOWS)
 # include "backends/imgui_impl_dx11.h"
-#else // USING(GE_PLATFORM_LINUX)
+#else
 # include "backends/imgui_impl_opengl3.h"
 #endif
 
@@ -68,7 +68,6 @@ namespace geEngineSDK {
 #else
         ImGui_ImplOpenGL3_NewFrame();
 #endif
-
         ImGuiIO& io = ImGui::GetIO();
         auto size = getWindowSize();
         io.DisplaySize = ImVec2((float)size.x, (float)size.y);

@@ -44,6 +44,8 @@
 #include <excpt.h>
 #endif
 
+#include <SFML/Graphics/RenderWindow.hpp>
+
 namespace geEngineSDK {
   using sf::VideoMode;
 
@@ -210,7 +212,7 @@ namespace geEngineSDK {
   }
 
   void
-    GE_COREBASE_CLASS::createWindow() {
+  GE_COREBASE_CLASS::createWindow() {
     auto& gameConfig = GameConfig::instance();
     if (!gameConfig.get<bool>("WINDOW", "CREATEWINDOW", true)) {
       return;
@@ -220,7 +222,7 @@ namespace geEngineSDK {
       return;
     }
 
-    m_window = ge_new<WindowBase>();
+    m_window = ge_new<sf::RenderWindow>();
     sf::Vector2u wndSize(gameConfig.get<uint32>("WINDOW", "WIDTH", 1280),
                          gameConfig.get<uint32>("WINDOW", "HEIGHT", 720));
     m_clientSize.x = wndSize.x;
@@ -504,8 +506,18 @@ namespace geEngineSDK {
 
     //TODO: Change this for the RendererManager calls
     graphMan.setRenderTargets(defatultRT, WeakSPtr<Texture>());
+
+    //TODO: Remove this once the OpenGL driver is ready
+    sf::RenderWindow* pRW = cast::re<sf::RenderWindow*>(m_window);
+    pRW->clear(sf::Color::Blue);
+    pRW->clearStencil(sf::StencilValue(0));
+
     onRender();
+
     graphMan.present();
+
+    //TODO: Remove this once the OpenGL driver is ready
+    pRW->display();
   }
 
   Vector2I
