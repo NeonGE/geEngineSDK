@@ -67,7 +67,7 @@ jobs:
               libsfml-dev \
               libx11-dev libxrandr-dev libxi-dev libxcursor-dev libudev-dev \
               libgl1-mesa-dev libfreetype6-dev \
-              libopenal-dev libvorbis-dev libflac-dev \
+              libopenal-dev libvorbis-dev libflac-dev uuid-dev \
               lcov
 
       - run:
