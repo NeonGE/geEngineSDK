@@ -96,6 +96,9 @@ namespace geEngineSDK {
       return *this;
     }
 
+    virtual void
+    getAllData(Vector<uint8>& outData);
+
     /**
      * @brief Read the requisite number of bytes from the stream, stopping at
      *        the end of the file.

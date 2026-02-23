@@ -2,7 +2,9 @@
 #include <geRenderAPI.h>
 #include <geDebug.h>
 
+#include "geTextureManager.h"
 #include "geImGuiPlatform.h"
+
 
 #if USING(GE_PLATFORM_WINDOWS)
 # include "backends/imgui_impl_dx11.h"
@@ -41,9 +43,13 @@ namespace geEngineSDK {
 #else
         ImGui_ImplOpenGL3_Init("#version 330");
 #endif
+        m_hdriImage = TextureManager::instance().load("Textures/TestTexture.png");
       });
 
       onDestroy.connect([this]() {
+       //Resources needs to be destroyed before the destructor is called
+       //m_hdriImage.reset();
+
 #if USING(GE_PLATFORM_WINDOWS)
         ImGui_ImplDX11_Shutdown();
 #else
@@ -79,6 +85,14 @@ namespace geEngineSDK {
       onRender.connect([this]() {
         ImGui::Text("Hello, world!");
 
+        static ImVec4 borderColor = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+        ImVec4 white = ImVec4(1, 1, 1, 1);
+
+        ImTextureRef tex = {};
+        tex._TexID = (ImTextureID)m_hdriImage->getDrawingReference();
+
+        ImGui::Image(tex, ImVec2(256, 256), ImVec2(0, 0), ImVec2(1, 1), white, borderColor);
+
         static bool bShowDemoWindow = true;
         ImGui::ShowDemoWindow(&bShowDemoWindow);
       });
@@ -96,6 +110,7 @@ namespace geEngineSDK {
 
    private:
     ImGuiPlatform m_imgui;
+    SPtr<Texture> m_hdriImage;
 
   };
 } //geEngineSDK

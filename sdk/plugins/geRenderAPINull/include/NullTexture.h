@@ -74,6 +74,11 @@ namespace geEngineSDK {
       return nullptr;
     }
 
+    const void*
+    getDrawingReference(const uint32 mipMap = 0) const override {
+      return nullptr;
+    }
+
    private:
 #if USING(GE_DEBUG_MODE)
     String m_debugName;

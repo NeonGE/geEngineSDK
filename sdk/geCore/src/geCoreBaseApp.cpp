@@ -53,6 +53,7 @@ namespace geEngineSDK {
     //First thing, we will initialize the CrashHandler and GameConfig
     CrashHandler::startUp();
     GameConfig::startUp();
+    DynLibManager::startUp();
 
     //Initialize the MountManager
     startMountManager();
@@ -66,6 +67,7 @@ namespace geEngineSDK {
   }
 
   GE_COREBASE_CLASS::~GE_COREBASE_CLASS() {
+    DynLibManager::shutDown();
     GameConfig::shutDown();
     CrashHandler::shutDown();
   }
@@ -154,6 +156,7 @@ namespace geEngineSDK {
 
     //Mount the BaseEngine.zip file system
     auto baseEngineZip = ge_shared_ptr_new<ZipFileSystem>(baseEnginePack);
+    mountManager.mount(baseEngineZip);
 
     //TODO: Here we need to get all the packages names from the listing file and mount them
   }
@@ -180,7 +183,7 @@ namespace geEngineSDK {
         if (!wndEvent.has_value()) {
           break;
         }
-        if (wndEvent.value().is<sf::Event::Closed>()) {
+        if (wndEvent.value().is<sf::Event::Closed>()) GE_UNLIKELY {
           m_window->close();
           shouldClose = true;
           break;
@@ -190,7 +193,7 @@ namespace geEngineSDK {
         handleWindowEvent(wndEvent.value());
       }
 
-      if (shouldClose) {
+      if (shouldClose) GE_UNLIKELY {
         break;
       }
 
@@ -256,7 +259,6 @@ namespace geEngineSDK {
     ThreadPool::startUp<TThreadPool<ThreadDefaultPolicy>>((numWorkerThreads));
     TaskScheduler::startUp();
     Time::startUp();
-    DynLibManager::startUp();
     CodecManager::startUp();
 
     //Create the optional systems
@@ -326,7 +328,6 @@ namespace geEngineSDK {
     CodecManager::shutDown();
 
     //Destroy the rest of the systems
-    DynLibManager::shutDown();
     Time::shutDown();
     TaskScheduler::shutDown();
     ThreadPool::shutDown();

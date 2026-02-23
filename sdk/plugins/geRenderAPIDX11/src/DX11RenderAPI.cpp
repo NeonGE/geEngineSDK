@@ -2124,6 +2124,7 @@ namespace geEngineSDK {
     D3D11_TEXTURE2D_DESC desc;
     m_pBackBufferTexture->m_pTexture->GetDesc(&desc);
     m_pBackBufferTexture->_setDesc(desc);
+    m_pBackBufferTexture->setDebugName("BackBuffer");
   }
 
   WeakSPtr<Texture>

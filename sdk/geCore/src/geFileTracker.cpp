@@ -89,6 +89,9 @@ namespace geEngineSDK {
 
       for (const auto& file : newFiles) {
         auto fileStr = file.getAbsolute(currentDir).toPlatformString();
+        if (!FileSystem::exists(toString(fileStr))) {
+          continue;
+        }
         TrackedFile trackedFile;
         trackedFile.m_systemID = systemID;
         trackedFile.m_filePath = fileStr;

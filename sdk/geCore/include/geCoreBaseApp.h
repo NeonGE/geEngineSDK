@@ -53,7 +53,7 @@ namespace geEngineSDK {
     void
     createRenderAPI();
 
-    virtual Vector2I
+    GE_NODISCARD virtual Vector2I
     getWindowSize() const;
 
    private:
@@ -92,7 +92,7 @@ namespace geEngineSDK {
     void
     setWindow(WindowBase* window);
 
-    WindowHandle
+    GE_NODISCARD WindowHandle
     getNativeHandle() {
       if (!m_window) {
 #if USING(GE_PLATFORM_LINUX)
@@ -111,7 +111,7 @@ namespace geEngineSDK {
       m_windowHasFocus = bStatus;
     }
 
-    bool
+    GE_NODISCARD bool
     hasFocus() const {
       return m_windowHasFocus;
     }

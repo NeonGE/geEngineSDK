@@ -1,7 +1,6 @@
 # Add here common plugins
-# add_subdirectory(PluginCommon)
 add_subdirectory(geRenderAPINull)
-
+add_subdirectory(geCodec_StbImage)
 
 # Windows only
 if(WIN32)

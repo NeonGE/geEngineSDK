@@ -20,6 +20,7 @@
 #include "geTextureManager.h"
 #include "geRenderAPI.h"
 #include "geCodecManager.h"
+#include "geMountManager.h"
 
 #include <geFileSystem.h>
 #include <geDataStream.h>
@@ -208,6 +209,7 @@ namespace geEngineSDK {
              filePath.toPlatformString());
     }
 
+    auto& mountMan = MountManager::instance();
     StringID fileID(filePath.toString());
     Path realPath = filePath;
     Path TextureCachePath;
@@ -226,7 +228,7 @@ namespace geEngineSDK {
         geEngineSDK::UUID fileuuid(filePath);
         TextureCachePath = "Saved/TextureCache/";
         TextureCachePath += fileuuid.toString() + ".dds";
-        if (FileSystem::exists(TextureCachePath)) {
+        if (mountMan.exists(TextureCachePath)) {
           realPath = TextureCachePath;
         }
         else {
@@ -241,14 +243,14 @@ namespace geEngineSDK {
       return m_loadedTextures[fileID.id()];
     }
 
-    if (!FileSystem::exists(realPath)) {
+    if (!mountMan.exists(realPath)) {
       GE_LOG(kWarning,
              TextureManager,
              "Texture not found: {0}. Trying in Root Folder...",
              filePath.toPlatformString());
 
       Path fileInRoot(filePath.getFilename(true));
-      if (!FileSystem::exists(fileInRoot)) {
+      if (!mountMan.exists(fileInRoot)) {
         GE_LOG(kWarning,
                TextureManager,
                "Texture: {0}. Not Found in Root Folder...",
@@ -276,7 +278,7 @@ namespace geEngineSDK {
              realPath.toPlatformString());
       return DEFAULT_ERROR;
     }
-    auto pTexture = std::reinterpret_pointer_cast<Texture>(pTexResource);
+    auto pTexture = std::static_pointer_cast<Texture>(pTexResource);
     
     {
       Lock lock(m_mutex);
@@ -298,6 +300,7 @@ namespace geEngineSDK {
 
     pTexture->setPath(filePath);
     pTexture->setCookedPath(TextureCachePath);
+    pTexture->setDebugName(filePath.getFilename());
 
     return pTexture;
   }

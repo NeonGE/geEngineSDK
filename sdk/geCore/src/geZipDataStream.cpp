@@ -75,6 +75,11 @@ namespace geEngineSDK {
     close();
   }
 
+  void
+  ZipDataStream::getAllData(Vector<uint8>& outData) {
+    outData = m_data;
+  }
+
   SIZE_T
   ZipDataStream::read(void* buf, SIZE_T count) {
     if (isEOF()) {

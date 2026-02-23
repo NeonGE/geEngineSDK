@@ -85,6 +85,14 @@ namespace geEngineSDK {
   }
 
   void
+  DataStream::getAllData(Vector<uint8>& outData) {
+    auto dataSize = size();
+    outData.resize(dataSize);
+    read(cast::re<void*>(&outData[0]), dataSize);
+    seek(0);
+  }
+
+  void
   DataStream::writeString(const String& str, STRING_ENCODING::E encoding) {
     if (STRING_ENCODING::kUTF16 == encoding) {
       //Write BOM

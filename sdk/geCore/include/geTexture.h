@@ -70,6 +70,9 @@ namespace geEngineSDK {
       return m_bIsCubeMap;
     }
 
+    virtual const void*
+    getDrawingReference(const uint32 mipMap = 0) const = 0;
+
    protected:
     friend class RenderAPI;
 

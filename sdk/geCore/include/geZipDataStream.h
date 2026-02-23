@@ -49,6 +49,9 @@ namespace geEngineSDK {
       return true;
     }
 
+    void
+    getAllData(Vector<uint8>& outData) override;
+
     SIZE_T
     read(void* buf, SIZE_T count) override;
 

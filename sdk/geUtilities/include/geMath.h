@@ -1181,12 +1181,19 @@ namespace geEngineSDK {
     template<typename T>
     GE_NODISCARD static uint32
     solveLinear(T A, T B, T* roots) {
-      if (!isNearlyEqual(A, static_cast<T>(0))) {
-        roots[0] = -B / A;
-        return 1;
+      GE_ASSERT(roots);
+
+      //Degenerate cases
+      if (isNearlyEqual(A, static_cast<T>(0))) {
+        if (isNearlyEqual(B, static_cast<T>(0))) {
+          return 0; //Infinite solutions
+        }
+        return 0; //No solutions
       }
 
-      roots[0] = 0.0f;
+      GE_ASSUME(!isNearlyEqual(A, static_cast<T>(0)));
+
+      roots[0] = -B / A;
       return 1;
     }
 

@@ -83,7 +83,7 @@ namespace geEngineSDK {
       FileSystem::getChildren(pluginsDir, files, dirs);
 
       for (const auto& codecFile : files) {
-        if(!StringUtil::match(codecFile.getExtension(), ".DLL", false)) {
+        if(!StringUtil::match(codecFile.getExtension(), DynLib::EXTENSION, false)) {
           continue; // Skip non-dll files
         }
 

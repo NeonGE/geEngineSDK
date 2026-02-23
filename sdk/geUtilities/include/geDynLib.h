@@ -54,16 +54,16 @@ namespace geEngineSDK {
   {
    public:
 #if USING(GE_PLATFORM_LINUX)
-    static CONSTEXPR const char* EXTENSION = "so";
+    static CONSTEXPR const char* EXTENSION = ".so";
     static CONSTEXPR const char* PREFIX = "lib";
 #elif USING(GE_PLATFORM_OSX)
-    static CONSTEXPR const char* EXTENSION = "dylib";
+    static CONSTEXPR const char* EXTENSION = ".dylib";
     static CONSTEXPR const char* PREFIX = "lib";
 #elif USING(GE_PLATFORM_WINDOWS)
-    static CONSTEXPR const char* EXTENSION = "dll";
+    static CONSTEXPR const char* EXTENSION = ".dll";
     static CONSTEXPR const char* PREFIX = nullptr;
 #elif USING(GE_PLATFORM_PS4) || USING(GE_PLATFORM_PS5)
-    static CONSTEXPR const char* EXTENSION = "prx";
+    static CONSTEXPR const char* EXTENSION = ".prx";
     static CONSTEXPR const char* PREFIX = "a";
 #else
 # error "No dynamic library loading functions defined for this platform."

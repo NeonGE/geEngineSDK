@@ -70,6 +70,9 @@ namespace geEngineSDK {
     SIZE_T
     getMemoryUsage() const override;
 
+    const void*
+    getDrawingReference(const uint32 mipMap = 0) const override;
+
     void
     _setDesc(D3D11_TEXTURE2D_DESC& desc);
 

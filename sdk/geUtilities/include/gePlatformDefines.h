@@ -151,20 +151,17 @@
 #   define GE_THREADLOCAL __thread
 #   define GE_STDCALL     __attribute__((stdcall))
 #   define GE_CDECL       __attribute__((cdecl))
-#   define GE_FALLTHROUGH [[clang::fallthrough]]
 
 #elif USING(GE_COMPILER_GNUC) //Check after Clang, as Clang also defines __GNUC__
 #   define GE_COMP_VER    (((__GNUC__)*100) + (__GNUC_MINOR__*10) + __GNUC_PATCHLEVEL__)
 #   define GE_THREADLOCAL __thread
 #   define GE_STDCALL     __attribute__((stdcall))
 #   define GE_CDECL       __attribute__((cdecl))
-#   define GE_FALLTHROUGH __attribute__((fallthrough))
 
 #elif USING(GE_COMPILER_INTEL)
 #   define GE_COMP_VER    __INTEL_COMPILER
 #   define GE_STDCALL     __stdcall
 #   define GE_CDECL       __cdecl
-#   define GE_FALLTHROUGH
     /** 
      * GE_THREADLOCAL is defined based on platform because Intel compiler
      * handles it differently.
@@ -180,7 +177,6 @@
 #   define GE_THREADLOCAL __declspec(thread)
 #   define GE_STDCALL     __stdcall
 #   define GE_CDECL       __cdecl
-#   define GE_FALLTHROUGH
 #   undef __PRETTY_FUNCTION__
 #   define __PRETTY_FUNCTION__ __FUNCSIG__
 
@@ -311,20 +307,29 @@
 
 /*****************************************************************************/
 /**
+ * C++ attributes helpers (portable)
+ */
+/*****************************************************************************/
+#ifndef GE_HAS_CPP_ATTRIBUTE
+#  if defined(__has_cpp_attribute)
+#    define GE_HAS_CPP_ATTRIBUTE(x) __has_cpp_attribute(x)
+#  else
+#    define GE_HAS_CPP_ATTRIBUTE(x) 0
+#  endif
+#endif
+
+/*****************************************************************************/
+/**
  * Use before a function declaration to warn that callers should not ignore the
  * return value.
  */
 /*****************************************************************************/
-#if !defined(GE_NODISCARD) && defined(__has_cpp_attribute)
-#   if USING(GE_CPP17_OR_LATER)
-#     if __has_cpp_attribute(nodiscard)
-#       define GE_NODISCARD [[nodiscard]]
-#     endif
+#if !defined(GE_NODISCARD)
+#   if USING(GE_CPP17_OR_LATER) && GE_HAS_CPP_ATTRIBUTE(nodiscard)
+#     define GE_NODISCARD [[nodiscard]]
+#   else
+#     define GE_NODISCARD
 #   endif
-#endif
-
-#ifndef GE_NODISCARD
-#   define GE_NODISCARD
 #endif
 
 /*****************************************************************************/
@@ -332,16 +337,95 @@
  * Use before a function declaration to indicate that the function never returns.
  */
 /*****************************************************************************/
-#if !defined(GE_NORETURN) && defined(__has_cpp_attribute)
-#   if USING(GE_CPP11_OR_LATER)
-#     if __has_cpp_attribute(noreturn)
-#       define GE_NORETURN [[noreturn]]
-#     endif
+#if !defined(GE_NORETURN)
+#   if USING(GE_CPP11_OR_LATER) && GE_HAS_CPP_ATTRIBUTE(noreturn)
+#     define GE_NORETURN [[noreturn]]
+#   else
+#     define GE_NORETURN
 #   endif
 #endif
 
-#ifndef GE_NORETURN
-# define GE_NORETURN
+/*****************************************************************************/
+/**
+ * FALLTHROUGH
+ * Usage:
+ *    switch(x) { case 0: ...; GE_FALLTHROUGH; case 1: ...; }
+ */ 
+/*****************************************************************************/
+#if !defined(GE_FALLTHROUGH)
+#   if USING(GE_CPP17_OR_LATER) && GE_HAS_CPP_ATTRIBUTE(fallthrough)
+#     define GE_FALLTHROUGH [[fallthrough]]
+#   elif GE_HAS_CPP_ATTRIBUTE(clang::fallthrough)
+#     define GE_FALLTHROUGH [[clang::fallthrough]]
+#   elif defined(__GNUC__) && (__GNUC__ >= 7)
+#     define GE_FALLTHROUGH __attribute__((fallthrough))
+#   else
+#     define GE_FALLTHROUGH ((void)0)
+#   endif
+#endif
+
+/*****************************************************************************/
+/*
+ * LIKELY / UNLIKELY (statement attributes, C++20)
+ * Usage:
+ *   if (cond) GE_LIKELY { ... }
+ *   else GE_UNLIKELY { ... }
+ */
+/*****************************************************************************/
+#if !defined(GE_LIKELY)
+#  if USING(GE_CPP20_OR_LATER) && GE_HAS_CPP_ATTRIBUTE(likely)
+#    define GE_LIKELY   [[likely]]
+#    define GE_UNLIKELY [[unlikely]]
+#  else
+#    define GE_LIKELY
+#    define GE_UNLIKELY
+#  endif
+#endif
+
+#if !defined(GE_MAYBE_UNUSED)
+#  if USING(GE_CPP17_OR_LATER) && GE_HAS_CPP_ATTRIBUTE(maybe_unused)
+#    define GE_MAYBE_UNUSED [[maybe_unused]]
+#  else
+#    define GE_MAYBE_UNUSED
+#  endif
+#endif
+
+#if !defined(GE_DEPRECATED)
+#  if USING(GE_CPP14_OR_LATER) && GE_HAS_CPP_ATTRIBUTE(deprecated)
+#    define GE_DEPRECATED(msg) [[deprecated(msg)]]
+#  elif GE_HAS_CPP_ATTRIBUTE(deprecated)
+#    define GE_DEPRECATED(msg) [[deprecated]]
+#  else
+#    define GE_DEPRECATED(msg)
+#  endif
+#endif
+
+#if !defined(GE_NO_UNIQUE_ADDRESS)
+#  if USING(GE_CPP20_OR_LATER) && GE_HAS_CPP_ATTRIBUTE(no_unique_address)
+#    define GE_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#  else
+#    define GE_NO_UNIQUE_ADDRESS
+#  endif
+#endif
+
+#if !defined(GE_UNREACHABLE)
+#  if USING(GE_COMPILER_MSVC)
+#    define GE_UNREACHABLE() __assume(0)
+#  elif USING(GE_COMPILER_CLANG) || USING(GE_COMPILER_GNUC)
+#    define GE_UNREACHABLE() __builtin_unreachable()
+#  else
+#    define GE_UNREACHABLE() ((void)0)
+#  endif
+#endif
+
+#if !defined(GE_ASSUME)
+#  if USING(GE_COMPILER_MSVC)
+#    define GE_ASSUME(expr) __assume(expr)
+#  elif USING(GE_COMPILER_CLANG) || USING(GE_COMPILER_GNUC)
+#    define GE_ASSUME(expr) do { if(!(expr)) __builtin_unreachable(); } while(0)
+#  else
+#    define GE_ASSUME(expr) ((void)0)
+#  endif
 #endif
 
 /*****************************************************************************/

@@ -43,7 +43,7 @@ namespace geEngineSDK {
     //Add the extension (.dll, .so, ...) if necessary.
     String filename = name;
     const SIZE_T length = filename.length();
-    const String extension = String(".") + DynLib::EXTENSION;
+    const String extension = DynLib::EXTENSION;
     const SIZE_T extLength = extension.length();
 
     if (length <= extLength || filename.substr(length - extLength) != extension) {

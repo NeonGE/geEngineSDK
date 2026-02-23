@@ -105,7 +105,7 @@ namespace geEngineSDK {
   DXTexture::setDebugName(const String& name) {
 #if USING(GE_DEBUG_MODE)
     m_debugName = name;
-    if (m_pTexture) {
+    if (m_pTexture) GE_LIKELY {
       m_pTexture->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(name.size()),
                                  name.c_str());
     }
@@ -118,7 +118,7 @@ namespace geEngineSDK {
   SIZE_T
   DXTexture::getMemoryUsage() const {
     SIZE_T sizeInMemory = 0;
-    if (m_pTexture) {
+    if (m_pTexture) GE_LIKELY {
       const SIZE_T& width = m_desc.width;
       const SIZE_T& height = m_desc.height;
       const SIZE_T& mipLevels = m_desc.mipLevels;
@@ -131,6 +131,15 @@ namespace geEngineSDK {
     }
 
     return sizeInMemory;
+  }
+
+  const void*
+  DXTexture::getDrawingReference(const uint32 mipMap) const {
+    if (m_ppSRV.empty() || mipMap >= m_ppSRV.size()) GE_UNLIKELY{
+      return nullptr;
+    }
+
+    return cast::re<void*>(m_ppSRV[mipMap]);
   }
 
   void
