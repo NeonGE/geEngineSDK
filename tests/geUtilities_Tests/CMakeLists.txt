@@ -31,6 +31,8 @@ add_executable(geUtilities_Tests
   src/core_UUID.cpp
   src/core_Random.cpp
   src/core_SmartEnum.cpp
+
+  src/core_MessageHandler.cpp
 )
 
 # Mantener mismo layout de outputs (bin/lib) por platform/config

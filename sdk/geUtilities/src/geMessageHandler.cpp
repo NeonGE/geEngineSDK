@@ -43,6 +43,7 @@ namespace geEngineSDK {
   HMessage::disconnect() {
     if (0 < m_id) {
       MessageHandler::instance().unsubscribe(m_id);
+      m_id = 0;
     }
   }
 
@@ -72,7 +73,11 @@ namespace geEngineSDK {
 
   void
   MessageHandler::unsubscribe(uint32 handleId) {
-    uint32 msgId = m_handlerIdToMessageMap[handleId];
+    auto it = m_handlerIdToMessageMap.find(handleId);
+    if (it == m_handlerIdToMessageMap.end()) {
+      return;
+    }
+    uint32 msgId = it->second;
 
     auto iterFind = m_messageHandlers.find(msgId);
     if (iterFind != m_messageHandlers.end()) {
