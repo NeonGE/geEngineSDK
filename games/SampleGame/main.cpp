@@ -29,7 +29,9 @@ namespace geEngineSDK {
 
 using namespace geEngineSDK;
 
+SPtr<SampleGameApp> g_pApp;
+
 int main() {
-  SampleGameApp app;
-  return app.run();
+  g_pApp = ge_shared_ptr_new<SampleGameApp>();
+  return g_pApp->run();
 }

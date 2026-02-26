@@ -193,10 +193,6 @@ namespace geEngineSDK {
                                     &deviceContext));
 
     m_pDevice = getAs<D3DDevice>(device);
-
-#if USING(GE_DEBUG_MODE)
-    m_pDebug = getAs<ID3D11Debug>(device);
-#endif
     m_pImmediateDC = getAs<D3DDeviceContext>(deviceContext);
     GE_ASSERT(m_pDevice);
     GE_ASSERT(m_pImmediateDC);
@@ -347,6 +343,7 @@ namespace geEngineSDK {
     //Cleanup all the temporal objects in order
     safeRelease(dxgiAdapter);
     safeRelease(dxgiFactory);
+    safeRelease(dxgiDevice);
     safeRelease(deviceContext);
     safeRelease(device);
 
@@ -354,6 +351,11 @@ namespace geEngineSDK {
   }
 
   DX11RenderAPI::~DX11RenderAPI() {
+    if (m_pImmediateDC) {
+      m_pImmediateDC->ClearState();
+      m_pImmediateDC->Flush();
+    }
+
     //Cleanup all the member objects in order
     m_pBackBufferTexture = nullptr;
     safeRelease(m_pSwapChain);
@@ -361,10 +363,7 @@ namespace geEngineSDK {
     m_pActiveContext = nullptr;
     safeRelease(m_pImmediateDC);
 
-#if USING(GE_DEBUG_MODE)
     reportLiveObjects();
-    safeRelease(m_pDebug);
-#endif
 
     safeRelease(m_pDevice);
   }
@@ -467,13 +466,18 @@ namespace geEngineSDK {
 
   void
   DX11RenderAPI::reportLiveObjects(){
-#if USING(GE_DEBUG_MODE)
-    if (!m_pDebug) {
+    GE_ASSERT(m_pDevice);
+
+    uint32 flags = 0;
+    flags = m_pDevice->GetCreationFlags();
+
+    if (!(flags & D3D11_CREATE_DEVICE_DEBUG)) {
       return;
     }
-    //Report live objects
-    m_pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-#endif
+
+    ID3D11Debug* pDebug = getAs<ID3D11Debug>(m_pDevice);
+    pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+    safeRelease(pDebug);
   }
   
   SPtr<Texture>
@@ -539,7 +543,7 @@ namespace geEngineSDK {
     tDesc.Format = tex_format;
     tDesc.SampleDesc.Count = sampleCount;
     tDesc.SampleDesc.Quality = 0;
-    tDesc.Usage = static_cast<D3D11_USAGE>(usage);
+    tDesc.Usage = cast::st<D3D11_USAGE>(usage);
     tDesc.BindFlags = bindFlags;
     tDesc.CPUAccessFlags = cpuAccessFlags;
     tDesc.MiscFlags = isCubeMap ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0;
@@ -560,9 +564,11 @@ namespace geEngineSDK {
       }
     }
 
+    D3DTexture2D* pD3DTexture = nullptr;
     throwIfFailed(m_pDevice->CreateTexture2D(&tDesc,
                                              nullptr,
-                                             &pTexture->m_pTexture));
+                                             &pD3DTexture));
+    pTexture->m_pTexture = pD3DTexture;
 
     if (bindFlags & D3D11_BIND_RENDER_TARGET && !isCubeMap) {
 #if !USING(DX_VERSION_11_3) && !USING(DX_VERSION_11_4)
@@ -671,6 +677,95 @@ namespace geEngineSDK {
 
     pTexture->m_desc = TranslateUtils::get(tDesc);
     pTexture->m_bIsCubeMap = isCubeMap;
+
+    return pTexture;
+  }
+
+  SPtr<Texture>
+  DX11RenderAPI::createTexture3D(uint32 width,
+                                 uint32 height,
+                                 uint32 depth,
+                                 GRAPHICS_FORMAT::E format,
+                                 uint32 bindFlags,
+                                 uint32 mipLevels,
+                                 RESOURCE_USAGE::E usage,
+                                 uint32 cpuAccessFlags) {
+    GE_ASSERT(m_pDevice);
+
+    auto pTexture = ge_shared_ptr_new<DXTexture>();
+
+    DXGI_FORMAT inFormat = TranslateUtils::get(format);
+
+    pTexture->m_desc.bindFlags = bindFlags;
+
+    D3D11_TEXTURE3D_DESC tDesc;
+    tDesc.Height = height;
+    tDesc.Width = width;
+    tDesc.Depth = depth;
+    tDesc.MipLevels = mipLevels ? mipLevels : 0;
+    tDesc.Format = inFormat;
+    tDesc.Usage = cast::st<D3D11_USAGE>(usage);
+    tDesc.BindFlags = bindFlags;
+    tDesc.CPUAccessFlags = cpuAccessFlags;
+    tDesc.MiscFlags = 0;
+
+    if (mipLevels != 1 && usage != RESOURCE_USAGE::STAGING) {
+      //Check if the format supports mipmaps
+      uint32 fmtSupport = 0;
+      HRESULT hr = m_pDevice->CheckFormatSupport(inFormat, &fmtSupport);
+      if (SUCCEEDED(hr) && (fmtSupport & D3D11_FORMAT_SUPPORT_MIP_AUTOGEN)) {
+        //If we want mipmaps, we REQUIRE that it is binded as a render target too
+        tDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+        tDesc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
+        if (mipLevels == 0) {
+          mipLevels = cast::st<uint32>(Math::log2(
+            float(Math::max3(width, height, depth)))) + 1;
+        }
+        tDesc.MipLevels = mipLevels;
+      }
+    }
+
+    D3DTexture3D* pD3DTexture = nullptr;
+    throwIfFailed(m_pDevice->CreateTexture3D(&tDesc, nullptr, &pD3DTexture));
+    pTexture->m_pTexture = pD3DTexture;
+
+    if (bindFlags & D3D11_BIND_SHADER_RESOURCE) {
+      pTexture->m_ppSRV.resize(1);
+
+      D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+      ge_zero_out(srvDesc);
+
+      srvDesc.Format = inFormat;
+      srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE3D;
+      srvDesc.Texture3D.MostDetailedMip = 0;
+      srvDesc.Texture3D.MipLevels = mipLevels;
+      throwIfFailed(m_pDevice->CreateShaderResourceView(pTexture->m_pTexture,
+                                                        &srvDesc,
+                                                        &pTexture->m_ppSRV[0]));
+    }
+
+    if (bindFlags & D3D11_BIND_UNORDERED_ACCESS) {
+      D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+      ge_zero_out(uavDesc);
+
+      uavDesc.Format = inFormat;
+      uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE3D;
+      uavDesc.Texture3D.FirstWSlice = 0;
+
+      pTexture->m_ppUAV.resize(mipLevels);
+
+      uint32 mipDepth = depth;
+      for (uint32 i = 0; i < mipLevels; ++i) {
+        uavDesc.Texture3D.WSize = mipDepth;
+        uavDesc.Texture3D.MipSlice = i;
+        throwIfFailed(m_pDevice->CreateUnorderedAccessView(pTexture->m_pTexture,
+          &uavDesc,
+          &pTexture->m_ppUAV[i]));
+        mipDepth = Math::max(1u, mipDepth >> 1);
+      }
+    }
+
+    pTexture->m_desc = TranslateUtils::get(tDesc);
 
     return pTexture;
   }
@@ -1445,6 +1540,13 @@ namespace geEngineSDK {
     m_pActiveContext->GenerateMips(pDXObj->m_ppSRV[0]);
   }
 
+  uint32
+  DX11RenderAPI::calcSubresource(uint32 mipSlice,
+                                 uint32 arraySlice,
+                                 uint32 mipLevels) const {
+    return D3D11CalcSubresource(mipSlice, arraySlice, mipLevels);
+  }
+
   void
   DX11RenderAPI::clearRenderTarget(const WeakSPtr<Texture>& pRenderTarget,
                                    const LinearColor& color) {
@@ -2107,23 +2209,25 @@ namespace geEngineSDK {
     m_pBackBufferTexture->m_ppRTV.push_back(nullptr);
 
     //Create a render target view
+    D3DTexture2D* pBBTexture = nullptr;
     throwIfFailed(m_pSwapChain->GetBuffer(0,
       __uuidof(ID3D11Texture2D),
-      reinterpret_cast<LPVOID*>(&m_pBackBufferTexture->m_pTexture)));
+      reinterpret_cast<LPVOID*>(&pBBTexture)));
 
 #if !USING(DX_VERSION_11_3) && !USING(DX_VERSION_11_4)
-    throwIfFailed(m_pDevice->CreateRenderTargetView(m_pBackBufferTexture->m_pTexture,
+    throwIfFailed(m_pDevice->CreateRenderTargetView(pBBTexture,
                                                     nullptr,
                                                     &m_pBackBufferTexture->m_ppRTV[0]));
 #else
-    throwIfFailed(m_pDevice->CreateRenderTargetView1(m_pBackBufferTexture->m_pTexture,
+    throwIfFailed(m_pDevice->CreateRenderTargetView1(pBBTexture,
                                                     nullptr,
                                                     &m_pBackBufferTexture->m_ppRTV[0]));
 #endif
 
     D3D11_TEXTURE2D_DESC desc;
-    m_pBackBufferTexture->m_pTexture->GetDesc(&desc);
-    m_pBackBufferTexture->_setDesc(desc);
+    pBBTexture->GetDesc(&desc);
+    m_pBackBufferTexture->m_pTexture = pBBTexture;
+    m_pBackBufferTexture->m_desc = TranslateUtils::get(desc);
     m_pBackBufferTexture->setDebugName("BackBuffer");
   }
 

@@ -1,6 +1,7 @@
 # Add here common plugins
 add_subdirectory(geRenderAPINull)
 add_subdirectory(geCodec_StbImage)
+add_subdirectory(geCodec_DDSLoader)
 
 # Windows only
 if(WIN32)

@@ -644,10 +644,62 @@ namespace geEngineSDK {
       return DXGI_FORMAT_UNKNOWN;
     }
 
-    TEXTURE2D_DESC
+    TEXTURE_DESC
+    get(const D3D11_TEXTURE1D_DESC& desc) {
+      TEXTURE_DESC tDesc;
+
+      tDesc.dimensions = 1;
+      tDesc.width = desc.Width;
+      tDesc.mipLevels = desc.MipLevels;
+      tDesc.arraySize = desc.ArraySize;
+      tDesc.format = cast::st<GRAPHICS_FORMAT::E>(desc.Format);
+      tDesc.usage = desc.Usage;
+      tDesc.bindFlags = desc.BindFlags;
+      tDesc.cpuAccessFlags = desc.CPUAccessFlags;
+      tDesc.miscFlags = desc.MiscFlags;
+
+      return tDesc;
+    }
+
+    TEXTURE_DESC
     get(const D3D11_TEXTURE2D_DESC& desc) {
-      TEXTURE2D_DESC tDesc;
-      memcpy(&tDesc, &desc, sizeof(TEXTURE2D_DESC));
+      TEXTURE_DESC tDesc;
+
+      tDesc.dimensions = 2;
+      tDesc.width = desc.Width;
+      tDesc.height = desc.Height;
+      tDesc.depth = 0;
+      tDesc.mipLevels = desc.MipLevels;
+      tDesc.arraySize = desc.ArraySize;
+      tDesc.format = cast::st<GRAPHICS_FORMAT::E>(desc.Format);
+      tDesc.sampleDesc.count = desc.SampleDesc.Count;
+      tDesc.sampleDesc.quality = desc.SampleDesc.Quality;
+      tDesc.usage = desc.Usage;
+      tDesc.bindFlags = desc.BindFlags;
+      tDesc.cpuAccessFlags = desc.CPUAccessFlags;
+      tDesc.miscFlags = desc.MiscFlags;
+
+      return tDesc;
+    }
+
+    TEXTURE_DESC
+    get(const D3D11_TEXTURE3D_DESC& desc) {
+      TEXTURE_DESC tDesc;
+
+      tDesc.dimensions = 3;
+      tDesc.width = desc.Width;
+      tDesc.height = desc.Height;
+      tDesc.depth = desc.Depth;
+      tDesc.mipLevels = desc.MipLevels;
+      tDesc.arraySize = 0;
+      tDesc.format = cast::st<GRAPHICS_FORMAT::E>(desc.Format);
+      tDesc.sampleDesc.count = 0;
+      tDesc.sampleDesc.quality = 0;
+      tDesc.usage = desc.Usage;
+      tDesc.bindFlags = desc.BindFlags;
+      tDesc.cpuAccessFlags = desc.CPUAccessFlags;
+      tDesc.miscFlags = desc.MiscFlags;
+
       return tDesc;
     }
 

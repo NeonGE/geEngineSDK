@@ -49,13 +49,6 @@ namespace geEngineSDK {
     m_desc.bindFlags = 0;
   }
 
-  Vector3
-  NullTexture::getDimensions() const {
-    return Vector3(cast::st<float>(m_desc.width),
-                   cast::st<float>(m_desc.height),
-                   cast::st<float>(m_desc.mipLevels));
-  }
-
   void
   NullTexture::setDebugName(const String& name) {
 #if USING(GE_DEBUG_MODE)

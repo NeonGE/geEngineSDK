@@ -263,6 +263,18 @@ namespace geEngineSDK {
     uint32 structureByteStride = 0;
   };
 
+  struct TEXTURE1D_DESC
+  {
+    uint32 width = 0;
+    uint32 mipLevels = 0;
+    uint32 arraySize = 0;
+    GRAPHICS_FORMAT::E format = GRAPHICS_FORMAT::kUNKNOWN;
+    uint32 usage = 0;
+    uint32 bindFlags = 0;
+    uint32 cpuAccessFlags = 0;
+    uint32 miscFlags = 0;
+  };
+
   struct TEXTURE2D_DESC
   {
     uint32 width = 0;
@@ -276,6 +288,39 @@ namespace geEngineSDK {
       uint32 quality = 0;
     }sampleDesc;
     uint32 usage = RESOURCE_USAGE::DEFAULT;
+    uint32 bindFlags = 0;
+    uint32 cpuAccessFlags = 0;
+    uint32 miscFlags = 0;
+  };
+
+  struct TEXTURE3D_DESC
+  {
+    uint32 width = 0;
+    uint32 height = 0;
+    uint32 depth = 0;
+    uint32 mipLevels = 0;
+    GRAPHICS_FORMAT::E format = GRAPHICS_FORMAT::kUNKNOWN;
+    uint32 usage = 0;
+    uint32 bindFlags = 0;
+    uint32 cpuAccessFlags = 0;
+    uint32 miscFlags = 0;
+  };
+
+  struct TEXTURE_DESC
+  {
+    uint32 dimensions = 0;
+    uint32 width = 0;
+    uint32 height = 0;
+    uint32 depth = 0;
+    uint32 mipLevels = 0;
+    uint32 arraySize = 0;
+    GRAPHICS_FORMAT::E format = GRAPHICS_FORMAT::kUNKNOWN;
+    struct SAMPLE_DESC
+    {
+      uint32 count = 0;
+      uint32 quality = 0;
+    }sampleDesc;
+    uint32 usage = 0;
     uint32 bindFlags = 0;
     uint32 cpuAccessFlags = 0;
     uint32 miscFlags = 0;

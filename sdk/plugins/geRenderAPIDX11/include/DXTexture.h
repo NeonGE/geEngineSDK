@@ -34,9 +34,6 @@ namespace geEngineSDK {
     void
     release() override;
 
-    Vector3
-    getDimensions() const override;
-
     void
     setDebugName(const String& name) override;
 
@@ -87,7 +84,7 @@ namespace geEngineSDK {
    protected:
     friend class DX11RenderAPI;
 
-    D3DTexture2D* m_pTexture = nullptr;
+    D3DResource* m_pTexture = nullptr;
     D3DDepthStencilView* m_pDSV = nullptr;
     D3DDepthStencilView* m_pRO_DSV = nullptr;
     

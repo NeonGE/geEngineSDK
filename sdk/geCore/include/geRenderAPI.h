@@ -97,6 +97,16 @@ namespace geEngineSDK {
                   bool isCubeMap = false,
                   uint32 arraySize = 1) = 0;
 
+    GE_NODISCARD virtual SPtr<Texture>
+    createTexture3D(uint32 width,
+                    uint32 height,
+                    uint32 depth,
+                    GRAPHICS_FORMAT::E format,
+                    uint32 bindFlags = BIND_FLAG::SHADER_RESOURCE,
+                    uint32 mipLevels = 1,
+                    RESOURCE_USAGE::E usage = RESOURCE_USAGE::DEFAULT,
+                    uint32 cpuAccessFlags = 0) = 0;
+
     GE_NODISCARD SPtr<Texture>
     createDepthStencilTexture(uint32 width,
                               uint32 height,
@@ -231,6 +241,11 @@ namespace geEngineSDK {
 
     virtual void
     generateMips(const WeakSPtr<Texture>& pTexture) = 0;
+
+    virtual uint32
+    calcSubresource(uint32 mipSlice,
+                    uint32 arraySlice,
+                    uint32 mipLevels) const = 0;
 
     virtual void
     clearRenderTarget(const WeakSPtr<Texture>& pRenderTarget,

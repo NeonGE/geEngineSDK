@@ -19,8 +19,6 @@
 #include "DXTexture.h"
 #include "DXTranslateUtils.h"
 
-#include <geVector3.h>
-
 namespace geEngineSDK {
 
   DXTexture::~DXTexture() {
@@ -92,13 +90,6 @@ namespace geEngineSDK {
     }
 
     m_desc.bindFlags = 0;
-  }
-
-  Vector3
-  DXTexture::getDimensions() const {
-    return Vector3(cast::st<float>(m_desc.width),
-                   cast::st<float>(m_desc.height),
-                   cast::st<float>(m_desc.mipLevels));
   }
 
   void

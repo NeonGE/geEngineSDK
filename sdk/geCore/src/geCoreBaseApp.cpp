@@ -319,13 +319,13 @@ namespace geEngineSDK {
       TextureManager::shutDown();
     }
 
+    //Destroy the Resource Importer
+    CodecManager::shutDown();
+
     //Destroy the Graphics Managers
     if (RenderAPI::isStarted()) {
       RenderAPI::shutDown();
     }
-
-    //Destroy the Resource Importer
-    CodecManager::shutDown();
 
     //Destroy the rest of the systems
     Time::shutDown();

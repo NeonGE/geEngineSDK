@@ -33,9 +33,6 @@ namespace geEngineSDK {
     void
     release() override;
 
-    Vector3
-    getDimensions() const override;
-
     void
     setDebugName(const String& name) override;
 
@@ -76,6 +73,7 @@ namespace geEngineSDK {
 
     const void*
     getDrawingReference(const uint32 mipMap = 0) const override {
+      GE_UNREFERENCED_PARAMETER(mipMap);
       return nullptr;
     }
 

@@ -89,7 +89,10 @@ using D3DBlendState = ID3D11BlendState1;
 # error "No DirectX version defined. Please define a DirectX version to use."
 #endif
 
+using D3DResource = ID3D11Resource;
+using D3DTexture1D = ID3D11Texture1D;
 using D3DTexture2D = ID3D11Texture2D;
+using D3DTexture3D = ID3D11Texture3D;
 using D3DShaderResourceView = ID3D11ShaderResourceView;
 using D3DDepthStencilView = ID3D11DepthStencilView;
 using D3DUnorderedAccessView = ID3D11UnorderedAccessView;

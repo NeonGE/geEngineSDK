@@ -34,12 +34,28 @@ namespace geEngineSDK {
     fromString(const String& strFormat);
 
     /**
-     * @brief Converts a DXGI_FORMAT value to the corresponding GRAPHICS_FORMAT::E value.
-     * @param inFormat The input DXGI_FORMAT to convert.
-     * @return The GRAPHICS_FORMAT::E value corresponding to the specified DXGI_FORMAT.
+     * @brief Converts a D3D11_TEXTURE1D_DESC value to the corresponding TEXTURE_DESC value.
+     * @param inFormat The input D3D11_TEXTURE1D_DESC to convert.
+     * @return The TEXTURE_DESC value corresponding to the specified D3D11_TEXTURE1D_DESC.
      */
-    TEXTURE2D_DESC
+    TEXTURE_DESC
+    get(const D3D11_TEXTURE1D_DESC& desc);
+
+    /**
+     * @brief Converts a D3D11_TEXTURE2D_DESC value to the corresponding TEXTURE_DESC value.
+     * @param inFormat The input D3D11_TEXTURE2D_DESC to convert.
+     * @return The TEXTURE_DESC value corresponding to the specified D3D11_TEXTURE2D_DESC.
+     */
+    TEXTURE_DESC
     get(const D3D11_TEXTURE2D_DESC& desc);
+
+    /**
+     * @brief Converts a D3D11_TEXTURE3D_DESC value to the corresponding TEXTURE_DESC value.
+     * @param inFormat The input D3D11_TEXTURE3D_DESC to convert.
+     * @return The TEXTURE_DESC value corresponding to the specified D3D11_TEXTURE3D_DESC.
+     */
+    TEXTURE_DESC
+    get(const D3D11_TEXTURE3D_DESC& desc);
 
     /**
      * @brief Returns the number of bits per pixel for a given DXGI_FORMAT value.

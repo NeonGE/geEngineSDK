@@ -30,20 +30,43 @@ namespace geEngineSDK {
     virtual ~Texture() = default;
 
     /**
-     * @brief getDimensions() - Get the dimensions of the texture
-     * @return Vector3 - The dimensions of the texture,
-     *                   x and y are the width and height
-     *                   z is the number of mipmaps
+     * @brief getDimensions() - Get the dimensions (width, height, depth of the
+     *                          texture (each only are set if the texture does
+     *                          have that dimension 1D, 2D, 3D.
+     * @return Vector4 - The dimensions of the texture,
+     *                   x, y and z are the width, height and depth
+     *                   w is the number of mipmaps
      */
-    virtual Vector3
-    getDimensions() const = 0;
+    virtual Vector4
+    getDimensions() const;
+
+    /**
+     * @brief getDesc() - Get the full description of the texture
+     * @return TEXTURE_DESC - The description of the texture
+     */
+    virtual const TEXTURE_DESC&
+    getDesc() const;
+
+    /**
+     * @brief getDesc() - Get the description of the texture as a 1D descriptor
+     * @return TEXTURE1D_DESC - The description of the texture
+     */
+    virtual TEXTURE1D_DESC
+    getDesc1D() const;
 
     /**
      * @brief getDesc() - Get the description of the texture
      * @return TEXTURE2D_DESC - The description of the texture
      */
-    virtual const TEXTURE2D_DESC&
-    getDesc() const;
+    virtual TEXTURE2D_DESC
+    getDesc2D() const;
+
+    /**
+     * @brief getDesc() - Get the description of the texture
+     * @return TEXTURE2D_DESC - The description of the texture
+     */
+    virtual TEXTURE3D_DESC
+    getDesc3D() const;
 
     /**
      * @brief Sets a debug name for the object.
@@ -78,6 +101,6 @@ namespace geEngineSDK {
 
     bool m_bHaveAlpha = false;
     bool m_bIsCubeMap = false;
-    TEXTURE2D_DESC m_desc;
+    TEXTURE_DESC m_desc;
   };
 }

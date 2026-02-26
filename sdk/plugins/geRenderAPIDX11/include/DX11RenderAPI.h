@@ -86,6 +86,16 @@ namespace geEngineSDK {
                   bool isCubeMap = false,
                   uint32 arraySize = 1) override;
 
+    SPtr<Texture>
+    createTexture3D(uint32 width,
+                    uint32 height,
+                    uint32 depth,
+                    GRAPHICS_FORMAT::E format,
+                    uint32 bindFlags = BIND_FLAG::SHADER_RESOURCE,
+                    uint32 mipLevels = 1,
+                    RESOURCE_USAGE::E usage = RESOURCE_USAGE::DEFAULT,
+                    uint32 cpuAccessFlags = 0) override;
+
     SPtr<VertexDeclaration>
     createVertexDeclaration(const Vector<VertexElement>& elements) override;
 
@@ -205,6 +215,11 @@ namespace geEngineSDK {
 
     void
     generateMips(const WeakSPtr<Texture>& pTexture) override;
+
+    uint32
+    calcSubresource(uint32 mipSlice,
+                    uint32 arraySlice,
+                    uint32 mipLevels) const override;
 
     void
     clearRenderTarget(const WeakSPtr<Texture>& pRenderTarget,
@@ -513,9 +528,6 @@ namespace geEngineSDK {
 
     D3DSwapChain* m_pSwapChain = nullptr;
 
-#if USING(GE_DEBUG_MODE)
-    ID3D11Debug* m_pDebug = nullptr;
-#endif
     //Helper variables
     bool m_bFullScreen = false;
     ADAPTER_DESC m_selectedAdapterDesc;

@@ -80,6 +80,7 @@ namespace geEngineSDK {
                                uint32 arraySize) {
     auto pTexture = ge_shared_ptr_new<NullTexture>();
 
+    pTexture->m_desc.dimensions = 2;
     pTexture->m_desc.width = width;
     pTexture->m_desc.height = height;
     pTexture->m_desc.format = format;
@@ -91,6 +92,35 @@ namespace geEngineSDK {
     pTexture->m_desc.sampleDesc.quality = 0;
     pTexture->m_desc.arraySize = arraySize;
     pTexture->m_bIsCubeMap = isCubeMap;
+    pTexture->m_textureObj += 1;
+
+    return pTexture;
+  }
+
+  SPtr<Texture>
+  NullRenderAPI::createTexture3D(uint32 width,
+                                 uint32 height,
+                                 uint32 depth,
+                                 GRAPHICS_FORMAT::E format,
+                                 uint32 bindFlags,
+                                 uint32 mipLevels,
+                                 RESOURCE_USAGE::E usage,
+                                 uint32 cpuAccessFlags) {
+    auto pTexture = ge_shared_ptr_new<NullTexture>();
+
+    pTexture->m_desc.dimensions = 3;
+    pTexture->m_desc.width = width;
+    pTexture->m_desc.height = height;
+    pTexture->m_desc.depth = depth;
+    pTexture->m_desc.format = format;
+    pTexture->m_desc.bindFlags = bindFlags;
+    pTexture->m_desc.mipLevels = mipLevels;
+    pTexture->m_desc.usage = usage;
+    pTexture->m_desc.cpuAccessFlags = cpuAccessFlags;
+    pTexture->m_desc.sampleDesc.count = 0;
+    pTexture->m_desc.sampleDesc.quality = 0;
+    pTexture->m_desc.arraySize = 1;
+    pTexture->m_bIsCubeMap = false;
     pTexture->m_textureObj += 1;
 
     return pTexture;
@@ -382,6 +412,16 @@ namespace geEngineSDK {
   void
   NullRenderAPI::generateMips(const WeakSPtr<Texture>&)
   {}
+
+  uint32
+  NullRenderAPI::calcSubresource(uint32 mipSlice,
+                                 uint32 arraySlice,
+                                 uint32 mipLevels) const {
+    GE_UNREFERENCED_PARAMETER(mipSlice);
+    GE_UNREFERENCED_PARAMETER(arraySlice);
+    GE_UNREFERENCED_PARAMETER(mipLevels);
+    return 0;
+  }
 
   void
   NullRenderAPI::clearRenderTarget(const WeakSPtr<Texture>&, const LinearColor&)
