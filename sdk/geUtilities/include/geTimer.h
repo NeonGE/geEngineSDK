@@ -23,6 +23,8 @@
 namespace geEngineSDK {
   using std::chrono::high_resolution_clock;
   using std::chrono::time_point;
+  static_assert(std::chrono::high_resolution_clock::is_steady,
+                "Timer requires a steady (monotonic) clock.");
 
   /**
    * @brief Timer class used for querying high precision timers.

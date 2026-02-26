@@ -89,7 +89,7 @@ namespace geEngineSDK {
 
    private:
 #if USING(GE_FILE_TRACKER)
-    uint32 m_systemID;
+    uint32 m_systemID = NumLimit::MAX_UINT32;
     ChangeCallback m_fileChangeCB;
 #endif
   };

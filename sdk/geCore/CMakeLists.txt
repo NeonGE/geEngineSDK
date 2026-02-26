@@ -11,6 +11,7 @@ add_library(geCore SHARED
 	include/geCodecManager.h
 	include/geCoreBaseApp.h
 	include/geCoreFeatures.h
+	include/geDeferredCallManager.h
 	include/geDiskFileSystem.h
 	include/geFileTracker.h
 	include/geGameConfig.h
@@ -33,6 +34,7 @@ add_library(geCore SHARED
 
 	src/geCodecManager.cpp
 	src/geCoreBaseApp.cpp
+	src/geDeferredCallManager.cpp
 	src/geDiskFileSystem.cpp
 	src/geFileTracker.cpp
 	src/geGameConfig.cpp

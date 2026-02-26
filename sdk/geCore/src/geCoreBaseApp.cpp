@@ -21,7 +21,6 @@
 #include <gePlatformUtility.h>
 #include <geException.h>
 #include <geDebug.h>
-#include <geMath.h>
 
 #include <geStackAlloc.h>
 #include <geMessageHandler.h>
@@ -31,6 +30,7 @@
 #include <geDynLibManager.h>
 #include <geRenderAPI.h>
 #include <geGameConfig.h>
+#include <geDeferredCallManager.h>
 
 #include <geMountManager.h>
 #include <geCodecManager.h>
@@ -260,6 +260,7 @@ namespace geEngineSDK {
     TaskScheduler::startUp();
     Time::startUp();
     CodecManager::startUp();
+    DeferredCallManager::startUp();
 
     //Create the optional systems
 #if USING(GE_FILE_TRACKER)
@@ -328,6 +329,7 @@ namespace geEngineSDK {
     }
 
     //Destroy the rest of the systems
+    DeferredCallManager::shutDown();
     Time::shutDown();
     TaskScheduler::shutDown();
     ThreadPool::shutDown();
@@ -496,6 +498,7 @@ namespace geEngineSDK {
 
   void
   GE_COREBASE_CLASS::update(float deltaTime) {
+    DeferredCallManager::instance().update(deltaTime);
     onUpdate(deltaTime);
   }
 
