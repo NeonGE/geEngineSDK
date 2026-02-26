@@ -28,7 +28,7 @@ set(BUILD_RTTR_DYNAMIC      ON  CACHE BOOL "" FORCE)
 set(BUILD_STATIC            OFF CACHE BOOL "" FORCE)
 
 FetchContent_Declare(rttr
-  GIT_REPOSITORY https://github.com/rttrorg/rttr.git
+  GIT_REPOSITORY https://github.com/berkaysahiin/rttr.git
   GIT_TAG        master
   GIT_SHALLOW    TRUE
 )
@@ -40,60 +40,60 @@ if(NOT rttr_POPULATED)
   # =========================
   # Patch: cmake_minimum_required(...) -> 3.5
   # =========================
-  set(_rttr_cmake "${rttr_SOURCE_DIR}/CMakeLists.txt")
-  if(NOT EXISTS "${_rttr_cmake}")
-    message(FATAL_ERROR "RTTR CMakeLists.txt not found at: ${_rttr_cmake}")
-  endif()
-
-  file(READ "${_rttr_cmake}" _txt)
-  set(_before "${_txt}")
-
-  # Soporta:
-  #   cmake_minimum_required(VERSION 2.8.12)
-  #   cmake_minimum_required ( VERSION 2.8 )
-  #   cmake_minimum_required(VERSION 3.2...3.20)
-  string(REGEX REPLACE
-    "cmake_minimum_required[ \t\r\n]*\\([ \t\r\n]*VERSION[ \t\r\n]+[0-9]+\\.[0-9]+(\\.[0-9]+)?([ \t\r\n]*\\.\\.\\.[ \t\r\n]*[0-9]+\\.[0-9]+(\\.[0-9]+)?)?[ \t\r\n]*\\)"
-    "cmake_minimum_required(VERSION 3.5)"
-    _txt
-    "${_txt}"
-  )
-
-  if(_txt STREQUAL _before)
-    # Ya estaba parcheado o cambió el formato: si ya es >= 3.5 no falles.
-    string(REGEX MATCH
-      "cmake_minimum_required[ \t\r\n]*\\([ \t\r\n]*VERSION[ \t\r\n]+([0-9]+)\\.([0-9]+)"
-      _m
-      "${_before}"
-    )
-
-    if(_m)
-      set(_maj "${CMAKE_MATCH_1}")
-      set(_min "${CMAKE_MATCH_2}")
-
-      if(_maj GREATER 3 OR (_maj EQUAL 3 AND _min GREATER_EQUAL 5))
-        message(STATUS "RTTR cmake_minimum_required already >= 3.5 (${_maj}.${_min}), patch not needed.")
-      else()
-        message(FATAL_ERROR
-          "RTTR cmake_minimum_required is ${_maj}.${_min} (< 3.5) but patch didn't match.\n"
-          "Open: ${_rttr_cmake}\n"
-          "Paste the exact cmake_minimum_required(...) line here."
-        )
-      endif()
-    else()
-      message(FATAL_ERROR
-        "RTTR patch failed: could not locate cmake_minimum_required(VERSION ...) in:\n"
-        "${_rttr_cmake}\n"
-        "Paste the exact cmake_minimum_required(...) line here."
-      )
-    endif()
-  else()
-    file(WRITE "${_rttr_cmake}" "${_txt}")
-  endif()
+  #set(_rttr_cmake "${rttr_SOURCE_DIR}/CMakeLists.txt")
+  #if(NOT EXISTS "${_rttr_cmake}")
+  #  message(FATAL_ERROR "RTTR CMakeLists.txt not found at: ${_rttr_cmake}")
+  #endif()
+  #
+  #file(READ "${_rttr_cmake}" _txt)
+  #set(_before "${_txt}")
+  #
+  ## Soporta:
+  ##   cmake_minimum_required(VERSION 2.8.12)
+  ##   cmake_minimum_required ( VERSION 2.8 )
+  ##   cmake_minimum_required(VERSION 3.2...3.20)
+  #string(REGEX REPLACE
+  #  "cmake_minimum_required[ \t\r\n]*\\([ \t\r\n]*VERSION[ \t\r\n]+[0-9]+\\.[0-9]+(\\.[0-9]+)?([ \t\r\n]*\\.\\.\\.[ \t\r\n]*[0-9]+\\.[0-9]+(\\.[0-9]+)?)?[ \t\r\n]*\\)"
+  #  "cmake_minimum_required(VERSION 3.5)"
+  #  _txt
+  #  "${_txt}"
+  #)
+  #
+  #if(_txt STREQUAL _before)
+  #  # Ya estaba parcheado o cambió el formato: si ya es >= 3.5 no falles.
+  #  string(REGEX MATCH
+  #    "cmake_minimum_required[ \t\r\n]*\\([ \t\r\n]*VERSION[ \t\r\n]+([0-9]+)\\.([0-9]+)"
+  #    _m
+  #    "${_before}"
+  #  )
+  #
+  #  if(_m)
+  #    set(_maj "${CMAKE_MATCH_1}")
+  #    set(_min "${CMAKE_MATCH_2}")
+  #
+  #    if(_maj GREATER 3 OR (_maj EQUAL 3 AND _min GREATER_EQUAL 5))
+  #      message(STATUS "RTTR cmake_minimum_required already >= 3.5 (${_maj}.${_min}), patch not needed.")
+  #    else()
+  #      message(FATAL_ERROR
+  #        "RTTR cmake_minimum_required is ${_maj}.${_min} (< 3.5) but patch didn't match.\n"
+  #        "Open: ${_rttr_cmake}\n"
+  #        "Paste the exact cmake_minimum_required(...) line here."
+  #      )
+  #    endif()
+  #  else()
+  #    message(FATAL_ERROR
+  #      "RTTR patch failed: could not locate cmake_minimum_required(VERSION ...) in:\n"
+  #      "${_rttr_cmake}\n"
+  #      "Paste the exact cmake_minimum_required(...) line here."
+  #    )
+  #  endif()
+  #else()
+  #  file(WRITE "${_rttr_cmake}" "${_txt}")
+  #endif()
 
   # =========================
   # Add RTTR
   # =========================
   add_subdirectory("${rttr_SOURCE_DIR}" "${rttr_BINARY_DIR}")
-  ge_rttr_silence_gcc_warnings_for_thirdparty()
+  #ge_rttr_silence_gcc_warnings_for_thirdparty()
 endif()
