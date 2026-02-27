@@ -17,7 +17,6 @@
  */
 /*****************************************************************************/
 #include "geTime.h"
-#include "geTimer.h"
 #include "geMath.h"
 
 #include <ctime>
@@ -45,14 +44,14 @@ namespace geEngineSDK {
   const double Time::MICROSEC_TO_SEC = 1.0 / 1000000.0;
 
   Time::Time() {
-    m_timer = ge_new<Timer>();
+    m_timer = ge_shared_ptr_new<HighResTimer>();
     m_appStartTime = m_timer->getStartMs();
     m_lastFrameTime = m_timer->getMicroseconds();
     m_appStartUpDate = time(nullptr);
   }
 
   Time::~Time() {
-    ge_delete(m_timer);
+    
   }
 
   void

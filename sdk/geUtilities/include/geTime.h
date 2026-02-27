@@ -19,6 +19,7 @@
 /*****************************************************************************/
 #include "gePrerequisitesUtilities.h"
 #include "geModule.h"
+#include "geTimer.h"
 
 namespace geEngineSDK {
   using std::atomic;
@@ -215,7 +216,7 @@ namespace geEngineSDK {
 
     time_t m_appStartUpDate;
 
-    Timer* m_timer;
+    SPtr<HighResTimer> m_timer;
   };
 
   /**

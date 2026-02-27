@@ -100,7 +100,6 @@ namespace geEngineSDK {
   class FileDataStream;
 
   class FileSystem;
-  class Timer;
   class Task;
 
   class PixelData;

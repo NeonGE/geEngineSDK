@@ -8,6 +8,9 @@
  * Timer class used for querying high precision timers.
  *
  * @bug     No known bugs.
+ * 
+ * @update  2026-02-26 Converted to a template so that we can create different
+ *          types of timers
  */
 /*****************************************************************************/
 #pragma once
@@ -19,51 +22,58 @@
 /*****************************************************************************/
 #include "gePrerequisitesUtilities.h"
 #include <chrono>
+#include <type_traits>
 
 namespace geEngineSDK {
-  using std::chrono::high_resolution_clock;
-  using std::chrono::time_point;
-  static_assert(std::chrono::high_resolution_clock::is_steady,
-                "Timer requires a steady (monotonic) clock.");
+  using namespace std::chrono;
 
   /**
-   * @brief Timer class used for querying high precision timers.
+   * @brief Template Timer class used for querying timers.
    */
-  class GE_UTILITIES_EXPORT Timer
+  template<class ClockT>
+  class BasicTimer
   {
    public:
-    /**
-     * @brief Construct the timer and start timing.
-     */
-    Timer();
+    using Clock = ClockT;
+    using TimePoint = typename Clock::time_point;
 
-    /**
-     * @brief Reset the timer to zero.
-     */
+    BasicTimer() {
+      reset();
+    }
+
     void
-    reset();
+    reset() {
+      m_startTime = Clock::now();
+    }
 
-    /**
-     * @brief Returns time in milliseconds since timer was initialized or last reset.
-     */
     uint64
-    getMilliseconds() const;
+    getMilliseconds() const {
+      return cast::st<uint64>(duration_cast<milliseconds>(Clock::now() - m_startTime).count());
+    }
 
-    /**
-     * @brief Returns time in microseconds since timer was initialized or last reset.
-     */
     uint64
-    getMicroseconds() const;
+    getMicroseconds() const {
+      return cast::st<uint64>(duration_cast<microseconds>(Clock::now() - m_startTime).count());
+    }
 
-    /**
-     * @brief Returns the time at which the timer was initialized, in milliseconds.
-     * @return  Time in milliseconds.
-     */
     uint64
-    getStartMs() const;
+    getStartMs() const {
+      // “start” relativo al epoch del clock (solo útil si lo comparas con el mismo Clock).
+      return cast::st<uint64>(duration_cast<milliseconds>(
+        m_startTime.time_since_epoch()).count());
+    }
 
    private:
-    high_resolution_clock m_highResClock;
-    time_point<high_resolution_clock> m_startTime;
+    TimePoint m_startTime;
   };
+
+  using SteadyTimer = BasicTimer<steady_clock>; //For budgets, deltas, schedules
+  using SystemTimer = BasicTimer<system_clock>; //For timestamps of "real time"
+  using HighResOrSteadyClock =
+    std::conditional_t<high_resolution_clock::is_steady, high_resolution_clock,
+                    steady_clock>;
+  using HighResTimer = BasicTimer<HighResOrSteadyClock>;
+
+  //This keeps compatibility the default timer is steady
+  using Timer = SteadyTimer;
 }
