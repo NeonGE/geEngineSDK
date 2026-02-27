@@ -43,7 +43,9 @@ function(ge_folder_all_targets_under prefix folderName)
   endforeach()
 endfunction()
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(BUILD_TESTING off CACHE BOOL "" FORCE)
+
 include(${CMAKE_SOURCE_DIR}/cmake/Externals.cmake)
 include(Externals_RTTR)
 
