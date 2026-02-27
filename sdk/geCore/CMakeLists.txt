@@ -3,7 +3,6 @@ ge_setup_nlohmann_json()
 ge_setup_sol2()
 ge_setup_lua()
 ge_setup_sfml()
-ge_setup_zlib()
 ge_setup_minizip()
 
 add_library(geCore SHARED

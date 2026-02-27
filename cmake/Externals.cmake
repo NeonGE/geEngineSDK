@@ -6,7 +6,6 @@ include(${CMAKE_SOURCE_DIR}/cmake/Warnings.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Externals_Sol2.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Externals_Lua.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Externals_SFML.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/Externals_ZlibNG.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Externals_MiniZip.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Externals_ImGui.cmake)
 

@@ -1,21 +1,21 @@
 include(FetchContent)
 
+if(POLICY CMP0169)
+  cmake_policy(SET CMP0169 OLD)
+endif()
+set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE BOOL "" FORCE)
+
 option(GE_USE_SYSTEM_MINIZIP "Prefer system minizip-ng if available" ON)
 option(GE_FETCH_EXTERNALS    "Download externals (sfml/minizip/etc.)" ON)
+
+# Opcional: exponer toggles de compresión
+option(GE_MINIZIP_ENABLE_BZIP2 "Enable BZIP2 support in minizip-ng" ON)
+option(GE_MINIZIP_ENABLE_LZMA  "Enable LZMA/XZ support in minizip-ng"  ON)
+option(GE_MINIZIP_ENABLE_ZSTD  "Enable ZSTD support in minizip-ng" ON)
 
 function(ge_setup_minizip)
   if(TARGET ge_minizip)
     return()
-  endif()
-
-  # ------------------------------------------------------------
-  # 0) Ensure zlib wrapper exists (you said you already added it)
-  # ------------------------------------------------------------
-  if(NOT TARGET ge::zlib AND NOT TARGET ge_zlib)
-    message(FATAL_ERROR
-      "[minizip-ng] zlib dependency not found. "
-      "Include your Externals_Zlib*.cmake and call ge_setup_zlib() before ge_setup_minizip()."
-    )
   endif()
 
   # ------------------------------------------------------------
@@ -38,14 +38,9 @@ function(ge_setup_minizip)
         message(FATAL_ERROR "[minizip-ng] System package found, but no known CMake target was exported.")
       endif()
 
-      # ensure zlib + engine settings
-      if(TARGET ge::zlib)
-        target_link_libraries(ge_minizip INTERFACE ge::zlib ge_build_settings)
-      else()
-        target_link_libraries(ge_minizip INTERFACE ge_zlib ge_build_settings)
-      endif()
-
+      target_link_libraries(ge_minizip INTERFACE ge_build_settings)
       add_library(ge::minizip ALIAS ge_minizip)
+
       message(STATUS "[minizip-ng] Using system package")
       return()
     endif()
@@ -65,33 +60,42 @@ function(ge_setup_minizip)
   set(GE_MINIZIP_GIT_TAG  "4.1.0")
 
   # ------------------------------------------------------------
-  # 2a) Configure minizip-ng options (MUST be CACHE+FORCE)
+  # 2a) Configure minizip-ng options (CACHE+FORCE)
+  #
+  # Queremos que minizip-ng resuelva/traiga sus dependencias
+  # (zlib, bzip2, lzma, zstd) según configuración.
   # ------------------------------------------------------------
-  set(MZ_FETCH_LIBS         OFF CACHE BOOL "" FORCE)
-  set(MZ_BUILD_DEPENDENCIES OFF CACHE BOOL "" FORCE)
+  set(MZ_ZLIB ON CACHE BOOL "" FORCE)
 
-  set(MZ_BZIP2    OFF CACHE BOOL "" FORCE)
-  set(MZ_COMPAT   OFF CACHE BOOL "" FORCE)
-  set(MZ_LZMA     OFF CACHE BOOL "" FORCE)
-  set(MZ_PKCRYPT  OFF CACHE BOOL "" FORCE)
+  set(MZ_BZIP2 ${GE_MINIZIP_ENABLE_BZIP2} CACHE BOOL "" FORCE)
+  set(MZ_LZMA  ${GE_MINIZIP_ENABLE_LZMA}  CACHE BOOL "" FORCE)
+  set(MZ_ZSTD  ${GE_MINIZIP_ENABLE_ZSTD}  CACHE BOOL "" FORCE)
 
-  set(MZ_ZSTD     OFF CACHE BOOL "" FORCE)
-  set(WITH_GTEST  OFF CACHE BOOL "" FORCE)
-  set(INSTALL_GTEST  OFF CACHE BOOL "" FORCE)
-  set(ZLIBNG_ENABLE_TESTS  OFF CACHE BOOL "" FORCE)
+  # Que minizip-ng consiga dependencias
+  set(MZ_FETCH_LIBS ON CACHE BOOL "" FORCE)
 
+  # Si quieres evitar que “medio use” libs del sistema y medio las fetchee,
+  # puedes forzar fetch (útil para builds reproducibles):
+  set(MZ_FORCE_FETCH_LIBS ON CACHE BOOL "" FORCE)
+
+  # (Este flag existe en varias versiones; si no existe, no pasa nada grave)
+  set(MZ_BUILD_DEPENDENCIES ON CACHE BOOL "" FORCE)
+
+  # Opcionales/seguridad:
+  set(MZ_COMPAT  OFF CACHE BOOL "" FORCE)
+  set(MZ_PKCRYPT OFF CACHE BOOL "" FORCE)
+
+  # Evitar tests/ejemplos
   set(MZ_BUILD_TESTS      OFF CACHE BOOL "" FORCE)
   set(MZ_BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
   set(MZ_BUILD_EXAMPLES   OFF CACHE BOOL "" FORCE)
   set(BUILD_TESTING       OFF CACHE BOOL "" FORCE)
 
+  # No instalar nada de minizip-ng (ni sus deps como zlib) desde tu build de externals
+  set(SKIP_INSTALL_ALL ON CACHE BOOL "" FORCE)
 
-  # If you want static by default for externals:
-  # set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-
-  # Some setups use ZLIB from system; we are providing ours:
-  # This variable name can differ across versions; leaving it ON usually doesn't hurt.
-  set(MZ_ZLIB ON CACHE BOOL "" FORCE)
+  set(BUILD_SHARED_LIBS OFF)
+  set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
   FetchContent_Declare(
     minizip_upstream
@@ -122,15 +126,15 @@ function(ge_setup_minizip)
     )
   endif()
 
-  # Ensure zlib external is linked after minizip (order helps some linkers)
-  if(TARGET ge::zlib)
-    target_link_libraries(ge_minizip INTERFACE ge::zlib)
-  else()
-    target_link_libraries(ge_minizip INTERFACE ge_zlib)
-  endif()
+  # IMPORTANTE: ya NO linkeamos zlib/bzip2/lzma/zstd aquí manualmente.
+  # El target upstream ya debe venir linkeado correctamente según MZ_*.
 
   target_link_libraries(ge_minizip INTERFACE ge_build_settings)
 
   add_library(ge::minizip ALIAS ge_minizip)
-  message(STATUS "[minizip-ng] Fetched ${GE_MINIZIP_GIT_TAG}")
+  message(STATUS "[minizip-ng] Fetched ${GE_MINIZIP_GIT_TAG} (fetch deps ON)")
+
+  set_target_properties(bzip2 PROPERTIES FOLDER "Dependencies/MiniZip")
+  set_target_properties(liblzma PROPERTIES FOLDER "Dependencies/MiniZip")
+  set_target_properties(libzstd_static PROPERTIES FOLDER "Dependencies/MiniZip")
 endfunction()

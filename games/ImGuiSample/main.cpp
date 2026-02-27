@@ -29,7 +29,6 @@ namespace geEngineSDK {
       auto input = inputEvents.lock();
 
       onCreate.connect([this, inputEvents]() {
-        auto& graphMan = RenderAPI::instance();
 
         //Initialize ImGui
         IMGUI_CHECKVERSION();
@@ -37,19 +36,17 @@ namespace geEngineSDK {
         m_imgui.init();
         m_imgui.registerEvents(inputEvents);
 #if USING(GE_PLATFORM_WINDOWS)
+        auto& graphMan = RenderAPI::instance();
         auto graphicsDevice = graphMan.getDevice();
         ImGui_ImplDX11_Init(cast::re<ID3D11Device*>(graphicsDevice.pDevicePtr),
                             cast::re<ID3D11DeviceContext*>(graphicsDevice.pCommandPtr));
 #else
         ImGui_ImplOpenGL3_Init("#version 330");
 #endif
-        m_hdriImage = TextureManager::instance().load("Textures/TestTexture.png");
+        m_hdriImage = TextureManager::instance().load("Textures/studio_kontrast_04_4k.hdr");
       });
 
       onDestroy.connect([this]() {
-       //Resources needs to be destroyed before the destructor is called
-       //m_hdriImage.reset();
-
 #if USING(GE_PLATFORM_WINDOWS)
         ImGui_ImplDX11_Shutdown();
 #else

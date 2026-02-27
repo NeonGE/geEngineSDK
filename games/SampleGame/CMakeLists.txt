@@ -29,6 +29,8 @@ target_link_libraries(SampleGame
 
 ge_link_rttr(SampleGame)
 
+ge_copy_runtime_dlls(SampleGame)
+
 get_target_property(SAMPLEGAME_SOURCES SampleGame SOURCES)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SAMPLEGAME_SOURCES})

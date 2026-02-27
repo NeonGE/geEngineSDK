@@ -31,6 +31,8 @@ target_link_libraries(ImGuiSample
 
 ge_link_rttr(ImGuiSample)
 
+ge_copy_runtime_dlls(ImGuiSample)
+
 get_target_property(IMGUISAMPLE_SOURCES ImGuiSample SOURCES)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${IMGUISAMPLE_SOURCES})
