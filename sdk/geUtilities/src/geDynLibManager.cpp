@@ -19,6 +19,7 @@
 /*****************************************************************************/
 #include "geDynLibManager.h"
 #include "geDynLib.h"
+#include "geFileSystem.h"
 
 namespace geEngineSDK {
   using std::move;
@@ -39,27 +40,29 @@ namespace geEngineSDK {
   }
 
   DynLib*
-  DynLibManager::load(const String& name) {
-    //Add the extension (.dll, .so, ...) if necessary.
-    String filename = name;
-    const SIZE_T length = filename.length();
-    const String extension = DynLib::EXTENSION;
-    const SIZE_T extLength = extension.length();
-
-    if (length <= extLength || filename.substr(length - extLength) != extension) {
-      filename.append(extension);
+  DynLibManager::load(const String& logicalName) {
+    //If the library is already loaded
+    const auto& iterFind = m_loadedLibraries.lower_bound(logicalName);
+    if (iterFind != m_loadedLibraries.end() && (*iterFind)->getName() == logicalName) {
+      return iterFind->get(); //Return the handle
     }
 
-    IF_CONSTEXPR (nullptr != DynLib::PREFIX) {
-      filename.insert(0, DynLib::PREFIX);
+    String candidate = logicalName;
+
+    const bool looksLikePath = candidate.find('/') != String::npos ||
+                               candidate.find('\\') != String::npos;
+
+    Path resolvedPath;
+    if (looksLikePath) {
+      resolvedPath = Path(candidate);
+    }
+    else {
+      const String platformFile = buildPlatformFilename(candidate);
+      resolvedPath = resolveOrThrow(platformFile);
     }
 
-    const auto& iterFind = m_loadedLibraries.lower_bound(filename);
-    if (iterFind != m_loadedLibraries.end() && (*iterFind)->getName() == filename) {
-      return iterFind->get();
-    }
-
-    auto newLib = ge_new<DynLib>(std::move(filename));
+    auto newLib = ge_new<DynLib>(logicalName);
+    newLib->loadFromFile(resolvedPath);
     m_loadedLibraries.emplace_hint(iterFind, newLib);
     return newLib;
   }
@@ -73,6 +76,53 @@ namespace geEngineSDK {
     else {
       ge_delete(lib);
     }
+  }
+
+  String
+  DynLibManager::buildPlatformFilename(const String& logicalName) {
+    String filename = logicalName;
+
+    //Check if the extension has already been sent
+    const String ext = DynLib::EXTENSION;
+    if (filename.length() <= ext.length() ||
+        filename.substr(filename.length() - ext.length()) != ext) {
+      filename.append(ext);
+    }
+
+    //Add prefix only it it's missing
+    IF_CONSTEXPR(nullptr != DynLib::PREFIX) {
+      const String prefix = DynLib::PREFIX;
+      if (filename.length() < prefix.length() ||
+          filename.substr(0, prefix.length()) != prefix) {
+        filename.insert(0, prefix);
+      }
+    }
+
+    return filename;
+  }
+
+  Path
+  DynLibManager::resolveOrThrow(const String& logicalName) {
+    //Here we use the filesystem to check if/where the file exists
+    
+    //The first point to check will be the Plugins folder
+    Path testPath = FileSystem::getPluginsPath() + logicalName;
+    if (FileSystem::exists(testPath)) {
+      return testPath;
+    }
+
+    //Second test point is the App directory
+    testPath = FileSystem::getWorkingDirectoryPath() + logicalName;
+    if (FileSystem::exists(testPath)) {
+      return testPath;
+    }
+
+    //If we havent found the file, send an exception
+    GE_EXCEPT(FileNotFoundException,
+      "Could not resolve dynamic library '" + logicalName +
+      "'. Provide a resolver (VFS) or implement direct file existence checks.");
+
+    GE_UNREACHABLE();
   }
 
   DynLibManager&

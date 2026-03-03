@@ -33,10 +33,12 @@ namespace geEngineSDK {
    public:
     /**
      * @brief Loads the given file as a dynamic library.
-     * @param[in] name  The name of the library. The extension can be omitted.
+     * @param[in] name The name of the library.
+     * @note The name parameter should only be the name of the library.
+     *       Prefix and extension and Path will be deduced in this function.
      */
     DynLib*
-    load(const String& name);
+    load(const String& logicalName);
 
     /**
      * @brief Unloads the given library.
@@ -44,7 +46,13 @@ namespace geEngineSDK {
     void
     unload(DynLib* lib);
 
-   protected:
+    String
+    buildPlatformFilename(const String& logicalName);
+
+   private:
+     Path
+     resolveOrThrow(const String& logicalName);
+
     Set<UPtr<DynLib>, std::less<>> m_loadedLibraries;
   };
 

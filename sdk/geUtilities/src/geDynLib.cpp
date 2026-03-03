@@ -17,13 +17,14 @@
  */
 /*****************************************************************************/
 #include "geDynLib.h"
+#include "geDataStream.h"
 #include "geException.h"
 
 #if USING(GE_PLATFORM_WINDOWS)
 #	include <Win32/geMinWindows.h>
 #endif
 
-#if USING(GE_PLATFORM_OSX)
+#if USING(GE_PLATFORM_LINUX) || USING(GE_PLATFORM_OSX)
 # include <dlfcn.h>
 #endif
 
@@ -31,29 +32,33 @@ namespace geEngineSDK {
   using std::move;
 
   DynLib::DynLib(String name)
-    : m_name(std::move(name)),
+    : m_logicalName(std::move(name)),
 #if USING(GE_PLATFORM_PS4) || USING(GE_PLATFORM_PS5)
     m_hInst(0)
 #else
     m_hInst(nullptr)
 #endif
-  {
-    load();
-  }
+  {}
 
   DynLib::~DynLib() {
     unload();
   }
 
   void
-  DynLib::load() {
-    if (m_hInst) {
-      return;
+  DynLib::ensureNotLoaded() const {
+    if (m_hInst != nullptr) {
+      GE_EXCEPT(InternalErrorException,
+                "DynLib '" + m_logicalName + "' is already loaded.");
     }
+  }
+
+  void
+  DynLib::loadFromFile(const Path& resolvedPath) {
+    ensureNotLoaded();
 
 #if USING(GE_PLATFORM_PS4) || USING(GE_PLATFORM_PS5)
     int startResult = 0;
-    m_hInst = static_cast<DYNLIB_HANDLE>(DYNLIB_LOAD( m_name.c_str(),
+    m_hInst = static_cast<DYNLIB_HANDLE>(DYNLIB_LOAD( resolvedPath.toString().c_str(),
                                                       0,
                                                       NULL,
                                                       0,
@@ -63,23 +68,21 @@ namespace geEngineSDK {
     if (m_hInst < 0) {
       GE_EXCEPT(InternalErrorException,
                 "Could not load dynamic library " +
-                m_name +
+                resolvedPath.toString() +
                 ".  System Error: " +
                 dynlibError());
   }
 #else
-    m_hInst = static_cast<DYNLIB_HANDLE>(DYNLIB_LOAD(m_name.c_str()));
+    m_hInst = static_cast<DYNLIB_HANDLE>(DYNLIB_LOAD(resolvedPath.toString().c_str()));
 
     if (!m_hInst) {
       GE_EXCEPT(InternalErrorException,
                 "Could not load dynamic library " +
-                m_name +
+                resolvedPath.toString() +
                 ".  System Error: " +
                 dynlibError());
     }
 #endif
-
-    
   }
 
   void
@@ -92,7 +95,7 @@ namespace geEngineSDK {
     if (DYNLIB_UNLOAD(m_hInst, 0, NULL, 0, NULL, NULL) != SCE_OK) {
       GE_EXCEPT(InternalErrorException,
                 "Could not unload dynamic library " +
-                m_name +
+                m_logicalName +
                 ".  System Error: " +
                 dynlibError());
     }
@@ -100,7 +103,7 @@ namespace geEngineSDK {
     if (DYNLIB_UNLOAD(m_hInst)) {
       GE_EXCEPT(InternalErrorException,
                 "Could not unload dynamic library " +
-                m_name +
+                m_logicalName +
                 ".  System Error: " +
                 dynlibError());
     }

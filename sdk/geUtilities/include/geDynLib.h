@@ -73,14 +73,15 @@ namespace geEngineSDK {
      * @brief Constructs the dynamic library object and loads the library with
      *        the specified name.
      */
-    DynLib(String name);
+    DynLib(String logicalName);
     ~DynLib();
 
     /**
-     * @brief Loads the library. Does nothing if library is already loaded.
+     * @brief Loads the library from a file in drive (Path).
+     *        Does nothing if library is already loaded.
      */
     void
-    load();
+    loadFromFile(const Path& resolvedPath);
 
     /**
      * @brief Unloads the library. Does nothing if library is not loaded.
@@ -93,7 +94,7 @@ namespace geEngineSDK {
      */
     const String&
     getName() const {
-      return m_name;
+      return m_logicalName;
     }
 
     /**
@@ -105,17 +106,18 @@ namespace geEngineSDK {
     void*
     getSymbol(const String& strName) const;
 
-   protected:
-    friend class DynLibManager;
-
+   private:
     /**
      * @brief Gets the last loading error.
      */
     static String
     dynlibError();
 
-   protected:
-    const String m_name;
+    void
+    ensureNotLoaded() const;
+
+   private:
+    const String m_logicalName;
     DYNLIB_HANDLE m_hInst = 0;  //Handle to the loaded library.
   };
 }
