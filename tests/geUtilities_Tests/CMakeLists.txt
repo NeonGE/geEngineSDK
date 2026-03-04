@@ -32,6 +32,7 @@ add_executable(geUtilities_Tests
   src/core_Random.cpp
   src/core_SmartEnum.cpp
 
+  src/core_BMPWriter.cpp
   src/core_MessageHandler.cpp
 )
 

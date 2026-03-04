@@ -110,7 +110,12 @@ namespace geEngineSDK {
     auto bmpDataSize = BitmapWriter::getBMPSize(width, height, bytesPerPixel);
     auto bmpBuffer = ge_newN<uint8>(bmpDataSize);
 
-    BitmapWriter::rawPixelsToBMP(rawPixels, bmpBuffer, width, height, bytesPerPixel);
+    BitmapWriter::rawPixelsToBMP(rawPixels,
+                                 width,
+                                 height,
+                                 bytesPerPixel,
+                                 bmpBuffer,
+                                 bmpDataSize);
 
     ds->write(bmpBuffer, bmpDataSize);
     ds->close();

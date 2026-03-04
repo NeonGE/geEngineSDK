@@ -8,6 +8,8 @@
  * Utility class for generating BMP images.
  *
  * @bug     No known bugs.
+ * 
+ * @update  2026/06/06 Fixed all the structure to be more robust and acurate.
  */
 /*****************************************************************************/
 
@@ -19,131 +21,180 @@
 #include "geBitmapWriter.h"
 
 namespace geEngineSDK {
-  //Align to 2 byte boundary so we don't get extra 2 bytes for this struct
-#	pragma pack(push, 2)
-  struct BMP_HEADER
+
+#pragma pack(push, 1)
+  struct BMPFileHeader
   {
-    uint16 BM;
-    uint32 size_of_file;
-    uint32 reserve;
-    uint32 offset_of_pixel_data;
-    uint32 size_of_header;
-    uint32 width;
-    uint32 hight;
-    uint16 num_of_color_plane;
-    uint16 num_of_bit_per_pix;
-    uint32 compression;
-    uint32 size_of_pix_data;
-    uint32 h_resolution;
-    uint32 v_resolution;
-    uint32 num_of_color_in_palette;
-    uint32 important_colors;
+    uint16 bfType;      // 'BM' = 0x4D42
+    uint32 bfSize;      // Total file size in bytes
+    uint16 bfReserved1; // 0
+    uint16 bfReserved2; // 0
+    uint32 bfOffBits;   // Offset to pixel data (54)
   };
-#	pragma pack(pop)
 
-  void
-  BitmapWriter::rawPixelsToBMP(const uint8* input,
-                               uint8* output,
-                               uint32 width,
-                               uint32 height,
-                               uint32 bytesPerPixel) {
-    uint16 bmpBytesPerPixel = 3;
-    if (4 < bytesPerPixel) {
-      bmpBytesPerPixel = 4;
-    }
+  struct BMPInfoHeader
+  {
+    uint32 biSize;          // 40
+    int32  biWidth;
+    int32  biHeight;        // + => bottom-up
+    uint16 biPlanes;        // 1
+    uint16 biBitCount;      // 24 or 32
+    uint32 biCompression;   // 0 = BI_RGB
+    uint32 biSizeImage;     // Pixel data size incl padding
+    int32  biXPelsPerMeter; // 3780 ~= 96 DPI
+    int32  biYPelsPerMeter; // 3780 ~= 96 DPI
+    uint32 biClrUsed;       // 0
+    uint32 biClrImportant;  // 0
+  };
+#pragma pack(pop)
 
-    uint32 padding = (width * bmpBytesPerPixel) % 4;
-    if (0 != padding) {
-      padding = 4 - padding;
-    }
+  static_assert(sizeof(BMPFileHeader) == 14, "BMPFileHeader must be 14 bytes");
+  static_assert(sizeof(BMPInfoHeader) == 40, "BMPInfoHeader must be 40 bytes");
 
-    uint32 rowPitch = (width * bmpBytesPerPixel) + padding;
-    uint32 dataSize = height * rowPitch;
-
-    BMP_HEADER header;
-    header.BM = 0x4d42;
-    header.size_of_file = sizeof(header) + dataSize;
-    header.reserve = 0000;
-    header.offset_of_pixel_data = 54;
-    header.size_of_header = 40;
-    header.width = width;
-    header.hight = height;
-    header.num_of_color_plane = 1;
-    header.num_of_bit_per_pix = bmpBytesPerPixel * 8;
-    header.compression = 0;
-    header.size_of_pix_data = dataSize;
-    header.h_resolution = 2835;
-    header.v_resolution = 2835;
-    header.num_of_color_in_palette = 0;
-    header.important_colors = 0;
-
-    //Write header
-    memcpy(output, &header, sizeof(header));
-    output += sizeof(header);
-
-    //Write bytes
-    uint32 widthBytes = width * bytesPerPixel;
-
-    //BPP matches so we can just copy directly
-    if (bmpBytesPerPixel == bytesPerPixel) {
-      for (int32 y = height - 1; y >= 0; --y) {
-        uint8* outputPtr = output + y * rowPitch;
-        memcpy(outputPtr, input, widthBytes);
-        memset(outputPtr + widthBytes, 0, padding);
-        input += widthBytes;
-      }
-    }
-    else if (bmpBytesPerPixel < bytesPerPixel) {
-      //More bytes in source than supported in BMP, just truncate excess data
-      for (int32 y = height - 1; y >= 0; --y) {
-        uint8* outputPtr = output + y * rowPitch;
-        for (uint32 x = 0; x<width; ++x) {
-          memcpy(outputPtr, input, bmpBytesPerPixel);
-          outputPtr += bmpBytesPerPixel;
-          input += bytesPerPixel;
-        }
-
-        memset(outputPtr, 0, padding);
-      }
-    }
-    else {
-      //More bytes in BMP than in source (BMP must be 24bit minimum)
-      for (int32 y = height - 1; y >= 0; --y) {
-        uint8* outputPtr = output + y * rowPitch;
-        for (uint32 x = 0; x < width; ++x) {
-          memcpy(outputPtr, input, bytesPerPixel);
-
-          //Fill the empty bytes with the last available byte from input
-          uint32 remainingBytes = bmpBytesPerPixel - bytesPerPixel;
-          while (0 < remainingBytes) {
-            memcpy(outputPtr + (bmpBytesPerPixel - remainingBytes), input, 1);
-            --remainingBytes;
-          }
-
-          outputPtr += bmpBytesPerPixel;
-          input += bytesPerPixel;
-        }
-
-        memset(outputPtr, 0, padding);
-      }
-    }
+  static inline uint32
+  calcRowPitch(uint32 width, uint32 bytesPerPixel) {
+    //BMP rows are aligned to 4 bytes
+    const uint32 raw = width * bytesPerPixel;
+    const uint32 pad = (4u - (raw & 3u)) & 3u;
+    return raw + pad;
   }
 
   uint32
-  BitmapWriter::getBMPSize(uint32 width, uint32 height, uint32 bytesPerPixel) {
-    uint16 bmpBytesPerPixel = 3;
-    if (4 < bytesPerPixel) {
-      bmpBytesPerPixel = 4;
+  BitmapWriter::getBMPSize(uint32 width,
+                           uint32 height,
+                           uint32 srcBytesPerPixel,
+                           bool force32bpp) {
+    //Output is 24-bit unless we have alpha (src >= 4) or caller forces 32-bit
+    const uint32 outBpp = (force32bpp || srcBytesPerPixel >= 4) ? 4u : 3u;
+    const uint32 rowPitch = calcRowPitch(width, outBpp);
+    const uint32 dataSize = height * rowPitch;
+
+    return uint32_t(sizeof(BMPFileHeader) + sizeof(BMPInfoHeader) + dataSize);
+  }
+
+  // Writes a full BMP (header + pixels) to 'dst'.
+  // Returns bytes written (same as getBMPSize(...)) or 0 on invalid args.
+  uint32
+  BitmapWriter::rawPixelsToBMP(const uint8* src,
+                               const uint32 width,
+                               const uint32 height,
+                               const uint32 srcBytesPerPixel,
+                               uint8* dst,
+                               uint32 dstCapacity,
+                               PIXEL_ORDER::E srcOrder,
+                               bool force32bpp)
+  {
+    if (!src || !dst || width == 0 || height == 0) {
+      return 0;
     }
 
-    uint32 padding = (width * bmpBytesPerPixel) % 4;
-    if (padding != 0) {
-      padding = 4 - padding;
+    if (srcBytesPerPixel < 1 || srcBytesPerPixel > 4){
+      return 0; // Keep it simple: only 1-4 bpp supported. 1=gray, 2=gray+alpha, 3=RGB, 4=RGBA
     }
 
-    uint32 rowPitch = (width * bmpBytesPerPixel) + padding;
-    uint32 dataSize = height * rowPitch;
+    const uint32 outBytesPerPixel = (force32bpp || srcBytesPerPixel >= 4) ? 4u : 3u;
+    const uint32 rowPitch = calcRowPitch(width, outBytesPerPixel);
+    const uint32 dataSize = height * rowPitch;
+    const uint32 totalSize = uint32(sizeof(BMPFileHeader) + sizeof(BMPInfoHeader) + dataSize);
 
-    return sizeof(BMP_HEADER) + dataSize;
+    if (dstCapacity < totalSize) {
+      return 0;
+    }
+
+    BMPFileHeader fileH{};
+    fileH.bfType = 0x4D42; // 'BM'
+    fileH.bfSize = totalSize;
+    fileH.bfReserved1 = 0;
+    fileH.bfReserved2 = 0;
+    fileH.bfOffBits = uint32_t(sizeof(BMPFileHeader) + sizeof(BMPInfoHeader));
+
+    BMPInfoHeader infoH{};
+    infoH.biSize = sizeof(BMPInfoHeader);
+    infoH.biWidth =  cast::st<int32>(width);
+    infoH.biHeight = cast::st<int32>(height); // bottom-up
+    infoH.biPlanes = 1;
+    infoH.biBitCount = cast::st<uint16>(outBytesPerPixel * 8u); // 24/32
+    infoH.biCompression = 0; // BI_RGB
+    infoH.biSizeImage = dataSize;
+    infoH.biXPelsPerMeter = 3780;
+    infoH.biYPelsPerMeter = 3780;
+    infoH.biClrUsed = 0;
+    infoH.biClrImportant = 0;
+
+    //Write headers
+    uint8* out = dst;
+    memcpy(out, &fileH, sizeof(fileH)); out += sizeof(fileH);
+    memcpy(out, &infoH, sizeof(infoH)); out += sizeof(infoH);
+
+    //Pixel conversion
+    //BMP expects BGR (24) or BGRA (32)
+    //We write bottom-up: first row in file is bottom row.
+    const uint32 srcRowBytes = width * srcBytesPerPixel;
+    const uint32 outRowBytes = width * outBytesPerPixel;
+    const uint32 padding = rowPitch - outRowBytes;
+
+    for (uint32 y = 0; y < height; ++y) {
+      const uint8* srcRow = src + cast::st<size_t>(y) * srcRowBytes;
+      uint8* dstRow = out + cast::st<size_t>(height - 1 - y) * rowPitch;
+
+      //Fast-path when formats match exactly AND already BGR/BGRA
+      const bool srcIsBGR = (srcOrder == PIXEL_ORDER::BGR && srcBytesPerPixel == 3);
+      const bool srcIsBGRA = (srcOrder == PIXEL_ORDER::BGRA && srcBytesPerPixel == 4);
+
+      if (outBytesPerPixel == 3 && srcIsBGR) {
+        memcpy(dstRow, srcRow, outRowBytes);
+      }
+      else if (outBytesPerPixel == 4 && srcIsBGRA) {
+        memcpy(dstRow, srcRow, outRowBytes);
+      }
+      else {
+        //Convert per pixel
+        for (uint32 x = 0; x < width; ++x) {
+          const uint8* sp = srcRow + cast::st<size_t>(x) * srcBytesPerPixel;
+          uint8* dp = dstRow + cast::st<size_t>(x) * outBytesPerPixel;
+
+          uint8 r = 0, g = 0, b = 0, a = 255;
+
+          switch (srcBytesPerPixel)
+          {
+          case 4:
+            if (srcOrder == PIXEL_ORDER::RGBA) { r = sp[0]; g = sp[1]; b = sp[2]; a = sp[3]; }
+            else /*BGRA*/ { b = sp[0]; g = sp[1]; r = sp[2]; a = sp[3]; }
+            break;
+
+          case 3:
+            if (srcOrder == PIXEL_ORDER::RGB) { r = sp[0]; g = sp[1]; b = sp[2]; }
+            else /*BGR*/ { b = sp[0]; g = sp[1]; r = sp[2]; }
+            break;
+
+          case 2:
+            //Interpret as LA (luma+alpha) or RG? -> we make it robust
+            //replicate 1st byte to RGB and 2nd byte is alpha
+            r = g = b = sp[0];
+            a = sp[1];
+            break;
+
+          case 1:
+            r = g = b = sp[0];
+            a = 255;
+            break;
+          }
+
+          //BMP output is BGR/BGRA
+          dp[0] = b;
+          dp[1] = g;
+          dp[2] = r;
+          if (outBytesPerPixel == 4) {
+            dp[3] = a;
+          }
+        }
+      }
+
+      if (padding) {
+        memset(dstRow + outRowBytes, 0, padding);
+      }
+    }
+
+    return totalSize;
   }
 }
