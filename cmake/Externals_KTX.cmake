@@ -14,6 +14,8 @@ function(ge_setup_ktx)
   set(GE_KTX_GIT_REPO "https://github.com/KhronosGroup/KTX-Software.git")
   set(GE_KTX_GIT_TAG  "v4.4.2") # pin
 
+  set(ENV{GIT_LFS_SKIP_SMUDGE} "1")
+
   FetchContent_Declare(
     ktx_software
     GIT_REPOSITORY ${GE_KTX_GIT_REPO}
