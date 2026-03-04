@@ -43,7 +43,7 @@ namespace geEngineSDK {
 #else
         ImGui_ImplOpenGL3_Init("#version 330");
 #endif
-        m_hdriImage = TextureManager::instance().load("Textures/studio_kontrast_04_4k.hdr");
+        m_hdriImage = TextureManager::instance().load("Textures/grasslands_sunset_2k.exr");
       });
 
       onDestroy.connect([this]() {

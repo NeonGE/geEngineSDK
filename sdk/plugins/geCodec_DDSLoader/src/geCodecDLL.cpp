@@ -129,6 +129,8 @@ extern "C"
       return;
     }
 
+    pTexture->setAlpha(textureData.desc.hasAlpha);
+
     for (const auto& subResource : textureData.subresources) {
       const uint32 srIndex = renderAPI.calcSubresource(subResource.mip,
                                                        subResource.arraySlice,

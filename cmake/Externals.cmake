@@ -9,6 +9,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/Externals_SFML.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Externals_MiniZip.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Externals_ImGui.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/Externals_KTX.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/Externals_EXR.cmake)
 
 function(ge_setup_test_dependencies)
   ge_setup_nlohmann_json()

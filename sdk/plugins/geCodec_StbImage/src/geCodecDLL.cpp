@@ -204,10 +204,11 @@ extern "C"
       //Free the image data
       stbi_image_free(pImageData);
 
+      renderAPI.generateMips(pTexture);
+
       //Set the output resource
       outRes = pTexture;
     }
-
   }
 
   GE_PLUGIN_EXPORT bool

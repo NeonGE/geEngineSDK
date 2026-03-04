@@ -1537,6 +1537,8 @@ namespace geEngineSDK {
     auto pObj = pTexture.lock();
     auto pDXObj = reinterpret_cast<DXTexture*>(pObj.get());
 
+    GE_ASSERT(!pDXObj->m_ppSRV.empty() &&
+              "Texture must have a Shader Resource View to generate mips.");
     m_pActiveContext->GenerateMips(pDXObj->m_ppSRV[0]);
   }
 

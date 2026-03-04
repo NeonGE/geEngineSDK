@@ -3,6 +3,8 @@ add_subdirectory(geRenderAPINull)
 add_subdirectory(geCodec_StbImage)
 add_subdirectory(geCodec_DDSLoader)
 add_subdirectory(geCodec_KTXLoader)
+add_subdirectory(geCodec_EXRLoader)
+
 
 # Windows only
 if(WIN32)

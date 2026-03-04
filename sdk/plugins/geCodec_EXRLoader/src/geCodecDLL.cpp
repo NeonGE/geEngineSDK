@@ -22,21 +22,19 @@
 #include <geRenderAPI.h>
 #include <geMountManager.h>
 
-#include "geKTXLoader.h"
+#include "geEXRLoader.h"
 
 using namespace geEngineSDK;
 
-
-static String CODEC_NAME = "KTX/KTX2 Image Loader Codec";
-static String CODEC_DESC = "This codec implements the KTX Loader found in "
-                           "the AMD Compressonator Library";
-
+static String CODEC_NAME = "EXR Image Codec";
+static String CODEC_DESC = "This codec implements the TinyEXR Library "
+                           "and expose it as a codec";
 static Vector<String> CODEC_EXTENSIONS_IMPORT = {
-  ".ktx", ".ktx2"
+  ".exr"
 };
 
 static Vector<String> CODEC_EXTENSIONS_EXPORT = {
-  
+  ".exr"
 };
 
 extern "C"
@@ -48,8 +46,8 @@ extern "C"
 
   GE_PLUGIN_EXPORT void
   CodecVersion(uint32& major, uint32& minor, uint32& patch) {
-    major = 1;
-    minor = 0;
+    major = 2;
+    minor = 30;
     patch = 0;
   }
 
@@ -110,53 +108,41 @@ extern "C"
     auto& mountman = MountManager::instance();
 
     auto pFileData = mountman.open(filePath);
-    Vector<uint8>fileData;
-    pFileData->getAllData(fileData);
-    auto textureData = KtxLoader::loadFromMemory(fileData.data(), fileData.size());
+    auto textureData = EXRLoader::loadFromMemory(pFileData);
 
-    auto pTexture = renderAPI.createTexture(textureData.desc.width,
-                                            textureData.desc.height,
-                                            textureData.desc.format,
+    auto pTexture = renderAPI.createTexture(textureData.width,
+                                            textureData.height,
+                                            GRAPHICS_FORMAT::kR32G32B32A32_FLOAT,
                                             BIND_FLAG::SHADER_RESOURCE,
-                                            textureData.desc.mipCount,
-                                            RESOURCE_USAGE::DEFAULT,
-                                            0,
-                                            1,
-                                            false,
-                                            textureData.desc.isCubemap,
-                                            textureData.desc.arraySize);
+                                            0);
     if (!pTexture) {
       return;
     }
 
-    pTexture->setAlpha(textureData.desc.hasAlpha);
+    pTexture->setAlpha(false);
 
-    for (const auto& subResource : textureData.subresources) {
-      const uint32 srIndex = renderAPI.calcSubresource(subResource.mip,
-                                                       subResource.arraySlice,
-                                                       textureData.desc.mipCount);
-      const uint8* srcData = textureData.blob.data() + subResource.offset;
+    renderAPI.writeToResource(pTexture,
+                              0,
+                              nullptr,
+                              textureData.rgba.data(),
+                              textureData.width * 16,
+                              textureData.width * textureData.height * 16);
 
-      if (subResource.slicePitch > NumLimit::MAX_UINT32) {
-        GE_LOG(kError,
-               Generic,
-               String("Subresource slice pitch is too large. Cannot import texture."));
-        return;
-      }
-
-      renderAPI.writeToResource(pTexture,
-                                srIndex,
-                                nullptr,
-                                srcData,
-                                subResource.rowPitch,
-                                cast::st<uint32>(subResource.slicePitch));
-    }
+    renderAPI.generateMips(pTexture);
 
     outRes = pTexture;
   }
 
   GE_PLUGIN_EXPORT bool
-  CodecExport(const SPtr<Resource>& /*resource*/, const Path& /*filePath*/) {
+  CodecExport(const SPtr<Resource>& resource, const Path& filePath) {
+    //Check if we can export this resource
+    if (!CodecCanExport(filePath)) {
+      GE_LOG(kError,
+             Generic,
+             "Cannot export resource: {0}. Unsupported format.", filePath.toString());
+      return false;
+    }
+
     return false;
   }
 }
