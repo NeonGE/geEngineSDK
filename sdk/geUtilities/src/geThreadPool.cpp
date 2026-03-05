@@ -61,10 +61,11 @@ namespace geEngineSDK {
 
     if (nullptr != parentThread) {
       Lock lock(parentThread->m_mutex);
-      if (parentThread->m_id == m_threadId) { //Check again in case it changed
-        while (!parentThread->m_idle) {
-          parentThread->m_workerEndedCond.wait(lock);
-        }
+      if (parentThread->m_id == m_threadId) {
+        parentThread->m_workerEndedCond.wait(lock, [&]
+        {
+          return parentThread->m_idle || parentThread->m_id != m_threadId;
+        });
       }
     }
   }
@@ -73,10 +74,7 @@ namespace geEngineSDK {
   PooledThread::initialize() {
     m_thread = ge_new<Thread>(bind(&PooledThread::run, this));
     Lock lock(m_mutex);
-
-    while (!m_threadStarted) {
-      m_startedCond.wait(lock);
-    }
+    m_startedCond.wait(lock, [this] { return m_threadStarted; });
   }
 
   void
@@ -106,14 +104,11 @@ namespace geEngineSDK {
 
     while (true) {
       function<void()> worker = nullptr;
-      
+
       {
         {
           Lock lock(m_mutex);
-
-          while (!m_threadReady) {
-            m_readyCond.wait(lock);
-          }
+          m_readyCond.wait(lock, [this] { return m_threadReady; });
           worker = m_workerMethod;
         }
 
@@ -169,9 +164,7 @@ namespace geEngineSDK {
   void
   PooledThread::blockUntilComplete() {
     Lock lock(m_mutex);
-    while (!m_idle) {
-      m_workerEndedCond.wait(lock);
-    }
+    m_workerEndedCond.wait(lock, [this] { return m_idle; });
   }
 
   bool
@@ -316,10 +309,14 @@ namespace geEngineSDK {
 
   SIZE_T
   ThreadPool::getNumAvailable() const {
-    SIZE_T numAvailable = m_maxCapacity;
+    Vector<PooledThread*> threadsCopy;
+    {
+      Lock lock(m_mutex);
+      threadsCopy = m_threads;
+    }
 
-    Lock lock(m_mutex);
-    for (auto& pThread : m_threads) {
+    SIZE_T numAvailable = m_maxCapacity;
+    for (auto* pThread : threadsCopy) {
       if (!pThread->isIdle()) {
         --numAvailable;
       }
@@ -329,10 +326,15 @@ namespace geEngineSDK {
 
   SIZE_T
   ThreadPool::getNumActive() const {
-    SIZE_T numActive = 0;
+    Vector<PooledThread*> threadsCopy;
+    {
+      Lock lock(m_mutex);
+      threadsCopy = m_threads;
+    }
 
+    SIZE_T numActive = 0;
     Lock lock(m_mutex);
-    for (auto& pThread : m_threads) {
+    for (auto* pThread : threadsCopy) {
       if (!pThread->isIdle()) {
         ++numActive;
       }
