@@ -32,106 +32,88 @@ sfmlKeyToImGuiMod(sf::Keyboard::Key code) {
 
 static ImGuiKey
 sfmlKeyToImGui(sf::Keyboard::Key k) {
-  switch (k)
-  {
-  case sf::Keyboard::Key::A: return ImGuiKey_A;
-  case sf::Keyboard::Key::B: return ImGuiKey_B;
-  case sf::Keyboard::Key::C: return ImGuiKey_C;
-  case sf::Keyboard::Key::D: return ImGuiKey_D;
-  case sf::Keyboard::Key::E: return ImGuiKey_E;
-  case sf::Keyboard::Key::F: return ImGuiKey_F;
-  case sf::Keyboard::Key::G: return ImGuiKey_G;
-  case sf::Keyboard::Key::H: return ImGuiKey_H;
-  case sf::Keyboard::Key::I: return ImGuiKey_I;
-  case sf::Keyboard::Key::J: return ImGuiKey_J;
-  case sf::Keyboard::Key::K: return ImGuiKey_K;
-  case sf::Keyboard::Key::L: return ImGuiKey_L;
-  case sf::Keyboard::Key::M: return ImGuiKey_M;
-  case sf::Keyboard::Key::N: return ImGuiKey_N;
-  case sf::Keyboard::Key::O: return ImGuiKey_O;
-  case sf::Keyboard::Key::P: return ImGuiKey_P;
-  case sf::Keyboard::Key::Q: return ImGuiKey_Q;
-  case sf::Keyboard::Key::R: return ImGuiKey_R;
-  case sf::Keyboard::Key::S: return ImGuiKey_S;
-  case sf::Keyboard::Key::T: return ImGuiKey_T;
-  case sf::Keyboard::Key::U: return ImGuiKey_U;
-  case sf::Keyboard::Key::V: return ImGuiKey_V;
-  case sf::Keyboard::Key::W: return ImGuiKey_W;
-  case sf::Keyboard::Key::X: return ImGuiKey_X;
-  case sf::Keyboard::Key::Y: return ImGuiKey_Y;
-  case sf::Keyboard::Key::Z: return ImGuiKey_Z;
+  using K = sf::Keyboard::Key;
+  using geEngineSDK::UnorderedMap;
 
-  case sf::Keyboard::Key::Num0: return ImGuiKey_0;
-  case sf::Keyboard::Key::Num1: return ImGuiKey_1;
-  case sf::Keyboard::Key::Num2: return ImGuiKey_2;
-  case sf::Keyboard::Key::Num3: return ImGuiKey_3;
-  case sf::Keyboard::Key::Num4: return ImGuiKey_4;
-  case sf::Keyboard::Key::Num5: return ImGuiKey_5;
-  case sf::Keyboard::Key::Num6: return ImGuiKey_6;
-  case sf::Keyboard::Key::Num7: return ImGuiKey_7;
-  case sf::Keyboard::Key::Num8: return ImGuiKey_8;
-  case sf::Keyboard::Key::Num9: return ImGuiKey_9;
+  //Initialize only once (C++11 guarantees thread-safe on local static)
+  static const UnorderedMap<K, ImGuiKey> s_map = {
+    //Letters
+    {K::A, ImGuiKey_A}, {K::B, ImGuiKey_B}, {K::C, ImGuiKey_C}, {K::D, ImGuiKey_D},
+    {K::E, ImGuiKey_E}, {K::F, ImGuiKey_F}, {K::G, ImGuiKey_G}, {K::H, ImGuiKey_H},
+    {K::I, ImGuiKey_I}, {K::J, ImGuiKey_J}, {K::K, ImGuiKey_K}, {K::L, ImGuiKey_L},
+    {K::M, ImGuiKey_M}, {K::N, ImGuiKey_N}, {K::O, ImGuiKey_O}, {K::P, ImGuiKey_P},
+    {K::Q, ImGuiKey_Q}, {K::R, ImGuiKey_R}, {K::S, ImGuiKey_S}, {K::T, ImGuiKey_T},
+    {K::U, ImGuiKey_U}, {K::V, ImGuiKey_V}, {K::W, ImGuiKey_W}, {K::X, ImGuiKey_X},
+    {K::Y, ImGuiKey_Y}, {K::Z, ImGuiKey_Z},
 
-  case sf::Keyboard::Key::Escape:    return ImGuiKey_Escape;
-  case sf::Keyboard::Key::LControl:  return ImGuiKey_LeftCtrl;
-  case sf::Keyboard::Key::LShift:    return ImGuiKey_LeftShift;
-  case sf::Keyboard::Key::LAlt:      return ImGuiKey_LeftAlt;
-  case sf::Keyboard::Key::LSystem:   return ImGuiKey_LeftSuper;
-  case sf::Keyboard::Key::RControl:  return ImGuiKey_RightCtrl;
-  case sf::Keyboard::Key::RShift:    return ImGuiKey_RightShift;
-  case sf::Keyboard::Key::RAlt:      return ImGuiKey_RightAlt;
-  case sf::Keyboard::Key::RSystem:   return ImGuiKey_RightSuper;
-  case sf::Keyboard::Key::Menu:      return ImGuiKey_Menu;
+    //Top row digits
+    {K::Num0, ImGuiKey_0}, {K::Num1, ImGuiKey_1}, {K::Num2, ImGuiKey_2},
+    {K::Num3, ImGuiKey_3}, {K::Num4, ImGuiKey_4}, {K::Num5, ImGuiKey_5},
+    {K::Num6, ImGuiKey_6}, {K::Num7, ImGuiKey_7}, {K::Num8, ImGuiKey_8},
+    {K::Num9, ImGuiKey_9},
 
-  case sf::Keyboard::Key::LBracket:   return ImGuiKey_LeftBracket;
-  case sf::Keyboard::Key::RBracket:   return ImGuiKey_RightBracket;
-  case sf::Keyboard::Key::Semicolon:  return ImGuiKey_Semicolon;
-  case sf::Keyboard::Key::Comma:      return ImGuiKey_Comma;
-  case sf::Keyboard::Key::Period:     return ImGuiKey_Period;
-  case sf::Keyboard::Key::Apostrophe: return ImGuiKey_Apostrophe;
-  case sf::Keyboard::Key::Slash:      return ImGuiKey_Slash;
-  case sf::Keyboard::Key::Backslash:  return ImGuiKey_Backslash;
-  case sf::Keyboard::Key::Grave:      return ImGuiKey_GraveAccent;
-  case sf::Keyboard::Key::Equal:      return ImGuiKey_Equal;
-  case sf::Keyboard::Key::Hyphen:     return ImGuiKey_Minus;
+    //Modifiers / system
+    {K::Escape,   ImGuiKey_Escape},
+    {K::LControl, ImGuiKey_LeftCtrl},
+    {K::LShift,   ImGuiKey_LeftShift},
+    {K::LAlt,     ImGuiKey_LeftAlt},
+    {K::LSystem,  ImGuiKey_LeftSuper},
+    {K::RControl, ImGuiKey_RightCtrl},
+    {K::RShift,   ImGuiKey_RightShift},
+    {K::RAlt,     ImGuiKey_RightAlt},
+    {K::RSystem,  ImGuiKey_RightSuper},
+    {K::Menu,     ImGuiKey_Menu},
 
-  case sf::Keyboard::Key::Space:     return ImGuiKey_Space;
-  case sf::Keyboard::Key::Enter:     return ImGuiKey_Enter;
-  case sf::Keyboard::Key::Backspace: return ImGuiKey_Backspace;
-  case sf::Keyboard::Key::Tab:       return ImGuiKey_Tab;
+    //Punctuation
+    {K::LBracket,   ImGuiKey_LeftBracket},
+    {K::RBracket,   ImGuiKey_RightBracket},
+    {K::Semicolon,  ImGuiKey_Semicolon},
+    {K::Comma,      ImGuiKey_Comma},
+    {K::Period,     ImGuiKey_Period},
+    {K::Apostrophe, ImGuiKey_Apostrophe},
+    {K::Slash,      ImGuiKey_Slash},
+    {K::Backslash,  ImGuiKey_Backslash},
+    {K::Grave,      ImGuiKey_GraveAccent},
+    {K::Equal,      ImGuiKey_Equal},
+    {K::Hyphen,     ImGuiKey_Minus},
 
-  case sf::Keyboard::Key::PageUp:    return ImGuiKey_PageUp;
-  case sf::Keyboard::Key::PageDown:  return ImGuiKey_PageDown;
-  case sf::Keyboard::Key::End:       return ImGuiKey_End;
-  case sf::Keyboard::Key::Home:      return ImGuiKey_Home;
-  case sf::Keyboard::Key::Insert:    return ImGuiKey_Insert;
-  case sf::Keyboard::Key::Delete:    return ImGuiKey_Delete;
+    //Whitespace / editing
+    {K::Space,     ImGuiKey_Space},
+    {K::Enter,     ImGuiKey_Enter},
+    {K::Backspace, ImGuiKey_Backspace},
+    {K::Tab,       ImGuiKey_Tab},
 
-  case sf::Keyboard::Key::Add:       return ImGuiKey_KeypadAdd;
-  case sf::Keyboard::Key::Subtract:  return ImGuiKey_KeypadSubtract;
-  case sf::Keyboard::Key::Multiply:  return ImGuiKey_KeypadMultiply;
-  case sf::Keyboard::Key::Divide:    return ImGuiKey_KeypadDivide;
+    //Navigation
+    {K::PageUp,   ImGuiKey_PageUp},
+    {K::PageDown, ImGuiKey_PageDown},
+    {K::End,      ImGuiKey_End},
+    {K::Home,     ImGuiKey_Home},
+    {K::Insert,   ImGuiKey_Insert},
+    {K::Delete,   ImGuiKey_Delete},
 
-  case sf::Keyboard::Key::Left:      return ImGuiKey_LeftArrow;
-  case sf::Keyboard::Key::Right:     return ImGuiKey_RightArrow;
-  case sf::Keyboard::Key::Up:        return ImGuiKey_UpArrow;
-  case sf::Keyboard::Key::Down:      return ImGuiKey_DownArrow;
+    //Keypad ops (según tu mapping original)
+    {K::Add,      ImGuiKey_KeypadAdd},
+    {K::Subtract, ImGuiKey_KeypadSubtract},
+    {K::Multiply, ImGuiKey_KeypadMultiply},
+    {K::Divide,   ImGuiKey_KeypadDivide},
 
-  case sf::Keyboard::Key::F1:  return ImGuiKey_F1;
-  case sf::Keyboard::Key::F2:  return ImGuiKey_F2;
-  case sf::Keyboard::Key::F3:  return ImGuiKey_F3;
-  case sf::Keyboard::Key::F4:  return ImGuiKey_F4;
-  case sf::Keyboard::Key::F5:  return ImGuiKey_F5;
-  case sf::Keyboard::Key::F6:  return ImGuiKey_F6;
-  case sf::Keyboard::Key::F7:  return ImGuiKey_F7;
-  case sf::Keyboard::Key::F8:  return ImGuiKey_F8;
-  case sf::Keyboard::Key::F9:  return ImGuiKey_F9;
-  case sf::Keyboard::Key::F10: return ImGuiKey_F10;
-  case sf::Keyboard::Key::F11: return ImGuiKey_F11;
-  case sf::Keyboard::Key::F12: return ImGuiKey_F12;
+    //Arrows
+    {K::Left,  ImGuiKey_LeftArrow},
+    {K::Right, ImGuiKey_RightArrow},
+    {K::Up,    ImGuiKey_UpArrow},
+    {K::Down,  ImGuiKey_DownArrow},
 
-  default: break;
+    //Function keys
+    {K::F1,  ImGuiKey_F1},  {K::F2,  ImGuiKey_F2},  {K::F3,  ImGuiKey_F3},
+    {K::F4,  ImGuiKey_F4},  {K::F5,  ImGuiKey_F5},  {K::F6,  ImGuiKey_F6},
+    {K::F7,  ImGuiKey_F7},  {K::F8,  ImGuiKey_F8},  {K::F9,  ImGuiKey_F9},
+    {K::F10, ImGuiKey_F10}, {K::F11, ImGuiKey_F11}, {K::F12, ImGuiKey_F12},
+  };
+
+  if (auto it = s_map.find(k); it != s_map.end()) {
+    return it->second;
   }
+
   return ImGuiKey_None;
 }
 
@@ -183,7 +165,7 @@ namespace geEngineSDK {
     auto input = inputEvents.lock();
     ImGuiIO& io = ImGui::GetIO();
     
-    input->onResize.connect([this, &io](int32 width, int32 height) {
+    input->onResize.connect([&io](int32 width, int32 height) {
       io.DisplaySize = ImVec2(cast::st<float>(Math::max(8, width)),
                               cast::st<float>(Math::max(8, height)));
     });
@@ -212,7 +194,7 @@ namespace geEngineSDK {
         io.SetKeyEventNativeData(key, cast::st<int>(keyCode), -1);
       };
 
-    input->onKeyPressed.connect([this, &io, handleKeyChanged](int32 keyCode,
+    input->onKeyPressed.connect([&io, handleKeyChanged](int32 keyCode,
       bool alt, bool ctrl, bool shift, bool systemKey) {
         handleKeyChanged(keyCode, alt, ctrl, shift, systemKey, true);
         if (io.WantCaptureKeyboard) {
@@ -220,7 +202,7 @@ namespace geEngineSDK {
         }
       });
 
-    input->onKeyReleased.connect([this, &io, handleKeyChanged](int32 keyCode,
+    input->onKeyReleased.connect([&io, handleKeyChanged](int32 keyCode,
       bool alt, bool ctrl, bool shift, bool systemKey) {
         handleKeyChanged(keyCode, alt, ctrl, shift, systemKey, false);
         if (io.WantCaptureKeyboard) {
@@ -228,25 +210,25 @@ namespace geEngineSDK {
         }
       });
 
-    input->onTextEntered.connect([this, &io](UNICHAR text) {
+    input->onTextEntered.connect([&io](UNICHAR text) {
       io.AddInputCharacterUTF16(static_cast<uint16>(text));
     });
 
-    input->onMouseButtonPressed.connect([this, &io](int32 button, int32 /*x*/, int32 /*y*/) {
+    input->onMouseButtonPressed.connect([&io](int32 button, int32 /*x*/, int32 /*y*/) {
       io.AddMouseButtonEvent(button, true);
       if (io.WantCaptureMouse) {
         return;
       }
     });
 
-    input->onMouseButtonReleased.connect([this, &io](int32 button, int32 /*x*/, int32 /*y*/) {
+    input->onMouseButtonReleased.connect([&io](int32 button, int32 /*x*/, int32 /*y*/) {
       io.AddMouseButtonEvent(button, false);
       if (io.WantCaptureMouse) {
         return;
       }
     });
 
-    input->onMouseWheelScrolled.connect([this, &io](int32 wheel,
+    input->onMouseWheelScrolled.connect([&io](int32 wheel,
                                                     float delta,
                                                     int32 /*x*/,
                                                     int32 /*y*/) {
@@ -262,14 +244,14 @@ namespace geEngineSDK {
         }
       });
 
-    input->onMouseMoved.connect([this, &io](int32 x, int32 y) {
+    input->onMouseMoved.connect([&io](int32 x, int32 y) {
       io.AddMousePosEvent(cast::st<float>(x), cast::st<float>(y));
       if (io.WantCaptureMouse) {
         return;
       }
     });
 
-    input->onFocusLost.connect([this, &io]() {
+    input->onFocusLost.connect([&io]() {
       io.AddFocusEvent(false);
       io.AddKeyEvent(ImGuiMod_Ctrl, false);
       io.AddKeyEvent(ImGuiMod_Shift, false);
@@ -277,7 +259,7 @@ namespace geEngineSDK {
       io.AddKeyEvent(ImGuiMod_Super, false);
     });
 
-    input->onFocusGained.connect([this, &io]() {
+    input->onFocusGained.connect([&io]() {
       io.AddFocusEvent(true);
     });
   }

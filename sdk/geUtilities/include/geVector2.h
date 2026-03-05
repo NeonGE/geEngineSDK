@@ -287,7 +287,7 @@ namespace geEngineSDK {
       * @brief Exchange the contents of this vector with another.
       */
      FORCEINLINE void
-     swap(Vector2& other);
+     swap(Vector2& other) _NOEXCEPT;
 
     /**
      * @brief Calculates the dot product of two vectors.
@@ -599,7 +599,7 @@ namespace geEngineSDK {
   }
 
   FORCEINLINE void
-  Vector2::swap(Vector2& other) {
+  Vector2::swap(Vector2& other) _NOEXCEPT {
     std::swap(x, other.x);
     std::swap(y, other.y);
   }

@@ -100,26 +100,17 @@ namespace geEngineSDK {
 
   GE_NORETURN void
   PlatformUtility::terminate(bool force) {
+#if USING(GE_PLATFORM_WINDOWS) || USING(GE_PLATFORM_XBOX)
     if (!force) {
-#if USING(GE_PLATFORM_WINDOWS) || USING(GE_PLATFORM_XBOX)
       PostQuitMessage(0);
-#elif USING(GE_PLATFORM_PS4) || USING(GE_PLATFORM_PS5)
-      _exit(0);
-#elif USING(GE_PLATFORM_LINUX) || USING(GE_PLATFORM_OSX) || \
-      USING(GE_PLATFORM_ANDROID) || USING(GE_PLATFORM_IOS)
-      _exit(0);
-#endif
     }
-    else {
-#if USING(GE_PLATFORM_WINDOWS) || USING(GE_PLATFORM_XBOX)
+    else{
       TerminateProcess(GetCurrentProcess(), 0);
-#elif USING(GE_PLATFORM_PS4) || USING(GE_PLATFORM_PS5)
-      _exit(0);
-#elif USING(GE_PLATFORM_LINUX) || USING(GE_PLATFORM_OSX) || \
-      USING(GE_PLATFORM_ANDROID) || USING(GE_PLATFORM_IOS)
-      _exit(0);
-#endif
     }
+#else
+    GE_UNREFERENCED_PARAMETER(force);
+    _exit(0);
+#endif
   }
 
   SystemInfo

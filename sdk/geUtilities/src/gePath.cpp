@@ -54,7 +54,7 @@ namespace geEngineSDK {
   }
 
   void
-  Path::swap(Path& path) {
+  Path::swap(Path& path) _NOEXCEPT {
     std::swap(m_directories, path.m_directories);
     std::swap(m_filename, path.m_filename);
     std::swap(m_device, path.m_device);

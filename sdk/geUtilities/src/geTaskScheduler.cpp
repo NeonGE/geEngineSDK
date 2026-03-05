@@ -223,16 +223,17 @@ namespace geEngineSDK {
     while (true) {
       Lock lock(m_readyMutex);
 
-      while ((!m_checkTasks || static_cast<uint32>(m_activeTasks.size()) >= m_maxActiveTasks)
-             && !m_shutdown) {
-        m_taskReadyCond.wait(lock);
-      }
+      m_taskReadyCond.wait(lock, [this]
+      {
+        return m_shutdown || (m_checkTasks && m_activeTasks.size() < m_maxActiveTasks);
+      });
 
       m_checkTasks = false;
 
       if (m_shutdown) {
         break;
       }
+      m_checkTasks = false;
 
       for (auto iter = m_taskQueue.begin(); iter != m_taskQueue.end();) {
         if (static_cast<uint32>(m_activeTasks.size()) >= m_maxActiveTasks) {
@@ -316,9 +317,7 @@ namespace geEngineSDK {
       addWorker();
       {
         Lock lock(m_completeMutex);
-        while (!task->isComplete()) {
-          m_taskCompleteCond.wait(lock);
-        }
+        m_taskCompleteCond.wait(lock, [task] { return task->isComplete(); });
       }
       removeWorker();
     }
@@ -330,9 +329,10 @@ namespace geEngineSDK {
       addWorker();
       {
         Lock lock(m_completeMutex);
-        while (taskGroup->m_numRemainingTasks.load(std::memory_order_acquire) > 0) {
-          m_taskCompleteCond.wait(lock);
-        }
+        m_taskCompleteCond.wait(lock, [taskGroup]
+        {
+          return taskGroup->m_numRemainingTasks.load(std::memory_order_acquire) == 0;
+        });
       }
       removeWorker();
     }

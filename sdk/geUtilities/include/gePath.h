@@ -98,7 +98,7 @@ namespace geEngineSDK {
     * @brief	Swap internal data with another Path object.
     */
     void
-    swap(Path& path);
+    swap(Path& path) _NOEXCEPT;
 
     /**
      * @brief Create a path from another Path object.

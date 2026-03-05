@@ -60,13 +60,11 @@ namespace geEngineSDK {
 
   byte*
   FrameAlloc::alloc(SIZE_T amount) {
-
+    GE_ASSERT(m_freeBlock);
     GE_DEBUG_ONLY(amount += sizeof(SIZE_T));
 
     SIZE_T freeMem = 0;
-    if (nullptr != m_freeBlock) {
-      freeMem = m_freeBlock->m_size - m_freeBlock->m_freePtr;
-    }
+    freeMem = m_freeBlock->m_size - m_freeBlock->m_freePtr;
 
     if (amount > freeMem) {
       allocBlock(amount);
@@ -88,18 +86,17 @@ namespace geEngineSDK {
 
   byte*
   FrameAlloc::allocAligned(SIZE_T amount, SIZE_T alignment) {
+    GE_ASSERT(m_freeBlock);
     GE_DEBUG_ONLY(amount += sizeof(SIZE_T));
 
     SIZE_T freeMem = 0;
     SIZE_T freePtr = 0;
-    if (nullptr != m_freeBlock) {
-      freeMem = m_freeBlock->m_size - m_freeBlock->m_freePtr;
+    freeMem = m_freeBlock->m_size - m_freeBlock->m_freePtr;
 #if USING(GE_DEBUG_MODE)
-      freePtr = m_freeBlock->m_freePtr + sizeof(SIZE_T);
+    freePtr = m_freeBlock->m_freePtr + sizeof(SIZE_T);
 #else
-      freePtr = m_freeBlock->m_freePtr;
+    freePtr = m_freeBlock->m_freePtr;
 #endif
-    }
 
     SIZE_T alignOffset = (alignment - (freePtr & (alignment - 1))) & (alignment - 1);
     if ((amount + alignOffset) > freeMem) {

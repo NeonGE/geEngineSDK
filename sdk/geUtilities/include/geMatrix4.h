@@ -87,7 +87,7 @@ namespace geEngineSDK {
     /**
      * @brief Swaps the contents of this matrix with another.
      */
-    void swap(Matrix4& other) {
+    void swap(Matrix4& other) _NOEXCEPT {
       std::swap(m[0][0], other.m[0][0]);
       std::swap(m[0][1], other.m[0][1]);
       std::swap(m[0][2], other.m[0][2]);
