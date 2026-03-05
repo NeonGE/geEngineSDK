@@ -111,15 +111,15 @@ namespace geEngineSDK {
     }
 
     const float&
-    operator[](const int32 Index) const {
-      GE_ASSERT(Index >= 0 && Index < 4);
-      return (&r)[Index];
+    operator[](const uint32 Index) const {
+      GE_ASSERT(Index < 4);
+      return *(&r + Index);
     }
 
     float&
-    operator[](const int32 Index) {
-      GE_ASSERT(Index >= 0 && Index < 4);
-      return (&r)[Index];
+    operator[](const uint32 Index) {
+      GE_ASSERT(Index < 4);
+      return *(&r + Index);
     }
 
     LinearColor

@@ -1184,11 +1184,9 @@ namespace geEngineSDK {
       GE_ASSERT(roots);
 
       //Degenerate cases
-      if (isNearlyEqual(A, static_cast<T>(0))) {
-        if (isNearlyEqual(B, static_cast<T>(0))) {
-          return 0; //Infinite solutions
-        }
-        return 0; //No solutions
+      if (isNearlyEqual(A, static_cast<T>(0)) ||
+          isNearlyEqual(B, static_cast<T>(0))) GE_UNLIKELY {
+        return 0;
       }
 
       GE_ASSUME(!isNearlyEqual(A, static_cast<T>(0)));

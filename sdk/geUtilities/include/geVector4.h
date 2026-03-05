@@ -465,12 +465,12 @@ namespace geEngineSDK {
 
   FORCEINLINE float&
   Vector4::operator[](uint32 ComponentIndex) {
-    return (&x)[ComponentIndex];
+    return *(&x + ComponentIndex);
   }
 
   FORCEINLINE float
   Vector4::operator[](uint32 ComponentIndex) const {
-    return (&x)[ComponentIndex];
+    return *(&x + ComponentIndex);
   }
 
   FORCEINLINE void
