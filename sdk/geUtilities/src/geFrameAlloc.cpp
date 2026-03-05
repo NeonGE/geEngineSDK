@@ -60,7 +60,9 @@ namespace geEngineSDK {
 
   byte*
   FrameAlloc::alloc(SIZE_T amount) {
-    GE_ASSERT(m_freeBlock);
+    if (!m_freeBlock) {
+      return nullptr;
+    }
     GE_DEBUG_ONLY(amount += sizeof(SIZE_T));
 
     SIZE_T freeMem = 0;
@@ -86,7 +88,9 @@ namespace geEngineSDK {
 
   byte*
   FrameAlloc::allocAligned(SIZE_T amount, SIZE_T alignment) {
-    GE_ASSERT(m_freeBlock);
+    if (!m_freeBlock) {
+      return nullptr;
+    }
     GE_DEBUG_ONLY(amount += sizeof(SIZE_T));
 
     SIZE_T freeMem = 0;

@@ -27,7 +27,7 @@ namespace geEngineSDK {
   {
    public:
     GameConfig() = default;
-    ~GameConfig() = default;
+    ~GameConfig() override = default;
 
     bool
     load(const Path& filePath);

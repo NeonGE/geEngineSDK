@@ -13,11 +13,11 @@
 #endif
 
 namespace geEngineSDK {
-  class ImGuiSampleApp : public GE_COREBASE_CLASS
+  class ImGuiSampleApp final : public GE_COREBASE_CLASS
   {
    public:
     ImGuiSampleApp() = default;
-    virtual ~ImGuiSampleApp() = default;
+    ~ImGuiSampleApp() = default;
 
     void
     onSuscribeInputs(const WeakSPtr<AppInputEvents>& inputEvents) override {
@@ -56,7 +56,7 @@ namespace geEngineSDK {
         ImGui::DestroyContext();
       });
 
-      onUpdate.connect([this](float deltaTime) {
+      onUpdate.connect([](float deltaTime) {
         GE_UNREFERENCED_PARAMETER(deltaTime);
       });
 
@@ -94,7 +94,7 @@ namespace geEngineSDK {
         ImGui::ShowDemoWindow(&bShowDemoWindow);
       });
 
-      onRender.connect([this]() {
+      onRender.connect([]() {
         //Render dear imgui into framebuffer
         ImGui::Render();
 #if USING(GE_PLATFORM_WINDOWS)
@@ -106,7 +106,7 @@ namespace geEngineSDK {
     }
 
    private:
-    ImGuiPlatform m_imgui;
+    GE_NO_UNIQUE_ADDRESS ImGuiPlatform m_imgui;
     SPtr<Texture> m_hdriImage;
 
   };

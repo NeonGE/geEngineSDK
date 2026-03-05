@@ -32,13 +32,13 @@ namespace geEngineSDK {
   constexpr uint64 MIN_DEFERRED_BUDGET_US = 200;  // 200 micro seconds
   constexpr uint64 MAX_DEFERRED_BUDGET_US = 2000; // 2000 micro seconds
 
-  class GE_CORE_EXPORT DeferredCallManager : public Module<DeferredCallManager>
+  class GE_CORE_EXPORT DeferredCallManager final : public Module<DeferredCallManager>
   {
    public:
     using Task = function<void()>;
 
     DeferredCallManager() = default;
-    ~DeferredCallManager();
+    ~DeferredCallManager() override;
 
     //Enque callable + args
     template<class F, class... Args>

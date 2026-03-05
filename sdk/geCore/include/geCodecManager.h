@@ -29,11 +29,11 @@ namespace geEngineSDK {
 
   class ICodec;
 
-  class GE_CORE_EXPORT CodecManager : public Module<CodecManager>
+  class GE_CORE_EXPORT CodecManager final : public Module<CodecManager>
   {
    public:
     CodecManager() = default;
-    ~CodecManager() = default;
+    ~CodecManager() override = default;
   
     const SPtr<ICodec>
     getImportCodec(const CODEC_TYPE::E type, const String& fileExt);

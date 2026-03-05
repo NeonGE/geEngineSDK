@@ -68,7 +68,7 @@ namespace geEngineSDK {
   {
    public:
     FileTracker() = default;
-    ~FileTracker() = default;
+    ~FileTracker() override = default;
 
     /**
      * @brief Start monitoring the files
@@ -100,10 +100,14 @@ namespace geEngineSDK {
       uint32 systemID = StringID(systemName).id();
 
       ScopedLock<true> lock(m_dataMutex);
+#if USING(GE_CPP20_OR_LATER)
+      if(!m_subscribersCallbacks.contains(systemID)) {
+#else
       if (m_subscribersCallbacks.find(systemID) == m_subscribersCallbacks.end()) {
+#endif
         m_subscribersCallbacks[systemID] = callback;
       }
-      
+
       return systemID;
     }
 

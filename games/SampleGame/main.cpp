@@ -2,11 +2,11 @@
 #include <geDebug.h>
 
 namespace geEngineSDK {
-  class SampleGameApp : public GE_COREBASE_CLASS
+  class SampleGameApp final : public GE_COREBASE_CLASS
   {
    public:
     SampleGameApp() = default;
-    virtual ~SampleGameApp() = default;
+    ~SampleGameApp() = default;
 
     void
     onSuscribeInputs(const WeakSPtr<AppInputEvents>& inputEvents) override {
@@ -17,12 +17,12 @@ namespace geEngineSDK {
 
       auto input = inputEvents.lock();
 
-      onCreate.connect([this]() {});
-      onDestroy.connect([this]() {});
-      onUpdate.connect([this](float deltaTime) {
+      onCreate.connect([]() {});
+      onDestroy.connect([]() {});
+      onUpdate.connect([](float deltaTime) {
         GE_UNREFERENCED_PARAMETER(deltaTime);
       });
-      onRender.connect([this]() {});
+      onRender.connect([]() {});
     }
   };
 } //geEngineSDK
