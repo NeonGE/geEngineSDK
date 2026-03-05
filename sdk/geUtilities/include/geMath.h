@@ -220,9 +220,9 @@ namespace geEngineSDK {
     GE_NODISCARD static FORCEINLINE float
     carmackInvSqrt(float F) {
       float Half = 0.5f * F;
-      int32 I = *reinterpret_cast<int32*>(&F);
+      int32 I = bit_cast<int32>(F);
       I = 0x5f3759df - (I >> 1);
-      F = *reinterpret_cast<float*>(&I);
+      F = bit_cast<float>(I);
       F = F * (1.5f - Half * F * F);
       return F;
     }
@@ -234,13 +234,13 @@ namespace geEngineSDK {
 
     static FORCEINLINE bool
     isNaN(float A) {
-      return ((*reinterpret_cast<uint32*>(&A)) & 0x7F800000) == 0x7F800000 &&
-             ((*reinterpret_cast<uint32*>(&A)) & 0x007FFFFF) != 0;
+      return (bit_cast<uint32>(A) & 0x7F800000) == 0x7F800000 &&
+             (bit_cast<uint32>(A) & 0x007FFFFF) != 0;
     }
 
     static FORCEINLINE bool
     isFinite(float A) {
-      return ((*reinterpret_cast<uint32*>(&A)) & 0x7F800000) != 0x7F800000;
+      return (bit_cast<uint32>(A) & 0x7F800000) != 0x7F800000;
     }
 
     static FORCEINLINE bool

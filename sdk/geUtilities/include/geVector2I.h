@@ -221,7 +221,7 @@ namespace geEngineSDK {
      * @brief Exchange the contents of this vector with another.
      */
     FORCEINLINE void
-    swap(Vector2I& other);
+    swap(Vector2I& other) _NOEXCEPT;
 
     /**
      * @brief  Returns the Manhattan distance between this and another point.
@@ -434,7 +434,7 @@ namespace geEngineSDK {
   }
 
   FORCEINLINE void
-    Vector2I::swap(Vector2I& other) {
+  Vector2I::swap(Vector2I& other) _NOEXCEPT {
     std::swap(x, other.x);
     std::swap(y, other.y);
   }

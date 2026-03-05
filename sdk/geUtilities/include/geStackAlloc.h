@@ -411,7 +411,7 @@ namespace geEngineSDK {
     /**
      * @brief Needed until c++17
      */
-    StackMemory(StackMemory && other)
+    StackMemory(StackMemory && other) _NOEXCEPT
       : m_ptr(exchange(other.m_ptr, nullptr)),
         m_count(exchange(other.m_count, 0))
     {}

@@ -55,7 +55,7 @@ namespace geEngineSDK {
       }
     }
 
-    SmallVector(SmallVector<ValueType, N>&& other) {
+    SmallVector(SmallVector<ValueType, N>&& other) _NOEXCEPT {
       if (!other.empty()) {
         *this = move(other);
       }
@@ -80,7 +80,7 @@ namespace geEngineSDK {
     }
 
     SmallVector<ValueType, N>&
-    operator=(const SmallVector<ValueType, N>& other) {
+    operator=(const SmallVector<ValueType, N>& other) _NOEXCEPT {
       if (&other == this) {
         return *this;
       }

@@ -477,7 +477,7 @@ namespace geEngineSDK {
     using difference_type = ptrdiff_t;
     
     CONSTEXPR StdAlloc() = default;
-    CONSTEXPR StdAlloc(StdAlloc&&) = default;
+    CONSTEXPR StdAlloc(StdAlloc&&) _NOEXCEPT = default;
     CONSTEXPR StdAlloc(const StdAlloc&) = default;
 
     template<class U, class Alloc2>
