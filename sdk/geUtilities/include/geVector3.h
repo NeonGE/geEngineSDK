@@ -1307,13 +1307,13 @@ namespace geEngineSDK {
   FORCEINLINE float&
   Vector3::operator[](uint32 index) {
     GE_ASSERT(index < 3);
-    return (&x)[index];
+    return *(&x +index);
   }
 
   FORCEINLINE float
   Vector3::operator[](uint32 index)const {
     GE_ASSERT(index < 3);
-    return (&x)[index];
+    return *(&x + index);
   }
 
   FORCEINLINE void

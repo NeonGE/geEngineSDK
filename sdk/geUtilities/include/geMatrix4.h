@@ -1610,9 +1610,9 @@ namespace geEngineSDK {
                                                    const Vector3& ZAxis,
                                                    const Vector3& Origin) {
     for (uint32 RowIndex = 0; RowIndex < 3; ++RowIndex) {
-      m[RowIndex][0] = (&XAxis.x)[RowIndex];
-      m[RowIndex][1] = (&YAxis.x)[RowIndex];
-      m[RowIndex][2] = (&ZAxis.x)[RowIndex];
+      m[RowIndex][0] = XAxis[RowIndex];
+      m[RowIndex][1] = YAxis[RowIndex];
+      m[RowIndex][2] = ZAxis[RowIndex];
       m[RowIndex][3] = 0.0f;
     }
 
@@ -1630,9 +1630,9 @@ namespace geEngineSDK {
     const Vector3 YAxis = ZAxis ^ XAxis;
 
     for (uint32 RowIndex = 0; RowIndex < 3; ++RowIndex) {
-      m[RowIndex][0] = (&XAxis.x)[RowIndex];
-      m[RowIndex][1] = (&YAxis.x)[RowIndex];
-      m[RowIndex][2] = (&ZAxis.x)[RowIndex];
+      m[RowIndex][0] = XAxis[RowIndex];
+      m[RowIndex][1] = YAxis[RowIndex];
+      m[RowIndex][2] = ZAxis[RowIndex];
       m[RowIndex][3] = 0.0f;
     }
 
