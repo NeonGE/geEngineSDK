@@ -1,5 +1,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build status](https://ci.appveyor.com/api/projects/status/05j1vydhneortpuk/branch/main?svg=true)](https://ci.appveyor.com/project/NeonGE/geenginesdk/branch/main)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=NeonGE_geEngineSDK&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=NeonGE_geEngineSDK)
 [![Coverage Status](https://coveralls.io/repos/github/NeonGE/geEngineSDK/badge.svg)](https://coveralls.io/github/NeonGE/geEngineSDK)
 
 # geEngineSDK
