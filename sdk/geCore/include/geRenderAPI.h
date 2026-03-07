@@ -166,6 +166,12 @@ namespace geEngineSDK {
                          const void* pInitialData = nullptr,
                          const uint32 usage = RESOURCE_USAGE::DEFAULT) = 0;
 
+    GE_NODISCARD virtual SPtr<StructuredBuffer>
+    createStructuredBuffer(const SIZE_T sizeInBytes,
+                           const uint32 byteStride,
+                           const void* pInitialData = nullptr,
+                           const uint32 usage = RESOURCE_USAGE::DEFAULT) = 0;
+
     /*************************************************************************/
     // Create State objects
     /*************************************************************************/
@@ -383,6 +389,33 @@ namespace geEngineSDK {
     virtual void
     csSetConstantBuffer(const WeakSPtr<ConstantBuffer>& pBuffer,
                         const uint32 startSlot = 0) = 0;
+
+    /*************************************************************************/
+    // Set Structured Buffers
+    /*************************************************************************/
+    virtual void
+    vsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                          const uint32 startSlot = 0) = 0;
+
+    virtual void
+    psSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                          const uint32 startSlot = 0) = 0;
+
+    virtual void
+    gsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                          const uint32 startSlot = 0) = 0;
+
+    virtual void
+    hsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                          const uint32 startSlot = 0) = 0;
+
+    virtual void
+    dsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                          const uint32 startSlot = 0) = 0;
+
+    virtual void
+    csSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                          const uint32 startSlot = 0) = 0;
 
     /*************************************************************************/
     // Set Samplers

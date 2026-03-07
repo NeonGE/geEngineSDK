@@ -145,6 +145,12 @@ namespace geEngineSDK {
                          const void* pInitialData = nullptr,
                          const uint32 usage = RESOURCE_USAGE::DEFAULT) override;
 
+    SPtr<ConstantBuffer>
+    createStructuredBuffer(const SIZE_T sizeInBytes,
+                           const uint32 byteStride,
+                           const void* pInitialData = nullptr,
+                           const uint32 usage = RESOURCE_USAGE::DEFAULT) override;
+
     /*************************************************************************/
     // Create Pipeline State Objects
     /*************************************************************************/
@@ -356,6 +362,10 @@ namespace geEngineSDK {
 
     template<ShaderStage Stage>
     FORCEINLINE void
+    _setStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer, const uint32 startSlot);
+
+    template<ShaderStage Stage>
+    FORCEINLINE void
     _setSampler(const WeakSPtr<SamplerState>& pSampler, const uint32 startSlot);
 
    public:
@@ -438,6 +448,33 @@ namespace geEngineSDK {
     void
     csSetConstantBuffer(const WeakSPtr<ConstantBuffer>& pBuffer,
                         const uint32 startSlot = 0) override;
+
+    /*************************************************************************/
+    // Set Structured Buffers
+    /*************************************************************************/
+    void
+    vsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                          const uint32 startSlot = 0) override;
+
+    void
+    psSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                          const uint32 startSlot = 0) override;
+
+    void
+    gsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                          const uint32 startSlot = 0) override;
+
+    void
+    hsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                          const uint32 startSlot = 0) override;
+
+    void
+    dsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                          const uint32 startSlot = 0) override;
+
+    void
+    csSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                          const uint32 startSlot = 0) override;
 
     /*************************************************************************/
     // Set Samplers

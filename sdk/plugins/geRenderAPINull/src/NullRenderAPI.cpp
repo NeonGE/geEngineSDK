@@ -248,6 +248,19 @@ namespace geEngineSDK {
     return pCB;
   }
 
+  SPtr<StructuredBuffer>
+  NullRenderAPI::createStructuredBuffer(const SIZE_T sizeInBytes,
+                                        const uint32 byteStride,
+                                        const void* pInitialData,
+                                        const uint32 usage) {
+    auto pSB = ge_shared_ptr_new<NullStructuredBuffer>();
+    pSB->m_pBuffer += 1;
+    pSB->m_Desc.byteWidth = cast::st<uint32>(sizeInBytes);
+    pSB->m_Desc.usage = usage;
+
+    return pSB;
+  }
+
   SPtr<RasterizerState>
   NullRenderAPI::createRasterizerState(const RASTERIZER_DESC&) {
     auto pRS = ge_shared_ptr_new<NullRasterizerState>();
@@ -543,6 +556,36 @@ namespace geEngineSDK {
 
   void
   NullRenderAPI::csSetConstantBuffer(const WeakSPtr<ConstantBuffer>&, const uint32) {}
+
+  void
+  NullRenderAPI::vsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                                       const uint32 startSlot)
+  {}
+
+  void
+  NullRenderAPI::psSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                                       const uint32 startSlot)
+  {}
+
+  void
+  NullRenderAPI::gsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                                       const uint32 startSlot)
+  {}
+
+  void
+  NullRenderAPI::hsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                                       const uint32 startSlot)
+  {}
+
+  void
+  NullRenderAPI::dsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                                       const uint32 startSlot)
+  {}
+
+  void
+  NullRenderAPI::csSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                                       const uint32 startSlot)
+  {}
 
   /*************************************************************************/
   // Set Samplers

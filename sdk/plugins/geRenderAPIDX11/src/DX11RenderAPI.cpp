@@ -36,7 +36,7 @@ namespace geEngineSDK {
   class D3DIncludeHandler : public ID3DInclude
   {
    public:
-    D3DIncludeHandler(const Vector<Path>& includeDirs)
+    explicit D3DIncludeHandler(const Vector<Path>& includeDirs)
       : m_includePaths(includeDirs)
     {}
 
@@ -1035,6 +1035,55 @@ namespace geEngineSDK {
     return pCB;
   }
 
+  SPtr<ConstantBuffer>
+  DX11RenderAPI::createStructuredBuffer(const SIZE_T sizeInBytes,
+                                        const uint32 byteStride,
+                                        const void* pInitialData,
+                                        const uint32 usage) {
+    GE_ASSERT(m_pDevice);
+    if (!sizeInBytes || !byteStride) {
+      return nullptr;
+    }
+
+    auto pCB = ge_shared_ptr_new<DXStructuredBuffer>();
+    uint32 numElements = sizeInBytes / byteStride;
+
+    ge_zero_out(pCB->m_Desc);
+    pCB->m_Desc.Usage = static_cast<D3D11_USAGE>(usage);
+    pCB->m_Desc.ByteWidth = static_cast<UINT>(sizeInBytes); //sizeof(OBJECT) * numElements
+    pCB->m_Desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
+    pCB->m_Desc.CPUAccessFlags = usage == D3D11_USAGE_DYNAMIC ? D3D11_CPU_ACCESS_WRITE : 0;
+    pCB->m_Desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+    pCB->m_Desc.StructureByteStride = byteStride; //sizeof(OBJECT)
+
+    D3D11_SUBRESOURCE_DATA InitData;
+    InitData.pSysMem = pInitialData;
+    InitData.SysMemPitch = 0;
+    InitData.SysMemSlicePitch = 0;
+
+    throwIfFailed(m_pDevice->CreateBuffer(&pCB->m_Desc,
+                                          pInitialData ? &InitData : nullptr,
+                                          &pCB->m_pBuffer));
+
+    //Create SRV
+    D3D11_SHADER_RESOURCE_VIEW_DESC desc;
+    desc.Format = DXGI_FORMAT_UNKNOWN;
+    desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+    desc.Buffer.FirstElement = 0;
+    desc.Buffer.NumElements = numElements;
+    m_pDevice->CreateShaderResourceView(pCB->m_pBuffer, &desc, &pCB->m_pSRV);
+
+    //Create UAV
+    D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+    uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+    uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+    uavDesc.Buffer.FirstElement = 0;
+    uavDesc.Buffer.NumElements = numElements;
+    m_pDevice->CreateUnorderedAccessView(pCB->m_pBuffer, &uavDesc, &pCB->m_pUAV);
+
+    return pCB;
+  }
+
   SPtr<RasterizerState>
   DX11RenderAPI::createRasterizerState(const RASTERIZER_DESC& rasterDesc) {
     GE_ASSERT(m_pDevice);
@@ -1936,6 +1985,68 @@ namespace geEngineSDK {
   DX11RenderAPI::csSetConstantBuffer(const WeakSPtr<ConstantBuffer>& pBuffer,
                                      const uint32 startSlot) {
     _setConstantBuffer<ShaderStage::Compute>(pBuffer, startSlot);
+  }
+
+  /*************************************************************************/
+  // Set Structured Buffers
+  /*************************************************************************/
+  template<DX11RenderAPI::ShaderStage Stage>
+  void
+  DX11RenderAPI::_setStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                                      const uint32 startSlot) {
+    GE_ASSERT(m_pActiveContext);
+
+    D3DShaderResourceView* pSRV = nullptr;
+    if (!pBuffer.expired()) {
+      auto pSB = reinterpret_cast<DXStructuredBuffer*>(pBuffer.lock().get());
+      pSRV = pSB->m_pSRV;
+    }
+
+    (m_pActiveContext->*ShaderTraits<Stage>::SetShaderResources)(startSlot, 1, &pSRV);
+  }
+
+  void
+  DX11RenderAPI::vsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                                       const uint32 startSlot) {
+    _setStructuredBuffer<ShaderStage::Vertex>(pBuffer, startSlot);
+  }
+
+  void
+  DX11RenderAPI::psSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                                       const uint32 startSlot) {
+    _setStructuredBuffer<ShaderStage::Pixel>(pBuffer, startSlot);
+  }
+
+  void
+  DX11RenderAPI::gsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                                       const uint32 startSlot) {
+    _setStructuredBuffer<ShaderStage::Geometry>(pBuffer, startSlot);
+  }
+
+  void
+  DX11RenderAPI::hsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                                       const uint32 startSlot) {
+    _setStructuredBuffer<ShaderStage::Hull>(pBuffer, startSlot);
+  }
+
+  void
+  DX11RenderAPI::dsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                                       const uint32 startSlot) {
+    _setStructuredBuffer<ShaderStage::Domain>(pBuffer, startSlot);
+  }
+
+  void
+  DX11RenderAPI::csSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
+                                       const uint32 startSlot) {
+    GE_ASSERT(m_pActiveContext);
+
+    D3DUnorderedAccessView* pUAV = nullptr;
+    if (!pBuffer.expired()) {
+      auto pSB = reinterpret_cast<DXStructuredBuffer*>(pBuffer.lock().get());
+      pUAV = pSB->m_pUAV;
+    }
+
+    m_pActiveContext->CSSetUnorderedAccessViews(startSlot, 1, &pUAV, nullptr);
   }
 
   /*************************************************************************/

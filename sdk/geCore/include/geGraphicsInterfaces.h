@@ -90,6 +90,7 @@ namespace geEngineSDK {
   };
 
   using ConstantBuffer = GraphicsBuffer;
+  using StructuredBuffer = GraphicsBuffer;
 
   class GE_CORE_EXPORT RasterizerState
   {

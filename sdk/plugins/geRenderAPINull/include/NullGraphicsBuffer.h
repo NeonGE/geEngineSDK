@@ -286,4 +286,6 @@ namespace geEngineSDK {
     BUFFER_DESC m_Desc{};
   };
 
+  using NullStructuredBuffer = NullConstantBuffer;
+
 } // namespace geEngineSDK
