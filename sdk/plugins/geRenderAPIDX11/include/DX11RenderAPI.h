@@ -207,9 +207,9 @@ namespace geEngineSDK {
                     uint32 copyFlags = 0) override;
 
     MappedSubresource
-    mapToRead(const WeakSPtr<GraphicsResource>& pTexture,
-              uint32 subResource = 0,
-              uint32 mapFlags = 0) override;
+    mapToRead(const WeakSPtr<GraphicsResource>& pResource,
+               uint32 subResource = 0,
+               uint32 mapFlags = 0) override;
 
     void
     unmap(const WeakSPtr<GraphicsResource>& pTexture,

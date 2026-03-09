@@ -285,8 +285,7 @@ namespace geEngineSDK {
     ID3D11Buffer* m_pBuffer = nullptr;
     D3D11_BUFFER_DESC m_Desc{};
   };
-
-  
+    
   class DXStructuredBuffer : public StructuredBuffer
   {
    public:
@@ -300,6 +299,8 @@ namespace geEngineSDK {
      */
     void
     release() override {
+      safeRelease(m_pUAV);
+      safeRelease(m_pSRV);
       safeRelease(m_pBuffer);
     }
 

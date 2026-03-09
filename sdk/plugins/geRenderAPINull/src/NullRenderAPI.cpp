@@ -251,12 +251,13 @@ namespace geEngineSDK {
   SPtr<StructuredBuffer>
   NullRenderAPI::createStructuredBuffer(const SIZE_T sizeInBytes,
                                         const uint32 byteStride,
-                                        const void* pInitialData,
+                                        const void* /*pInitialData*/,
                                         const uint32 usage) {
     auto pSB = ge_shared_ptr_new<NullStructuredBuffer>();
     pSB->m_pBuffer += 1;
     pSB->m_Desc.byteWidth = cast::st<uint32>(sizeInBytes);
     pSB->m_Desc.usage = usage;
+    pSB->m_Desc.structureByteStride = byteStride;
 
     return pSB;
   }
@@ -558,34 +559,22 @@ namespace geEngineSDK {
   NullRenderAPI::csSetConstantBuffer(const WeakSPtr<ConstantBuffer>&, const uint32) {}
 
   void
-  NullRenderAPI::vsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
-                                       const uint32 startSlot)
-  {}
+  NullRenderAPI::vsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>&, const uint32) {}
 
   void
-  NullRenderAPI::psSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
-                                       const uint32 startSlot)
-  {}
+  NullRenderAPI::psSetStructuredBuffer(const WeakSPtr<StructuredBuffer>&, const uint32) {}
 
   void
-  NullRenderAPI::gsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
-                                       const uint32 startSlot)
-  {}
+  NullRenderAPI::gsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>&, const uint32) {}
 
   void
-  NullRenderAPI::hsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
-                                       const uint32 startSlot)
-  {}
+  NullRenderAPI::hsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>&, const uint32) {}
 
   void
-  NullRenderAPI::dsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
-                                       const uint32 startSlot)
-  {}
+  NullRenderAPI::dsSetStructuredBuffer(const WeakSPtr<StructuredBuffer>&, const uint32) {}
 
   void
-  NullRenderAPI::csSetStructuredBuffer(const WeakSPtr<StructuredBuffer>& pBuffer,
-                                       const uint32 startSlot)
-  {}
+  NullRenderAPI::csSetStructuredBuffer(const WeakSPtr<StructuredBuffer>&, const uint32) {}
 
   /*************************************************************************/
   // Set Samplers

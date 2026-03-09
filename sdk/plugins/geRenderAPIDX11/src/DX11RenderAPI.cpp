@@ -1046,11 +1046,11 @@ namespace geEngineSDK {
     }
 
     auto pCB = ge_shared_ptr_new<DXStructuredBuffer>();
-    uint32 numElements = sizeInBytes / byteStride;
+    uint32 numElements = cast::st<uint32>(sizeInBytes) / byteStride;
 
     ge_zero_out(pCB->m_Desc);
-    pCB->m_Desc.Usage = static_cast<D3D11_USAGE>(usage);
-    pCB->m_Desc.ByteWidth = static_cast<UINT>(sizeInBytes); //sizeof(OBJECT) * numElements
+    pCB->m_Desc.Usage = cast::st<D3D11_USAGE>(usage);
+    pCB->m_Desc.ByteWidth = cast::st<UINT>(sizeInBytes); //sizeof(OBJECT) * numElements
     pCB->m_Desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
     pCB->m_Desc.CPUAccessFlags = usage == D3D11_USAGE_DYNAMIC ? D3D11_CPU_ACCESS_WRITE : 0;
     pCB->m_Desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
@@ -1067,6 +1067,7 @@ namespace geEngineSDK {
 
     //Create SRV
     D3D11_SHADER_RESOURCE_VIEW_DESC desc;
+    ge_zero_out(desc);
     desc.Format = DXGI_FORMAT_UNKNOWN;
     desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
     desc.Buffer.FirstElement = 0;
@@ -1075,6 +1076,7 @@ namespace geEngineSDK {
 
     //Create UAV
     D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+    ge_zero_out(uavDesc);
     uavDesc.Format = DXGI_FORMAT_UNKNOWN;
     uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
     uavDesc.Buffer.FirstElement = 0;
@@ -1535,8 +1537,8 @@ namespace geEngineSDK {
       GE_LOG(kError, RenderAPI, "Failed to map texture.");
     }
 
-    return mappedSubresource;
-  }
+      return mappedSubresource;
+    }
 
   void
   DX11RenderAPI::unmap(const WeakSPtr<GraphicsResource>& pResource,
@@ -2002,7 +2004,7 @@ namespace geEngineSDK {
       pSRV = pSB->m_pSRV;
     }
 
-    (m_pActiveContext->*ShaderTraits<Stage>::SetShaderResources)(startSlot, 1, &pSRV);
+    (m_pActiveContext->*ShaderTraits<Stage>::SetSRVFn)(startSlot, 1, &pSRV);
   }
 
   void
