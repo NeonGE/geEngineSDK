@@ -25,6 +25,7 @@
 #include <geMath.h>
 #include <geDebug.h>
 #include <geFileSystem.h>
+#include <geMountManager.h>
 #include <geDataStream.h>
 #include <d3dcompiler.h>
 
@@ -68,7 +69,8 @@ namespace geEngineSDK {
       }
 
       //Open the file and read its content into memory
-      auto fileStream = FileSystem::openFile(filePath);
+      auto& mountMan = MountManager::instance();
+      auto fileStream = mountMan.open(filePath);
       if (!fileStream) {
         GE_LOG(kError,
                RenderAPI,
@@ -103,14 +105,12 @@ namespace geEngineSDK {
    private:
     Path
     _findFile(const String& fileName) {
-      //Get working directory
-      static Path workingDir = FileSystem::getWorkingDirectoryPath();
-
       //Search all paths for the file
       for (const Path& path : m_includePaths) {
-        Path fullSearchPath = path.getAbsolute(workingDir);
+        Path fullSearchPath = path;
         fullSearchPath.append(fileName);
-        if (FileSystem::isFile(fullSearchPath)) {
+        auto& mountMan = MountManager::instance();
+        if (mountMan.exists(fullSearchPath)) {
           return fullSearchPath;
         }
       }
@@ -386,6 +386,16 @@ namespace geEngineSDK {
                                               scDesc.BufferDesc.Format,
                                               DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
     _updateBackBufferTexture();
+
+    GRAPHICS_VIEWPORT scDesc_Viewport;
+    scDesc_Viewport.x = 0.0f;
+    scDesc_Viewport.y = 0.0f;
+    scDesc_Viewport.width = float(newWidth);
+    scDesc_Viewport.height = float(newHeight);
+    scDesc_Viewport.zNear = 0.0f;
+    scDesc_Viewport.zFar = 1.0f;
+
+    setViewports({ scDesc_Viewport });
 
     return true;
   }
@@ -1193,11 +1203,14 @@ namespace geEngineSDK {
     int32 dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS ;
 #if USING(GE_DEBUG_MODE)
     dwShaderFlags |= D3DCOMPILE_DEBUG;
+    dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+#else
+    dwShaderFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
 #endif
 
     static D3DIncludeHandler includeHandler({
-      "Data/Engine/Shaders/",
-      "Data/Shaders/"
+      "Engine/Shaders/",
+      "Engine/Shaders/Library/"
     });
 
     //Add shader preprocessor definitions
@@ -1214,16 +1227,31 @@ namespace geEngineSDK {
     defines.push_back({ nullptr, nullptr });
 
     ID3DBlob* pErrorBlob = nullptr;
-    WString file = fileName.toPlatformString();
-    hr = D3DCompileFromFile(file.c_str(),
-                            defines.data(),
-                            &includeHandler,
-                            szEntryPoint.c_str(),
-                            szShaderModel.c_str(),
-                            dwShaderFlags,
-                            0,
-                            pBlob,
-                            &pErrorBlob);
+
+    auto& mountMan = MountManager::instance();
+    if (!mountMan.exists(fileName)) {
+      GE_LOG(kError,
+             RenderAPI,
+             "Couldn't find shader file: {1}", fileName);
+      safeRelease(pErrorBlob);
+    }
+
+    auto pFileStream = mountMan.open(fileName);
+    Vector<uint8> fileData;
+    pFileStream->getAllData(fileData);
+    const char* pSourceName = fileName.getFilename().c_str();
+
+    hr = D3DCompile(fileData.data(),
+                    fileData.size(),
+                    pSourceName,
+                    defines.data(),
+                    &includeHandler,
+                    szEntryPoint.c_str(),
+                    szShaderModel.c_str(),
+                    dwShaderFlags,
+                    0,
+                    pBlob,
+                    &pErrorBlob);
 
     if (FAILED(hr)) {
       if (nullptr != pErrorBlob) {

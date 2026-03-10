@@ -214,14 +214,16 @@ namespace geEngineSDK {
       io.AddInputCharacterUTF16(static_cast<uint16>(text));
     });
 
-    input->onMouseButtonPressed.connect([&io](int32 button, int32 /*x*/, int32 /*y*/) {
+    input->onMouseButtonPressed.connect([&io](int32 button, int32 x, int32 y) {
+      io.AddMousePosEvent(cast::st<float>(x), cast::st<float>(y));
       io.AddMouseButtonEvent(button, true);
       if (io.WantCaptureMouse) {
         return;
       }
     });
 
-    input->onMouseButtonReleased.connect([&io](int32 button, int32 /*x*/, int32 /*y*/) {
+    input->onMouseButtonReleased.connect([&io](int32 button, int32 x, int32 y) {
+      io.AddMousePosEvent(cast::st<float>(x), cast::st<float>(y));
       io.AddMouseButtonEvent(button, false);
       if (io.WantCaptureMouse) {
         return;
