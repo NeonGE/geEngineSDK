@@ -1,5 +1,10 @@
 include(FetchContent)
 
+if(POLICY CMP0169)
+  cmake_policy(SET CMP0169 OLD)
+endif()
+set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON CACHE BOOL "" FORCE)
+
 option(GE_FETCH_EXTERNALS "Download externals" ON)
 option(GE_EXR_USE_SYSTEM_ZLIB "Use system zlib instead of bundled miniz" OFF)
 
