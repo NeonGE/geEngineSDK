@@ -43,7 +43,9 @@ namespace geEngineSDK {
     isLoaded() const = 0;
 
     virtual const String&
-    getName() const = 0;
+    getName() const {
+      return m_name;
+    }
 
     virtual SIZE_T
     getMemoryUsage() const = 0;
@@ -69,6 +71,7 @@ namespace geEngineSDK {
     }
 
    private:
+    String m_name;
     Path m_path = Path::BLANK;
     Path m_cookedPath = Path::BLANK;
   };

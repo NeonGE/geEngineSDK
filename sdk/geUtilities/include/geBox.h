@@ -42,8 +42,15 @@ namespace geEngineSDK {
     *        invalid.
     * @param FORCE_INIT enum.
     */
-    FORCEINLINE explicit AABox(FORCE_INIT::E) {
-      init();
+    FORCEINLINE explicit AABox(FORCE_INIT::E fIni) {
+      if (fIni == FORCE_INIT::kForceInitToZero) {
+        m_min = Vector3::ZERO;
+        m_max = Vector3::ZERO;
+        m_isValid = 0;
+      }
+      else {
+        init();
+      }
     }
 
     /**
@@ -437,6 +444,11 @@ namespace geEngineSDK {
      * @brief Holds a flag indicating whether this box is valid.
      */
     uint8 m_isValid;
+
+    /**
+     * @brief A zero vector (0,0,0)
+     */
+    static GE_UTILITIES_EXPORT const AABox EMPTY;
   };
 
   /***************************************************************************/

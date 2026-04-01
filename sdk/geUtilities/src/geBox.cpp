@@ -28,6 +28,9 @@
 #endif
 
 namespace geEngineSDK {
+
+  const AABox AABox::EMPTY = AABox(FORCE_INIT::kForceInitToZero);
+
   AABox::AABox(const Vector3* Points, SIZE_T Count)
     : m_min(0, 0, 0),
       m_max(0, 0, 0),

@@ -5,50 +5,19 @@ ge_setup_lua()
 ge_setup_sfml()
 ge_setup_minizip()
 
-add_library(geCore SHARED
-	include/geAppInputEvents.h
-	include/geCodecManager.h
-	include/geCoreBaseApp.h
-	include/geCoreFeatures.h
-	include/geDeferredCallManager.h
-	include/geDiskFileSystem.h
-	include/geFileTracker.h
-	include/geGameConfig.h
-	include/geGraphicsInterfaces.h
-	include/geGraphicsTypes.h
-	include/geICodec.h
-	include/geInputLayout.h
-	include/geMountManager.h
-	include/gePrerequisitesCore.h
-	include/geRasterizationState.h
-	include/geRenderAPI.h
-	include/geResource.h
-	include/geSamplerState.h
-	include/geShader.h
-	include/geTexture.h
-	include/geTextureManager.h
-	include/geVertexDeclaration.h
-	include/geZipDataStream.h
-	include/geZipFileSystem.h
+file(GLOB_RECURSE GE_CORE_HEADERS
+    CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
+)
 
-	src/geCodecManager.cpp
-	src/geCoreBaseApp.cpp
-	src/geDeferredCallManager.cpp
-	src/geDiskFileSystem.cpp
-	src/geFileTracker.cpp
-	src/geGameConfig.cpp
-	src/geICodec.cpp
-	src/geInputLayout.cpp
-	src/geMountManager.cpp
-	src/geRasterizationState.cpp
-	src/geRenderAPI.cpp
-	src/geSamplerState.cpp
-	src/geShader.cpp
-	src/geTexture.cpp
-	src/geTextureManager.cpp
-	src/geVertexDeclaration.cpp
-	src/geZipDataStream.cpp
-	src/geZipFileSystem.cpp
+file(GLOB_RECURSE GE_CORE_SOURCES
+    CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+)
+
+add_library(geCore SHARED
+	${GE_CORE_HEADERS}
+	${GE_CORE_SOURCES}
 )
 
 ge_set_output_dirs(geCore)
@@ -67,27 +36,6 @@ target_link_libraries(geCore
 )
 
 ge_link_rttr(geCore)
-
-#if(WIN32)
-#target_link_libraries(geCore
-#	PRIVATE
-#		$<$<PLATFORM_ID:Windows>:Shell32>
-#		$<$<PLATFORM_ID:Windows>:DbgHelp>
-#		$<$<PLATFORM_ID:Windows>:IPHLPAPI>
-#		$<$<PLATFORM_ID:Windows>:Rpcrt4>
-#)
-#endif()
-#
-#if(UNIX AND NOT APPLE)
-#find_package(ICU REQUIRED COMPONENTS uc i18n data)
-#
-#target_link_libraries(geCore
-#	PRIVATE
-#		ICU::uc
-#		ICU::i18n
-#		ICU::data
-#)
-#endif()
 
 target_link_libraries(geCore
 	PUBLIC

@@ -4,7 +4,7 @@ add_subdirectory(geCodec_StbImage)
 add_subdirectory(geCodec_DDSLoader)
 add_subdirectory(geCodec_KTXLoader)
 add_subdirectory(geCodec_EXRLoader)
-
+add_subdirectory(geCodec_Assimp)
 
 # Windows only
 if(WIN32)
