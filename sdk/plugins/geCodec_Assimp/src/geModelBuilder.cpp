@@ -164,7 +164,7 @@ namespace geEngineSDK {
 
     if (subMesh.bounds.m_isValid) {
       subMesh.boundingSphere = Sphere(subMesh.bounds.getCenter(),
-                                      subMesh.bounds.getExtent().size());
+                                      subMesh.bounds.getExtent().getMax());
     }
     else {
       subMesh.boundingSphere = Sphere();
@@ -173,6 +173,7 @@ namespace geEngineSDK {
     group.vertices.insert(group.vertices.end(), vertices.begin(), vertices.end());
 
     for (uint32 index : indices) {
+      GE_ASSERT(index < subMesh.vertexCount);
       group.indices.push_back(subMesh.firstVertex + index);
     }
 
@@ -279,7 +280,10 @@ namespace geEngineSDK {
       for (const auto& builderSubMesh : group.subMeshes) {
         SubMesh subMesh;
         subMesh.m_name = builderSubMesh.name;
-        subMesh.m_baseVertex = builderSubMesh.firstVertex;
+
+        //Indices are already global in the mesh group.
+        subMesh.m_baseVertex = 0;
+
         subMesh.m_vertexCount = builderSubMesh.vertexCount;
         subMesh.m_firstIndex = builderSubMesh.firstIndex;
         subMesh.m_indexCount = builderSubMesh.indexCount;
@@ -291,7 +295,18 @@ namespace geEngineSDK {
         subMesh.m_boundingSphere = builderSubMesh.boundingSphere;
         meshData.m_subMeshes.push_back(subMesh);
       }
+
+      const uint32 finalMeshIndex = cast::st<uint32>(model->m_meshes.size());
       model->m_meshes.push_back(meshData);
+
+      //Remap node references from builder meshGroupIndex -> final model mesh index
+      for (auto& node : model->m_nodes) {
+        for (auto& ref : node.m_subMeshes) {
+          if (ref.meshIndex == meshGroupIndex) {
+            ref.meshIndex = finalMeshIndex;
+          }
+        }
+      }
     }
 
     model->updateWorldTransforms();

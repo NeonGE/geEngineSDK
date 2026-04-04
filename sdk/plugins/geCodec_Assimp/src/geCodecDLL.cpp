@@ -49,10 +49,10 @@ toVector4(const aiVector3D& v, float w) {
 
 static Matrix4
 aiMatrixToMatrix4(const aiMatrix4x4& m) {
-  return Matrix4(m.a1, m.a2, m.a3, m.a4,
-                 m.b1, m.b2, m.b3, m.b4,
-                 m.c1, m.c2, m.c3, m.c4,
-                 m.d1, m.d2, m.d3, m.d4);
+  return Matrix4(m.a1, m.b1, m.c1, m.d1,
+                 m.a2, m.b2, m.c2, m.d2,
+                 m.a3, m.b3, m.c3, m.d3,
+                 m.a4, m.b4, m.c4, m.d4);
 }
 
 static String CODEC_NAME = "Assimp Mesh Loader Codec";

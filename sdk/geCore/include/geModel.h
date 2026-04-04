@@ -33,6 +33,7 @@
 namespace geEngineSDK {
 
   class VertexBuffer;
+  class InputLayout;
   class IndexBuffer;
 
   /**
@@ -143,6 +144,7 @@ namespace geEngineSDK {
 
     SPtr<VertexBuffer> m_vertexBuffer;
     SPtr<IndexBuffer> m_indexBuffer;
+    SPtr<InputLayout> m_inputLayout;
 
     PRIMITIVE_TOPOLOGY::E m_topology = PRIMITIVE_TOPOLOGY::TRIANGLELIST;
 
