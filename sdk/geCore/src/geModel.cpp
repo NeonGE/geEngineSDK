@@ -116,10 +116,17 @@ namespace geEngineSDK {
     return count;
   }
 
+  uint32
+  Model::getNumSkinBindings() const {
+    return cast::st<uint32>(m_skinBindings.size());
+  }
+
   void
   Model::clear() {
     m_nodes.clear();
     m_meshes.clear();
+    m_skinBindings.clear();
+    m_skeleton = nullptr;
 
     m_bounds = AABox::EMPTY;
     m_boundingSphere = Sphere();
@@ -159,6 +166,17 @@ namespace geEngineSDK {
   Model::findMeshIndex(const String& name) const {
     for (uint32 i = 0; i < cast::st<uint32>(m_meshes.size()); ++i) {
       if (m_meshes[i].m_name == name) {
+        return cast::st<int32>(i);
+      }
+    }
+
+    return -1;
+  }
+
+  int32
+  Model::findSkinBindingIndex(const String& name) const {
+    for (uint32 i = 0; i < cast::st<uint32>(m_skinBindings.size()); ++i) {
+      if (m_skinBindings[i].m_name == name) {
         return cast::st<int32>(i);
       }
     }

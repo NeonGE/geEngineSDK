@@ -50,7 +50,7 @@ namespace geEngineSDK {
     m_nodes.clear();
     m_meshGroups.clear();
     m_skinBindings.clear();
-    m_skeleton = nullptr;
+    m_skeletonName.clear();
     m_bounds = AABox::EMPTY;
     m_boundingSphere = Sphere();
   }
@@ -348,7 +348,8 @@ namespace geEngineSDK {
     model->m_nodes = m_nodes;
     model->m_meshes.clear();
     model->m_meshes.reserve(m_meshGroups.size());
-    model->m_skeleton = m_skeleton;
+
+    model->m_skeleton = nullptr;
     model->m_skinBindings = m_skinBindings;
 
     auto& renderAPI = RenderAPI::instance();

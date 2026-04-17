@@ -267,12 +267,12 @@ buildAnimationClipFromAssimp(const aiAnimation* anim,
   return clip;
 }
 
-static String CODEC_NAME = "Assimp Mesh Loader Codec";
+static String CODEC_NAME = "Assimp Animation Loader Codec";
 static String CODEC_DESC = "This codec implements the Assimp Library "
-                           "to load 3D models";
+                           "to load Animation Clips";
 
 static Vector<String> CODEC_EXTENSIONS_IMPORT = {
-  ".glb", ".fbx", ".obj", ".3ds"
+  ".glb", ".fbx"
 };
 
 static Vector<String> CODEC_EXTENSIONS_EXPORT = { 
@@ -283,7 +283,7 @@ extern "C"
 {
   GE_PLUGIN_EXPORT CODEC_TYPE::E
   CodecType(void) {
-    return CODEC_TYPE::MODEL;
+    return CODEC_TYPE::ANIMATION;
   }
 
   GE_PLUGIN_EXPORT void
@@ -777,8 +777,6 @@ extern "C"
                                scene->mRootNode,
                                -1);
     builder.updateBounds();
-    builder.m_skeleton = skeleton;
-
     return true;
   }
 
@@ -832,7 +830,7 @@ extern "C"
     }
 
     importAssimpSceneToModelBuilder(pScene, skeleton, builder);
-    outRes = builder.build();
+    auto tmpModel = builder.build();
 
     Vector<SPtr<AnimationClip>> clips;
     if (nullptr != skeleton) {
@@ -842,6 +840,10 @@ extern "C"
         clips.push_back(buildAnimationClipFromAssimp(pScene->mAnimations[i], skeleton));
       }
     }
+
+    auto clipCollection = ge_shared_ptr_new<AnimationClipCollection>();
+    clipCollection->m_clips = std::move(clips);
+    outRes = clipCollection;
 
     auto loadingTime = profilingTimer.getMilliseconds();
     /*************************************************************************/

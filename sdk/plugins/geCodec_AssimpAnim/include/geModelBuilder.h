@@ -108,7 +108,7 @@ namespace geEngineSDK {
     Vector<ModelNode> m_nodes;
     Vector<ModelBuilderMeshGroup> m_meshGroups;
 
-    SPtr<Skeleton> m_skeleton;
+    String m_skeletonName;
     Vector<SkinBinding> m_skinBindings;
 
     AABox m_bounds = AABox::EMPTY;

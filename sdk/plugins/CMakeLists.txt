@@ -5,6 +5,7 @@ add_subdirectory(geCodec_DDSLoader)
 add_subdirectory(geCodec_KTXLoader)
 add_subdirectory(geCodec_EXRLoader)
 add_subdirectory(geCodec_Assimp)
+add_subdirectory(geCodec_AssimpAnim)
 
 # Windows only
 if(WIN32)

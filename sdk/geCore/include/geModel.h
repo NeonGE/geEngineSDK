@@ -35,6 +35,13 @@ namespace geEngineSDK {
   class VertexBuffer;
   class InputLayout;
   class IndexBuffer;
+  class Skeleton;
+
+  struct GE_CORE_EXPORT SkinBinding
+  {
+    String m_name;
+    Vector<Matrix4> m_boneOffsets;
+  };
 
   /**
    * @brief Describes a drawable range inside a mesh buffer.
@@ -68,6 +75,7 @@ namespace geEngineSDK {
     uint32 m_faceCount = 0;
 
     bool m_isSkinned = false;
+    uint32 m_skinBindingIndex = NumLimit::MAX_UINT32;
 
     AABox m_bounds = AABox::EMPTY;
     Sphere m_boundingSphere;
@@ -107,6 +115,16 @@ namespace geEngineSDK {
     Matrix4 m_worldTransform = Matrix4::IDENTITY;
 
     Vector<NodeSubMeshRef> m_subMeshes;
+  };
+
+  struct GE_CORE_EXPORT ModelBone
+  {
+    String  m_name;
+    uint32  m_nodeIndex = NumLimit::MAX_UINT32;
+
+    //Assimp aiBone::mOffsetMatrix converted to Matrix4
+    //This is the inverse bind in mesh/model space.
+    Matrix4 m_offsetMatrix = Matrix4::IDENTITY;
   };
 
   /**
@@ -185,6 +203,9 @@ namespace geEngineSDK {
     uint32
     getNumSubMeshes() const;
 
+    uint32
+    getNumSkinBindings() const;
+
     /**
      * @brief Clears all model data.
      */
@@ -212,6 +233,9 @@ namespace geEngineSDK {
      */
     int32
     findMeshIndex(const String& name) const;
+
+    int32
+    findSkinBindingIndex(const String& name) const;
 
     /**
      * @brief Returns the root node index if one exists.
@@ -257,6 +281,9 @@ namespace geEngineSDK {
   public:
     Vector<ModelNode> m_nodes;
     Vector<MeshData> m_meshes;
+
+    SPtr<Skeleton> m_skeleton;
+    Vector<SkinBinding> m_skinBindings;
 
     AABox m_bounds = AABox::EMPTY;
     Sphere m_boundingSphere;
