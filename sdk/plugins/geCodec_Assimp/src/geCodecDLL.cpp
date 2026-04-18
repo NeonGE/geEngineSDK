@@ -164,6 +164,54 @@ ensureBoneAndAncestors(SkeletonBuilder& builder,
   return thisIndex;
 }
 
+static BoneIndex
+findCommonAncestor(const SkeletonBuilder& builder,
+                   BoneIndex a,
+                   BoneIndex b) {
+  if (a == INVALID_BONE_INDEX) {
+    return b;
+  }
+
+  if (b == INVALID_BONE_INDEX) {
+    return a;
+  }
+
+  Vector<uint8> visited(builder.m_bones.size(), 0);
+
+  BoneIndex current = a;
+  while (current != INVALID_BONE_INDEX) {
+    visited[current] = 1;
+    current = builder.m_bones[current].parentIndex;
+  }
+
+  current = b;
+  while (current != INVALID_BONE_INDEX) {
+    if (visited[current]) {
+      return current;
+    }
+
+    current = builder.m_bones[current].parentIndex;
+  }
+
+  return INVALID_BONE_INDEX;
+}
+
+static BoneIndex
+findSkinRootBoneIndex(const SkeletonBuilder& builder,
+                      const Vector<String>& skinnedBoneNames) {
+                      BoneIndex common = INVALID_BONE_INDEX;
+  for (const auto& boneName : skinnedBoneNames) {
+    BoneIndex idx = builder.findBoneByName(boneName);
+    if (idx == INVALID_BONE_INDEX) {
+      continue;
+    }
+
+    common = findCommonAncestor(builder, common, idx);
+  }
+
+  return common;
+}
+
 static SPtr<Skeleton>
 buildSkeletonFromAssimpScene(const aiScene* scene) {
   GE_ASSERT(nullptr != scene);
@@ -172,13 +220,14 @@ buildSkeletonFromAssimpScene(const aiScene* scene) {
   SkeletonBuilder builder;
   builder.clear();
 
-  builder.m_globalInverseTransform =
-    aiMatrixToMatrix4(scene->mRootNode->mTransformation).inverse();
+  builder.m_globalInverseTransform = Matrix4::IDENTITY;
 
   UnorderedMap<String, const aiNode*> nodeMap;
   buildAssimpNodeMapRecursive(scene->mRootNode, nodeMap);
 
   UnorderedMap<String, Matrix4> offsetMap;
+  Vector<String> skinnedBoneNames;
+  skinnedBoneNames.reserve(MAX_BONES);
 
   for (uint32 meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex) {
     const aiMesh* mesh = scene->mMeshes[meshIndex];
@@ -194,6 +243,7 @@ buildSkeletonFromAssimpScene(const aiScene* scene) {
 
       const String boneName = bone->mName.C_Str();
       offsetMap[boneName] = aiMatrixToMatrix4(bone->mOffsetMatrix);
+      skinnedBoneNames.push_back(boneName);
     }
   }
 
@@ -209,6 +259,20 @@ buildSkeletonFromAssimpScene(const aiScene* scene) {
   }
 
   builder.rebuildBindGlobals();
+
+  //IMPORTANT:
+  //Do NOT use scene->mRootNode here.
+  //We want the inverse of the actual skin root (lowest common ancestor of
+  //all aiBone nodes), not the inverse of the full scene root.
+  const BoneIndex skinRootIndex = findSkinRootBoneIndex(builder, skinnedBoneNames);
+
+  if (skinRootIndex != INVALID_BONE_INDEX) {
+    builder.m_globalInverseTransform =
+      builder.m_bones[skinRootIndex].bindGlobal.inverse();
+  }
+  else {
+    builder.m_globalInverseTransform = Matrix4::IDENTITY;
+  }
 
   return builder.build();
 }
