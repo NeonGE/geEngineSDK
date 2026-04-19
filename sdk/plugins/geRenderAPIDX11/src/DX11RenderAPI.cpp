@@ -1034,8 +1034,11 @@ namespace geEngineSDK {
     GE_ASSERT(m_pDevice);
     auto pCB = ge_shared_ptr_new<DXConstantBuffer>();
 
+    //Constant buffers must be 16-byte aligned
+    SIZE_T cbSize = (sizeInBytes + 15u) & ~15u;
+
     _createBuffer(D3D11_BIND_CONSTANT_BUFFER,
-                  sizeInBytes,
+                  cbSize,
                   pInitialData,
                   usage,
                   0, //Constant buffers don't have a byte stride
@@ -1520,7 +1523,6 @@ namespace geEngineSDK {
     GE_UNREFERENCED_PARAMETER(copyFlags);
     m_pActiveContext->UpdateSubresource(pGraphRes,
                                         dstSubRes,
-                                        pDstBox ? nullptr :
                                         reinterpret_cast<const D3D11_BOX*>(pDstBox),
                                         pSrcData,
                                         srcRowPitch,
@@ -1528,7 +1530,6 @@ namespace geEngineSDK {
 #else
     m_pActiveContext->UpdateSubresource1(pGraphRes,
                                          dstSubRes,
-                                         pDstBox ? nullptr :
                                          reinterpret_cast<const D3D11_BOX*>(pDstBox),
                                          pSrcData,
                                          srcRowPitch,

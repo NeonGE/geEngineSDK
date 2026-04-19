@@ -243,6 +243,16 @@ namespace geEngineSDK {
     bool
     operator!= (const VertexDeclarationProperties& rhs) const;
 
+    SIZE_T
+    getHash() const {
+      SIZE_T hash = 0;
+      for (auto& elem : m_elementList) {
+        ge_hash_combine(hash, VertexElement::getHash(elem));
+      }
+
+      return hash;
+    }
+
     /**
      * @brief Returns the number of elements in the declaration.
      * @return The number of elements in the element list as a uint32.
