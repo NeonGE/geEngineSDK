@@ -133,6 +133,7 @@ namespace geEngineSDK {
     m_skeleton = skeleton;
     m_currentTime = 0.0f;
     m_isLooping = loop;
+    m_isPlaying = true;
 
     m_pose.resize(skeleton->getNumBones());
 
@@ -147,12 +148,21 @@ namespace geEngineSDK {
     m_skeleton = nullptr;
     m_currentTime = 0.0f;
     m_isLooping = true;
+    m_isPlaying = false;
     m_pose = Pose();
   }
 
   void
+  AnimationPlayer::pause(bool bPause) {
+    m_isPlaying = !bPause;
+  }
+  void
   AnimationPlayer::update(float deltaTime) {
     if (nullptr == m_currentClip || nullptr == m_skeleton) {
+      return;
+    }
+
+    if(!m_isPlaying){
       return;
     }
 

@@ -294,6 +294,9 @@ namespace geEngineSDK {
     stop();
 
     void
+    pause(bool bPause = true);
+
+    void
     update(float deltaTime);
 
     const Pose&
@@ -301,11 +304,17 @@ namespace geEngineSDK {
       return m_pose;
     }
 
+    GE_NODISCARD bool
+    isPlaying() const {
+      return m_isPlaying;
+    }
+
    private:
     SPtr<AnimationClip> m_currentClip;
     SPtr<Skeleton> m_skeleton;
     float m_currentTime = 0.0f;
     bool m_isLooping = true;
+    bool m_isPlaying = false;
     Pose m_pose;
   };
 
