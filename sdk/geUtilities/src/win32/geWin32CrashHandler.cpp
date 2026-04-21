@@ -206,6 +206,8 @@ namespace geEngineSDK {
     }
 
     g_PSAPILib = ge_new<DynLib>("PSAPI.dll");
+    g_PSAPILib->loadFromFile("PSAPI.dll");
+
     g_enumProcessModules = reinterpret_cast<EnumProcessModulesType>
                             (g_PSAPILib->getSymbol("EnumProcessModules"));
 
@@ -247,11 +249,6 @@ namespace geEngineSDK {
     }
 
     HANDLE hProcess = GetCurrentProcess();
-    if (hProcess == INVALID_HANDLE_VALUE) {
-      //The process handle should always be valid, if it's not something
-      //is very wrong, break in that case to investigate the issue.
-      __debugbreak();
-    }
     uint32 options = SymGetOptions();
 
     options |= SYMOPT_LOAD_LINES;
@@ -267,7 +264,7 @@ namespace geEngineSDK {
       return;
     }
 
-    DWORD bufferSize;
+    DWORD bufferSize = 0;
     g_enumProcessModules(hProcess, nullptr, 0, &bufferSize);
 
     auto* modules = static_cast<HMODULE*>(ge_alloc(bufferSize));
