@@ -1539,9 +1539,10 @@ namespace geEngineSDK {
   }
 
   MappedSubresource
-  DX11RenderAPI::mapToRead(const WeakSPtr<GraphicsResource>& pResource,
-                           uint32 subResource,
-                           uint32 mapFlags) {
+  DX11RenderAPI::map(const WeakSPtr<GraphicsResource>& pResource,
+                     uint32 subResource,
+                     MAP_TYPE::E mapType,
+                     uint32 mapFlags) {
     GE_ASSERT(m_pActiveContext);
 
     MappedSubresource mappedSubresource;
@@ -1557,17 +1558,18 @@ namespace geEngineSDK {
     GE_ASSERT(pGraphRes);
 
     ge_zero_out(mappedSubresource);
+    
     throwIfFailed(m_pActiveContext->Map(pGraphRes,
                           subResource,
-                          D3D11_MAP_READ,
+                          cast::st<D3D11_MAP>(mapType),
                           mapFlags,
-                          reinterpret_cast<D3D11_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
+                          cast::re<D3D11_MAPPED_SUBRESOURCE*>(&mappedSubresource)));
     if (mappedSubresource.pData == nullptr) {
       GE_LOG(kError, RenderAPI, "Failed to map texture.");
     }
 
-      return mappedSubresource;
-    }
+    return mappedSubresource;
+  }
 
   void
   DX11RenderAPI::unmap(const WeakSPtr<GraphicsResource>& pResource,

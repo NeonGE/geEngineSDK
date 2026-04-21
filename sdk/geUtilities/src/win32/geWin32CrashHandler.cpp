@@ -247,6 +247,11 @@ namespace geEngineSDK {
     }
 
     HANDLE hProcess = GetCurrentProcess();
+    if (hProcess == INVALID_HANDLE_VALUE) {
+      //The process handle should always be valid, if it's not something
+      //is very wrong, break in that case to investigate the issue.
+      __debugbreak();
+    }
     uint32 options = SymGetOptions();
 
     options |= SYMOPT_LOAD_LINES;

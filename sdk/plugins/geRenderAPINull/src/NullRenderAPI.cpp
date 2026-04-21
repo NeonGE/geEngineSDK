@@ -403,9 +403,10 @@ namespace geEngineSDK {
   {}
 
   MappedSubresource
-  NullRenderAPI::mapToRead(const WeakSPtr<GraphicsResource>&,
-                           uint32,
-                           uint32) {
+  NullRenderAPI::map(const WeakSPtr<GraphicsResource>&,
+                     uint32,
+                     MAP_TYPE::E mapType,
+                     uint32) {
     MappedSubresource mappedSubresource;
     mappedSubresource.pData = nullptr;
     mappedSubresource.rowPitch = 0;

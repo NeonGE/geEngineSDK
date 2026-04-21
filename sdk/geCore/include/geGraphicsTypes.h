@@ -355,6 +355,17 @@ namespace geEngineSDK {
     };
   }
 
+  namespace MAP_TYPE
+  {
+    enum E {
+      READ = 1,
+      WRITE = 2,
+      READ_WRITE = 3,
+      WRITE_DISCARD = 4,
+      WRITE_NO_OVERWRITE = 5
+    };
+  }
+
   struct MappedSubresource
   {
     void* pData;

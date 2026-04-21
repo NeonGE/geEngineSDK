@@ -233,9 +233,10 @@ namespace geEngineSDK {
                     uint32 copyFlags = 0) = 0;
 
     GE_NODISCARD virtual MappedSubresource
-    mapToRead(const WeakSPtr<GraphicsResource>& pResource,
-              uint32 subResource = 0,
-              uint32 mapFlags = 0) = 0;
+    map(const WeakSPtr<GraphicsResource>& pResource,
+        uint32 subResource = 0,
+        MAP_TYPE::E mapType = MAP_TYPE::WRITE_DISCARD,
+        uint32 mapFlags = 0) = 0;
 
     virtual void
     unmap(const WeakSPtr<GraphicsResource>& pResource,

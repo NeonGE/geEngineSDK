@@ -249,7 +249,7 @@ extern "C"
     renderAPI.copyResource(pTexture, pScratchTexture);
 
     //Map the scratch texture to get the data
-    auto mappedRes = renderAPI.mapToRead(pScratchTexture);
+    auto mappedRes = renderAPI.map(pScratchTexture, 0, MAP_TYPE::READ);
     bool bReturn = false;
 
     //Read the data from the mapped resource taking into account the format
