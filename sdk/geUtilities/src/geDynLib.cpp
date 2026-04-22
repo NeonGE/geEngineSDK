@@ -114,6 +114,9 @@ namespace geEngineSDK {
 
   void*
   DynLib::getSymbol(const String& strName) const {
+    GE_ASSERT(m_hInst &&
+              String("Cannot get symbol '" + strName + "' from library '" +
+                     m_logicalName + "' because it is not loaded.").c_str());
     if (!m_hInst) {
       return nullptr;
     }

@@ -438,8 +438,8 @@ namespace geEngineSDK {
   using BGRA = uint32;
 
   /**
-   * @brief Color represented as 4 components, each being a floating point
-   *        value ranging from 0 to 1.
+   * @brief Color represented as 4 components, each being an uint8
+   *        value ranging from 0 to 255.
    *        Color components are Red, Green, Blue and Alpha.
    */
   class GE_UTILITIES_EXPORT Color
