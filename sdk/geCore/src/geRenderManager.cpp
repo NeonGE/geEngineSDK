@@ -58,6 +58,18 @@ namespace geEngineSDK {
       const uint32 DISABLE_FRAME_BUFFER = StringID("bs_disable_frame_buffer").id();
     }
 
+    namespace Raster {
+      const uint32 DEFAULT = StringID("rs_default").id();
+
+      const uint32 CULL_BACK_WIREFRAME = StringID("rs_cull_back_wireframe").id();
+      const uint32 CULL_FRONT_WIREFRAME = StringID("rs_cull_front_wireframe").id();
+      const uint32 CULL_NONE_WIREFRAME = StringID("rs_cull_none_wireframe").id();
+
+      const uint32 CULL_BACK_SOLID = StringID("rs_cull_back_solid").id();
+      const uint32 CULL_FRONT_SOLID = StringID("rs_cull_front_solid").id();
+      const uint32 CULL_NONE_SOLID = StringID("rs_cull_none_solid").id();
+    }
+
     namespace Depth {
       const uint32 DEFAULT =
         StringID("ds_default").id();
@@ -483,9 +495,6 @@ namespace geEngineSDK {
 
   void
   RenderManager::onStartUp() {
-    using namespace RenderState;
-    auto& renderAPI = RenderAPI::instance();
-
     _createDefaultSamplerStates();
     _createDefaultBlendSates();
     _createDefaultRasterStates();
