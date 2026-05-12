@@ -94,6 +94,11 @@ namespace geEngineSDK {
     skeleton->m_bindPoseLocal = m_bindPoseLocal;
     skeleton->m_boneNameMap = m_boneNameMap;
     skeleton->m_globalInverseTransform = m_globalInverseTransform;
+
+    // Ensures bind globals, parent-before-child update order and hierarchy hash
+    // are always valid on the runtime Skeleton.
+    skeleton->rebuildBindGlobals();
+
     return skeleton;
   }
 

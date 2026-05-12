@@ -7,7 +7,9 @@ namespace geEngineSDK {
     m_bones.clear();
     m_bindPoseLocal.clear();
     m_boneNameMap.clear();
+    m_updateOrder.clear();
     m_globalInverseTransform = Matrix4::IDENTITY;
+    m_skeletonHash = 0;
   }
 
   bool
@@ -37,39 +39,71 @@ namespace geEngineSDK {
 
   void
   Skeleton::rebuildBindGlobals() {
-    if (m_bones.empty()) {
-      return;
-    }
+    m_updateOrder.clear();
+    m_updateOrder.reserve(m_bones.size());
 
-    for (BoneIndex i = 0; i < m_bones.size(); ++i) {
-      if (m_bones[i].parentIndex == INVALID_BONE_INDEX) {
-        m_bones[i].bindGlobal = m_bones[i].bindLocal;
-      }
+    if (m_bones.empty()) {
+      m_skeletonHash = 0;
+      return;
     }
 
     Vector<uint8> visited(m_bones.size(), 0);
 
-    function<void(BoneIndex)> buildGlobal = [&](BoneIndex i)
-    {
-      if (visited[i]) {
+    function<void(BoneIndex)> pushOrder = [&](BoneIndex i) {
+      if (i >= m_bones.size() || visited[i]) {
         return;
       }
 
       visited[i] = 1;
+      m_updateOrder.push_back(i);
 
+      for (BoneIndex child : m_bones[i].children) {
+        pushOrder(child);
+      }
+    };
+
+    for (BoneIndex i = 0; i < m_bones.size(); ++i) {
+      if (m_bones[i].parentIndex == INVALID_BONE_INDEX) {
+        pushOrder(i);
+      }
+    }
+
+    // Safety net for malformed/importer-generated skeletons with missing roots.
+    for (BoneIndex i = 0; i < m_bones.size(); ++i) {
+      pushOrder(i);
+    }
+
+    for (BoneIndex i : m_updateOrder) {
       Bone& bone = m_bones[i];
+
       if (bone.parentIndex != INVALID_BONE_INDEX) {
-        buildGlobal(bone.parentIndex);
         bone.bindGlobal = bone.bindLocal * m_bones[bone.parentIndex].bindGlobal;
       }
       else {
         bone.bindGlobal = bone.bindLocal;
       }
-    };
+    }
+
+    m_skeletonHash = calculateHierarchyHash();
+  }
+
+  SIZE_T
+  Skeleton::calculateHierarchyHash() const {
+    SIZE_T hash = 0;
+
+    ge_hash_combine(hash, cast::st<uint32>(m_bones.size()));
 
     for (BoneIndex i = 0; i < m_bones.size(); ++i) {
-      buildGlobal(i);
+      const Bone& bone = m_bones[i];
+
+      // Compatibility is based on the runtime bone mapping and default local
+      // pose, not on mesh-specific SkinBinding inverse bind matrices.
+      ge_hash_combine(hash, bone.name);
+      ge_hash_combine(hash, bone.parentIndex);
+      ge_hash_combine(hash, bone.bindLocal);
     }
+
+    return hash;
   }
 
   bool
@@ -90,7 +124,47 @@ namespace geEngineSDK {
 
   SIZE_T
   Skeleton::getMemoryUsage() const {
-    return 0;
+    return sizeof(*this)
+         + sizeof(Bone) * m_bones.size()
+         + sizeof(Transform) * m_bindPoseLocal.size()
+         + sizeof(BoneIndex) * m_updateOrder.size();
+  }
+
+  void
+  AnimationClip::resetForSkeleton(const Skeleton& skeleton) {
+    const SIZE_T numBones = skeleton.getNumBones();
+
+    m_boneTracks.clear();
+    m_hasTrack.clear();
+
+    m_boneTracks.resize(numBones);
+    m_hasTrack.resize(numBones, 0);
+    m_skeletonHash = skeleton.getSkeletonHash();
+  }
+
+  void
+  AnimationClip::setTrack(BoneIndex boneIndex, const BoneTrack& track) {
+    GE_ASSERT(boneIndex < m_boneTracks.size());
+    GE_ASSERT(boneIndex < m_hasTrack.size());
+
+    m_boneTracks[boneIndex] = track;
+    m_hasTrack[boneIndex] = 1;
+  }
+
+  void
+  AnimationClip::setTrack(BoneIndex boneIndex, BoneTrack&& track) {
+    GE_ASSERT(boneIndex < m_boneTracks.size());
+    GE_ASSERT(boneIndex < m_hasTrack.size());
+
+    m_boneTracks[boneIndex] = std::move(track);
+    m_hasTrack[boneIndex] = 1;
+  }
+
+  bool
+  AnimationClip::isCompatibleWith(const Skeleton& skeleton) const {
+    return m_skeletonHash == skeleton.getSkeletonHash()
+        && m_boneTracks.size() == skeleton.getNumBones()
+        && m_hasTrack.size() == skeleton.getNumBones();
   }
 
   void
@@ -99,6 +173,8 @@ namespace geEngineSDK {
     m_duration = 0.0f;
     m_ticksPerSecond = 25.0f;
     m_boneTracks.clear();
+    m_hasTrack.clear();
+    m_skeletonHash = 0;
   }
 
   bool
@@ -114,12 +190,71 @@ namespace geEngineSDK {
 
   bool
   AnimationClip::isLoaded() const {
-    return !m_boneTracks.empty();
+    for (uint8 hasTrack : m_hasTrack) {
+      if (hasTrack) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   SIZE_T
   AnimationClip::getMemoryUsage() const {
-    return sizeof(*this);
+    return sizeof(*this)
+         + sizeof(BoneTrack) * m_boneTracks.size()
+         + sizeof(uint8) * m_hasTrack.size();
+  }
+
+  SPtr<AnimationClip>
+  RawAnimationClip::compileForSkeleton(const SPtr<Skeleton>& skeleton) const {
+    GE_ASSERT(nullptr != skeleton);
+
+    auto clip = ge_shared_ptr_new<AnimationClip>();
+    clip->m_name = m_name;
+    clip->m_duration = m_duration;
+    clip->m_ticksPerSecond = m_ticksPerSecond;
+    clip->resetForSkeleton(*skeleton);
+
+    for (const NamedBoneTrack& namedTrack : m_tracks) {
+      const BoneIndex boneIndex = skeleton->getBoneIndexByName(namedTrack.boneName);
+      if (boneIndex == INVALID_BONE_INDEX) {
+        continue;
+      }
+
+      clip->setTrack(boneIndex, namedTrack.track);
+    }
+
+    return clip;
+  }
+
+  void
+  RawAnimationClip::clear() {
+    m_name.clear();
+    m_duration = 0.0f;
+    m_ticksPerSecond = 25.0f;
+    m_tracks.clear();
+  }
+
+  bool
+  RawAnimationClip::load(const Path& filePath) {
+    GE_UNREFERENCED_PARAMETER(filePath);
+    return false;
+  }
+
+  void
+  RawAnimationClip::unload() {
+    clear();
+  }
+
+  bool
+  RawAnimationClip::isLoaded() const {
+    return !m_tracks.empty();
+  }
+
+  SIZE_T
+  RawAnimationClip::getMemoryUsage() const {
+    return sizeof(*this) + sizeof(NamedBoneTrack) * m_tracks.size();
   }
 
   void
@@ -128,6 +263,12 @@ namespace geEngineSDK {
                         bool loop) {
     GE_ASSERT(nullptr != clip);
     GE_ASSERT(nullptr != skeleton);
+    GE_ASSERT(clip->isCompatibleWith(*skeleton));
+
+    if (nullptr == clip || nullptr == skeleton || !clip->isCompatibleWith(*skeleton)) {
+      stop();
+      return;
+    }
 
     m_currentClip = clip;
     m_skeleton = skeleton;
@@ -156,13 +297,14 @@ namespace geEngineSDK {
   AnimationPlayer::pause(bool bPause) {
     m_isPlaying = !bPause;
   }
+
   void
   AnimationPlayer::update(float deltaTime) {
     if (nullptr == m_currentClip || nullptr == m_skeleton) {
       return;
     }
 
-    if(!m_isPlaying){
+    if (!m_isPlaying) {
       return;
     }
 
@@ -177,26 +319,30 @@ namespace geEngineSDK {
       m_currentTime = Math::min(m_currentTime, m_currentClip->getDuration());
     }
 
-    for (BoneIndex i = 0; i < m_skeleton->getNumBones(); ++i) {
+    const BoneIndex numBones = cast::st<BoneIndex>(m_skeleton->getNumBones());
+
+    for (BoneIndex i = 0; i < numBones; ++i) {
       m_pose.localTransform(i) = m_skeleton->m_bindPoseLocal[i];
     }
 
-    for (auto& it : m_currentClip->m_boneTracks) {
-      const BoneIndex boneIndex = it.first;
-      const BoneTrack& track = it.second;
-
-      Transform& boneTransform = m_pose.localTransform(boneIndex);
-
-      if (!track.positions.empty()) {
-        boneTransform.setTranslation(sampleVector(track.positions, m_currentTime));
+    for (BoneIndex i = 0; i < numBones; ++i) {
+      const BoneTrack* track = m_currentClip->getTrack(i);
+      if (nullptr == track) {
+        continue;
       }
 
-      if (!track.rotations.empty()) {
-        boneTransform.setRotation(sampleQuaternion(track.rotations, m_currentTime));
+      Transform& boneTransform = m_pose.localTransform(i);
+
+      if (!track->positions.empty()) {
+        boneTransform.setTranslation(sampleVector(track->positions, m_currentTime));
       }
 
-      if (!track.scales.empty()) {
-        boneTransform.setScale3D(sampleVector(track.scales, m_currentTime));
+      if (!track->rotations.empty()) {
+        boneTransform.setRotation(sampleQuaternion(track->rotations, m_currentTime));
+      }
+
+      if (!track->scales.empty()) {
+        boneTransform.setScale3D(sampleVector(track->scales, m_currentTime));
       }
     }
   }
@@ -228,25 +374,44 @@ namespace geEngineSDK {
       m_localMatrices[i] = pose.localTransform(i).toMatrixWithScale();
     }
 
+    const Vector<BoneIndex>& updateOrder = m_skeleton->m_updateOrder;
+
+    if (!updateOrder.empty()) {
+      for (BoneIndex boneIndex : updateOrder) {
+        const Bone& bone = m_skeleton->getBone(boneIndex);
+
+        if (bone.parentIndex != INVALID_BONE_INDEX) {
+          m_globalMatrices[boneIndex] =
+            m_localMatrices[boneIndex] * m_globalMatrices[bone.parentIndex];
+        }
+        else {
+          m_globalMatrices[boneIndex] = m_localMatrices[boneIndex];
+        }
+      }
+
+      return;
+    }
+
+    // Fallback for skeletons created before m_updateOrder existed.
     Vector<uint8> visited(n, 0);
 
-    std::function<void(BoneIndex)> buildGlobal = [&](BoneIndex i) {
+    function<void(BoneIndex)> buildGlobal = [&](BoneIndex i) {
       if (visited[i]) {
         return;
       }
 
       visited[i] = 1;
 
-      const Bone& b = m_skeleton->getBone(i);
+      const Bone& bone = m_skeleton->getBone(i);
 
-      if (b.parentIndex != INVALID_BONE_INDEX) {
-        buildGlobal(b.parentIndex);
-        m_globalMatrices[i] = m_localMatrices[i] * m_globalMatrices[b.parentIndex];
+      if (bone.parentIndex != INVALID_BONE_INDEX) {
+        buildGlobal(bone.parentIndex);
+        m_globalMatrices[i] = m_localMatrices[i] * m_globalMatrices[bone.parentIndex];
       }
       else {
         m_globalMatrices[i] = m_localMatrices[i];
       }
-      };
+    };
 
     for (BoneIndex i = 0; i < n; ++i) {
       buildGlobal(i);
@@ -255,7 +420,8 @@ namespace geEngineSDK {
 
   void
   SkeletonInstance::buildFinalBoneMatricesForMesh(const Vector<Matrix4>& meshOffsets,
-      Vector<Matrix4>& outFinal) const {
+                                                  Vector<Matrix4>& outFinal,
+                                                  bool transposeForGPU) const {
     GE_ASSERT(nullptr != m_skeleton);
     GE_ASSERT(meshOffsets.size() == m_skeleton->getNumBones());
 
@@ -263,19 +429,29 @@ namespace geEngineSDK {
     outFinal.resize(n);
 
     for (BoneIndex i = 0; i < n; ++i) {
-      // Con tu convención de vector fila:
-      // bindPos * offset * currentGlobal * globalInverse
-      Matrix4 M = meshOffsets[i] * m_globalMatrices[i] * m_skeleton->m_globalInverseTransform;
-      M.transpose();
+      // Row-vector convention:
+      // vertexBind * inverseBind(mesh space) * animatedGlobal * globalInverse
+      Matrix4 M = meshOffsets[i] *
+                  m_globalMatrices[i] *
+                  m_skeleton->m_globalInverseTransform;
+
+      // Keep true for the current DX11 path if your shader constant upload
+      // expects transposed matrices. Pass false when the renderer handles this
+      // per-backend during upload.
+      if (transposeForGPU) {
+        M.transpose();
+      }
+
       outFinal[i] = M;
     }
   }
 
   void
   SkeletonInstance::applyPoseForMesh(const Pose& pose,
-                                     const Vector<Matrix4>& meshOffsets) {
+                                     const Vector<Matrix4>& meshOffsets,
+                                     bool transposeForGPU) {
     applyPose(pose);
-    buildFinalBoneMatricesForMesh(meshOffsets, m_finalMatrices);
+    buildFinalBoneMatricesForMesh(meshOffsets, m_finalMatrices, transposeForGPU);
   }
 
 } // namespace geEngineSDK

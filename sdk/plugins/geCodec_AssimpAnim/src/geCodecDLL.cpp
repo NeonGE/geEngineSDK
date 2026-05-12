@@ -23,6 +23,8 @@
 #include <geRenderAPI.h>
 #include <geMountManager.h>
 
+#include <algorithm>
+
 #include "geTimer.h"
 #include "geModelBuilder.h"
 
@@ -131,6 +133,7 @@ ensureBoneAndAncestors(SkeletonBuilder& builder,
                        const aiNode* node,
                        const UnorderedMap<String, const aiNode*>& nodeMap,
                        const UnorderedMap<String, Matrix4>& offsetMap) {
+  GE_UNREFERENCED_PARAMETER(nodeMap);
   GE_ASSERT(nullptr != node);
 
   const String nodeName = node->mName.C_Str();
@@ -140,28 +143,75 @@ ensureBoneAndAncestors(SkeletonBuilder& builder,
     return existing;
   }
 
+  // Parent-first insertion gives stable indices where parentIndex < childIndex
+  // for the normal imported hierarchy. This makes runtime global update a flat
+  // loop and prevents clips from depending on unordered_map iteration order.
+  BoneIndex parentIndex = INVALID_BONE_INDEX;
+  if (nullptr != node->mParent) {
+    parentIndex = ensureBoneAndAncestors(builder, node->mParent, nodeMap, offsetMap);
+  }
+
   Bone bone;
   bone.name = nodeName;
+  bone.parentIndex = INVALID_BONE_INDEX;
   bone.bindLocal = aiMatrixToMatrix4(node->mTransformation);
 
   auto offIt = offsetMap.find(nodeName);
-  if (offIt != offsetMap.end()) {
-    bone.offset = offIt->second;
-  }
-  else {
-    bone.offset = Matrix4::IDENTITY;
-  }
+  bone.offset = (offIt != offsetMap.end()) ? offIt->second : Matrix4::IDENTITY;
 
   const BoneIndex thisIndex = builder.addBone(bone);
   builder.m_bindPoseLocal[thisIndex] = Transform(bone.bindLocal);
-
-  if (nullptr != node->mParent) {
-    BoneIndex parentIndex =
-      ensureBoneAndAncestors(builder, node->mParent, nodeMap, offsetMap);
-    builder.setParent(thisIndex, parentIndex);
-  }
+  builder.setParent(thisIndex, parentIndex);
 
   return thisIndex;
+}
+
+static BoneIndex
+findCommonAncestor(const SkeletonBuilder& builder,
+                   BoneIndex a,
+                   BoneIndex b) {
+  if (a == INVALID_BONE_INDEX) {
+    return b;
+  }
+
+  if (b == INVALID_BONE_INDEX) {
+    return a;
+  }
+
+  Vector<uint8> visited(builder.m_bones.size(), 0);
+
+  BoneIndex current = a;
+  while (current != INVALID_BONE_INDEX) {
+    visited[current] = 1;
+    current = builder.m_bones[current].parentIndex;
+  }
+
+  current = b;
+  while (current != INVALID_BONE_INDEX) {
+    if (visited[current]) {
+      return current;
+    }
+
+    current = builder.m_bones[current].parentIndex;
+  }
+
+  return INVALID_BONE_INDEX;
+}
+
+static BoneIndex
+findSkinRootBoneIndex(const SkeletonBuilder& builder,
+                      const Vector<String>& skinnedBoneNames) {
+  BoneIndex common = INVALID_BONE_INDEX;
+  for (const auto& boneName : skinnedBoneNames) {
+    BoneIndex idx = builder.findBoneByName(boneName);
+    if (idx == INVALID_BONE_INDEX) {
+      continue;
+    }
+
+    common = findCommonAncestor(builder, common, idx);
+  }
+
+  return common;
 }
 
 static SPtr<Skeleton>
@@ -172,13 +222,14 @@ buildSkeletonFromAssimpScene(const aiScene* scene) {
   SkeletonBuilder builder;
   builder.clear();
 
-  builder.m_globalInverseTransform =
-    aiMatrixToMatrix4(scene->mRootNode->mTransformation).inverse();
+  builder.m_globalInverseTransform = Matrix4::IDENTITY;
 
   UnorderedMap<String, const aiNode*> nodeMap;
   buildAssimpNodeMapRecursive(scene->mRootNode, nodeMap);
 
   UnorderedMap<String, Matrix4> offsetMap;
+  Vector<String> skinnedBoneNames;
+  skinnedBoneNames.reserve(MAX_BONES);
 
   for (uint32 meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex) {
     const aiMesh* mesh = scene->mMeshes[meshIndex];
@@ -194,12 +245,19 @@ buildSkeletonFromAssimpScene(const aiScene* scene) {
 
       const String boneName = bone->mName.C_Str();
       offsetMap[boneName] = aiMatrixToMatrix4(bone->mOffsetMatrix);
+      skinnedBoneNames.push_back(boneName);
     }
   }
 
+  Vector<String> sortedBoneNames;
+  sortedBoneNames.reserve(offsetMap.size());
   for (const auto& it : offsetMap) {
-    const String& boneName = it.first;
+    sortedBoneNames.push_back(it.first);
+  }
 
+  std::sort(sortedBoneNames.begin(), sortedBoneNames.end());
+
+  for (const String& boneName : sortedBoneNames) {
     auto nodeIt = nodeMap.find(boneName);
     if (nodeIt == nodeMap.end()) {
       continue;
@@ -210,8 +268,22 @@ buildSkeletonFromAssimpScene(const aiScene* scene) {
 
   builder.rebuildBindGlobals();
 
+  // Use the same skin-root inverse rule as the model importer. If the same
+  // model and animation file share hierarchy, the skeleton hash and output
+  // matrices will remain compatible.
+  const BoneIndex skinRootIndex = findSkinRootBoneIndex(builder, skinnedBoneNames);
+
+  if (skinRootIndex != INVALID_BONE_INDEX) {
+    builder.m_globalInverseTransform =
+      builder.m_bones[skinRootIndex].bindGlobal.inverse();
+  }
+  else {
+    builder.m_globalInverseTransform = Matrix4::IDENTITY;
+  }
+
   return builder.build();
 }
+
 
 static SPtr<AnimationClip>
 buildAnimationClipFromAssimp(const aiAnimation* anim,
@@ -225,6 +297,7 @@ buildAnimationClipFromAssimp(const aiAnimation* anim,
   clip->m_ticksPerSecond = anim->mTicksPerSecond > 0.0 ?
                              static_cast<float>(anim->mTicksPerSecond) :
                              25.0f;
+  clip->resetForSkeleton(*skeleton);
 
   for (uint32 i = 0; i < anim->mNumChannels; ++i) {
     const aiNodeAnim* channel = anim->mChannels[i];
@@ -237,7 +310,7 @@ buildAnimationClipFromAssimp(const aiAnimation* anim,
       continue;
     }
 
-    BoneTrack& track = clip->m_boneTracks[boneIndex];
+    BoneTrack track;
 
     track.positions.reserve(channel->mNumPositionKeys);
     for (uint32 k = 0; k < channel->mNumPositionKeys; ++k) {
@@ -262,6 +335,8 @@ buildAnimationClipFromAssimp(const aiAnimation* anim,
       key.value = toVector3(channel->mScalingKeys[k].mValue);
       track.scales.push_back(key);
     }
+
+    clip->setTrack(boneIndex, std::move(track));
   }
 
   return clip;
@@ -594,7 +669,7 @@ extern "C"
     }
 
     boneIndicesOffset = dataOffset;
-    vertexElements.push_back(VertexElement(0, dataOffset, VET::UINT4, VES::BLENDINDICES));
+    vertexElements.push_back(VertexElement(0, dataOffset, VET::USHORT4, VES::BLENDINDICES));
     dataOffset += vertexElements.back().getSize();
 
     boneWeightsOffset = dataOffset;
@@ -673,11 +748,11 @@ extern "C"
         memcpy(&vertices[base + colOffset0], &color, sizeof(Color));
       }
 
-      uint32 boneIds[4] = {
-        static_cast<uint32>(skinData[i].boneIndices[0]),
-        static_cast<uint32>(skinData[i].boneIndices[1]),
-        static_cast<uint32>(skinData[i].boneIndices[2]),
-        static_cast<uint32>(skinData[i].boneIndices[3])
+      uint16 boneIds[4] = {
+        skinData[i].boneIndices[0],
+        skinData[i].boneIndices[1],
+        skinData[i].boneIndices[2],
+        skinData[i].boneIndices[3]
       };
 
       Vector4 boneWeights(skinData[i].boneWeights[0],
